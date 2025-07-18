@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🚀 QuickKart - Grocery in Minutes</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="main-header">
+    <div class="header-container">
+      <div class="logo-box">
+        <span class="logo-text">Quick<span>Kart</span></span>
+      </div>
+      
+      <div class="header-actions">
+        <div class="location">
+          <i class="fas fa-map-marker-alt"></i>
+          <span>Home</span>
+        </div>
+        <div class="cart-icon" id="cartToggle">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-count" id="cartCount">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-section">
+      <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search for products..." id="searchInput">
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="categories-scroll">
+      <div class="categories">
+        <button class="category-btn active" data-category="all">
+          <i class="fas fa-home"></i>
+          <span>All</span>
+        </button>
+        <button class="category-btn" data-category="Pan Corner">
+          <i class="fas fa-bread-slice"></i>
+          <span>Pan Corner</span>
+        </button>
+        <button class="category-btn" data-category="Masala & Oil">
+          <i class="fas fa-wine-bottle"></i>
+          <span>Masala & Oil</span>
+        </button>
+        <button class="category-btn" data-category="Cold Drinks & Juices">
+          <i class="fas fa-cookie"></i>
+          <span>Cold Drinks & Juices</span>
+        </button>
+        <button class="category-btn" data-category="Atta Rice & Daal">
+          <i class="fas fa-cheese"></i>
+          <span>Atta Rice & Daal</span>
+        </button>
+        <button class="category-btn" data-category="Bakery & Biscuits">
+          <i class="fas fa-cheese"></i>
+          <span>Bakery & Biscuits</span>
+        </button>
+        <button class="category-btn" data-category="Cleaning Care">
+          <i class="fas fa-cheese"></i>
+          <span>Cleaning Care</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    <section class="product-section">
+      <h2 class="section-title">Daily Essentials</h2>
+      <div class="store" id="storeItems"></div>
+    </section>
+
+    <section class="product-section">
+      <h2 class="section-title">Popular Items</h2>
+      <div class="store" id="popularItems"></div>
+    </section>
+  </main>
+
+  <!-- Cart Sidebar -->
+  <div id="cart" class="quickkart-cart">
+    <div class="cart-header">
+      <h2>Your Cart</h2>
+      <button class="close-cart" id="closeCart">&times;</button>
+    </div>
+    <div id="cartContent">
+      <ul id="cartList"></ul>
+      <div id="cartEmpty" class="empty-cart">
+        <img src="images/emptyCart.webp" alt="Empty Cart">
+        <h3>Your cart is empty</h3>
+        <p>Add items to get started</p>
+        <button id="continueShopping">Continue Shopping</button>
+      </div>
+    </div>
+
+    <div id="cartFull" class="cart-summary">
+      <div class="bill-details">
+        <div class="bill-row">
+          <span>Item Total</span>
+          <span id="itemTotal">₹0</span>
+        </div>
+        <div class="bill-row">
+          <span>Delivery Fee</span>
+          <span>FREE</span>
+        </div>
+        <div class="bill-row total">
+          <span>Total</span>
+          <span id="cartTotal">₹0</span>
+        </div>
+      </div>
+      <div class="cart-form">
+        <input type="text" id="customerName" placeholder="Your Name" required>
+        <input type="text" id="customerAddress" placeholder="Delivery Address" required>
+        <input type="tel" id="customerPhone" placeholder="Phone Number" required>
+        <button id="orderBtn" class="quickkart-btn">
+          <i class="fab fa-whatsapp"></i> Place Order
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div id="cartOverlay" class="cart-overlay"></div>
+
+  <!-- Notification -->
+  <div id="notification" class="quickkart-notification"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
