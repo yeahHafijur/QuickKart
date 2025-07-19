@@ -42,17 +42,18 @@ const items = [
     { name: 'Huggies(L size)', price: 75,category:'Baby Care', image: 'images/huggies.png' },
 
 
-    { name: 'Maxo(1pkt)', price: 29,category:'Maxo Killer', image: 'images/maxo.jpg' },
+    { name: 'Maxo(1pkt)', price: 29,category:'Maxo Killer & candle', image: 'images/maxo.jpg' },
     { name: 'zig Zag Brush(1P)', price: 25,category:'Daily Need', image: 'images/zigzag.png' },
-    { name: 'Candle(1pkt)', price: 75,category:'Maxo Killer', image: 'images/candle.jpg' },
+    { name: 'Candle(1pkt)', price: 75,category:'Maxo Killer & candle', image: 'images/candle.jpg' },
+
     { name: 'Eveready Battery(1p)', price: 18,category:'Daily Need', image: 'images/evereadyBattery.png' },
     { name: 'Panasonic Battery(1P)', price: 12, category:'Daily Need',image: 'images/panasonicBattery.png' },
-    { name: 'Agar Batti Man Mandir(1pkt)', price: 10,category:'Maxo Killer', image: 'images/AgarBattiManMandir.png' },
-    { name: 'Agar Batti Amena(1pkt)', price: 10,category:'Maxo Killer', image: 'images/amenaAgarbatti.jpg' },
+    { name: 'Agar Batti Man Mandir(1pkt)', price: 10,category:'Maxo Killer & candle', image: 'images/AgarBattiManMandir.png' },
+    { name: 'Agar Batti Amena(1pkt)', price: 10,category:'Maxo Killer & candle', image: 'images/amenaAgarbatti.jpg' },
     { name: 'Colgate(38gm)', price: 20,category:'Daily Need', image: 'images/colgate.png' },
     { name: 'Colgate(16gm)', price: 10,category:'Daily Need', image: 'images/colgate.png' },
     { name: 'Fevi kwik(1Pc)', price: 10,category:'Daily Need', image: 'images/feviKwik.png' },
-    { name: 'Aladin killer(1pkt)', price: 20,category:'Maxo Killer', image: 'images/aladinkiller.jpg' },
+    { name: 'Aladin killer(1pkt)', price: 20,category:'Maxo Killer & candle', image: 'images/aladinkiller.jpg' },
 
     
 
