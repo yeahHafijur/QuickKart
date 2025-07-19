@@ -99,19 +99,21 @@ body.cart-open {
   background: transparent;
 }
 
-/* Categories */
+/* Categories Scroll Container */
 .categories-scroll {
   overflow-x: auto;
   scrollbar-width: none;
   background: var(--white);
   border-bottom: 1px solid var(--border);
   padding: 8px 0;
+  position: relative;
 }
 
 .categories-scroll::-webkit-scrollbar {
   display: none;
 }
 
+/* Categories Wrapper */
 .categories {
   display: flex;
   gap: 12px;
@@ -119,20 +121,44 @@ body.cart-open {
   width: max-content;
 }
 
+/* Base Button Styles */
 .category-btn {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: end;
+  justify-content: end;
   border: none;
-  background: var(--bg);
-  color: var(--muted);
+  color: var(--white);
   font-size: 0.75rem;
   min-width: 70px;
   padding: 8px 4px;
   border-radius: var(--radius);
   cursor: pointer;
   transition: var(--transition);
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  overflow: hidden;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Dark overlay for better text visibility */
+.category-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 1;
+}
+
+/* Button content (icon + text) */
+.category-btn > * {
+  position: relative;
+  z-index: 2;
 }
 
 .category-btn i {
@@ -140,10 +166,53 @@ body.cart-open {
   margin-bottom: 4px;
 }
 
+/* Active State */
 .category-btn.active {
-  background: var(--primary);
-  color: var(--white);
   font-weight: 600;
+  box-shadow: 0 0 0 2px var(--white), 0 3px 6px rgba(0,0,0,0.3);
+}
+
+.category-btn.active::after {
+  background: rgba(0,177,64,0.6);
+}
+
+/* Individual Category Backgrounds */
+.category-btn[data-category="all"] {
+  background-image: url('images/all-bg.jpg');
+}
+
+.category-btn[data-category="Pan Corner"] {
+  background-image: url('images/pan-corner-bg.png');
+}
+
+.category-btn[data-category="Masala & Oil"] {
+  background-image: url('images/masala-oil-bg.png');
+}
+
+.category-btn[data-category="Cold Drinks & Juices"] {
+  background-image: url('images/drinks-bg.png');
+}
+
+.category-btn[data-category="Atta Rice & Daal"] {
+  background-image: url('images/atta-rice-bg.png');
+}
+
+.category-btn[data-category="Bakery & Biscuits"] {
+  background-image: url('images/bakery-bg.png');
+}
+
+.category-btn[data-category="Cleaning Care"] {
+  background-image: url('images/cleaning-bg.png');
+}
+
+/* Hover Effects */
+.category-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.category-btn:hover::after {
+  background: rgba(0,0,0,0.2);
 }
 
 /* Product Sections */
@@ -494,7 +563,7 @@ body.cart-open {
 /* Responsive Design */
 @media (max-width: 600px) {
   .store {
-    grid-template-columns: repeat(2, 1fr); /* Mobile pe hamesha 2 columns */
+    grid-template-columns: repeat(2, 1fr);
   }
   
   .logo-text {
@@ -513,7 +582,7 @@ body.cart-open {
 
 @media (max-width: 400px) {
   .store {
-    grid-template-columns: repeat(2, 1fr); /* Very small mobile pe bhi 2 columns */
+    grid-template-columns: 1fr;
   }
   
   body {
@@ -527,18 +596,5 @@ body.cart-open {
   
   .category-btn i {
     font-size: 1.2rem;
-  }
-}
-
-/* Add these new media queries for larger screens */
-@media (min-width: 601px) {
-  .store {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Laptop/desktop pe 4-5 columns */
-  }
-}
-
-@media (min-width: 601px) and (max-width: 900px) {
-  .store {
-    grid-template-columns: repeat(3, 1fr); /* Tablets pe 3 columns */
   }
 }
