@@ -200,9 +200,6 @@ function initStore(filterCategory = 'all', searchTerm = '') {
 
     let badgeHTML = item.badge ? `<span class="item-badge">${item.badge}</span>` : '';
 
-    // Rating stars
-    
-
     div.innerHTML = `
       <div class="item-image-container">
         ${badgeHTML}
@@ -210,7 +207,6 @@ function initStore(filterCategory = 'all', searchTerm = '') {
       </div>
       <div class="item-details">
         <h3 class="item-name">${item.name}</h3>
-       
         <div class="item-price">₹${item.price}</div>
         <div class="item-actions">
           <div class="quantity-control">
@@ -358,8 +354,15 @@ categoryBtns.forEach(btn => {
   });
 });
 
+// Make customerAddressInput readonly to prevent manual input
+customerAddressInput.setAttribute('readonly', true);
+
+// Disable order button initially till location valid
+const orderBtn = document.getElementById('orderBtn');
+orderBtn.disabled = true;
+
 // Place order with WhatsApp (with location link)
-document.getElementById('orderBtn').addEventListener('click', () => {
+orderBtn.addEventListener('click', () => {
   const name = document.getElementById('customerName').value.trim();
   const address = customerAddressInput.value.trim();
   const phone = document.getElementById('customerPhone').value.trim();
@@ -398,6 +401,8 @@ document.getElementById('orderBtn').addEventListener('click', () => {
 // Get user location and check distance from store
 getLocationBtn.addEventListener('click', () => {
   locationDisplay.textContent = 'Fetching location...';
+  orderBtn.disabled = true; // Disable order till location confirmed
+
   if (!navigator.geolocation) {
     locationDisplay.textContent = 'Geolocation is not supported by your browser.';
     return;
@@ -407,7 +412,6 @@ getLocationBtn.addEventListener('click', () => {
     position => {
       const lat = position.coords.latitude;
       const lng = position.coords.longitude;
-      
 
       // Calculate distance from store
       const distance = getDistanceFromLatLonInKm(storeLocation.lat, storeLocation.lng, lat, lng);
@@ -417,7 +421,7 @@ getLocationBtn.addEventListener('click', () => {
         customerAddressInput.value = '';
         userLatInput.value = '';
         userLngInput.value = '';
-        
+        orderBtn.disabled = true; // Disable order button
         return;
       }
 
@@ -444,12 +448,15 @@ getLocationBtn.addEventListener('click', () => {
 
             customerAddressInput.value = fullAddress;
             locationDisplay.textContent = 'Location fetched and address filled!';
+            orderBtn.disabled = false; // Enable order button now
           } else {
             locationDisplay.textContent = 'Could not determine address.';
+            orderBtn.disabled = true;
           }
         })
         .catch(() => {
           locationDisplay.textContent = 'Failed to fetch address.';
+          orderBtn.disabled = true;
         });
     },
     error => {
@@ -466,6 +473,7 @@ getLocationBtn.addEventListener('click', () => {
         default:
           locationDisplay.textContent = 'An unknown error occurred.';
       }
+      orderBtn.disabled = true;
     }
   );
 });
@@ -479,14 +487,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   initStore();
 });
+
 const phoneInput = document.getElementById("customerPhone");
 
-  phoneInput.addEventListener("input", function () {
-    // Only allow digits, remove everything else
-    this.value = this.value.replace(/\D/g, "");
+phoneInput.addEventListener("input", function () {
+  // Only allow digits, remove everything else
+  this.value = this.value.replace(/\D/g, "");
 
-    // Limit to max 10 digits (for safety)
-    if (this.value.length > 10) {
-      this.value = this.value.slice(0, 10);
-    }
-  });
+  // Limit to max 10 digits (for safety)
+  if (this.value.length > 10) {
+    this.value = this.value.slice(0, 10);
+  }
+});
