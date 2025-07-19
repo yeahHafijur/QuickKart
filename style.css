@@ -427,9 +427,9 @@ body.cart-open {
   position: fixed;
   top: 0;
   right: -100%;
-  width: 90%;
+  width: 80%;
   max-width: 420px;
-  height: 100vh;
+  height: 70vh;
   background: #ffffff;
   z-index: 1001;
   box-shadow: -5px 0 25px rgba(0, 0, 0, 0.1);
