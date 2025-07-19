@@ -125,7 +125,7 @@
         <button type="button" id="getLocationBtn" style="padding: 8px 12px;" title="Auto-fill your address using current location">📍</button>
       </div>
 
-      <input type="tel" id="customerPhone" placeholder="Phone Number" required>
+      <input type="tel" id="customerPhone" pattern="[0-9]{10}" maxlength="10" placeholder="Phone Number" required >
 
       <p id="locationDisplay" style="font-size: 14px; color: green; margin-top: 5px;"></p>
 

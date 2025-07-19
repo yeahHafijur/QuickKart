@@ -407,6 +407,7 @@ getLocationBtn.addEventListener('click', () => {
     position => {
       const lat = position.coords.latitude;
       const lng = position.coords.longitude;
+      
 
       // Calculate distance from store
       const distance = getDistanceFromLatLonInKm(storeLocation.lat, storeLocation.lng, lat, lng);
@@ -416,6 +417,7 @@ getLocationBtn.addEventListener('click', () => {
         customerAddressInput.value = '';
         userLatInput.value = '';
         userLngInput.value = '';
+        
         return;
       }
 
@@ -477,3 +479,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   initStore();
 });
+const phoneInput = document.getElementById("customerPhone");
+
+  phoneInput.addEventListener("input", function () {
+    // Only allow digits, remove everything else
+    this.value = this.value.replace(/\D/g, "");
+
+    // Limit to max 10 digits (for safety)
+    if (this.value.length > 10) {
+      this.value = this.value.slice(0, 10);
+    }
+  });
