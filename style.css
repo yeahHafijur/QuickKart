@@ -494,7 +494,7 @@ body.cart-open {
 /* Responsive Design */
 @media (max-width: 600px) {
   .store {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr); /* Mobile pe hamesha 2 columns */
   }
   
   .logo-text {
@@ -513,7 +513,7 @@ body.cart-open {
 
 @media (max-width: 400px) {
   .store {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr); /* Very small mobile pe bhi 2 columns */
   }
   
   body {
@@ -527,5 +527,18 @@ body.cart-open {
   
   .category-btn i {
     font-size: 1.2rem;
+  }
+}
+
+/* Add these new media queries for larger screens */
+@media (min-width: 601px) {
+  .store {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Laptop/desktop pe 4-5 columns */
+  }
+}
+
+@media (min-width: 601px) and (max-width: 900px) {
+  .store {
+    grid-template-columns: repeat(3, 1fr); /* Tablets pe 3 columns */
   }
 }
