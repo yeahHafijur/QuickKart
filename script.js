@@ -125,6 +125,7 @@ const items = [
 
 
 
+
 // Cart data
 const cart = [];
 
@@ -144,6 +145,36 @@ const cartEmpty = document.getElementById('cartEmpty');
 const cartFull = document.getElementById('cartFull');
 const continueShoppingBtn = document.getElementById('continueShopping');
 const cartOverlay = document.getElementById('cartOverlay');
+
+const getLocationBtn = document.getElementById('getLocationBtn');
+const locationDisplay = document.getElementById('locationDisplay');
+const customerAddressInput = document.getElementById('customerAddress');
+const userLatInput = document.getElementById('userLat');
+const userLngInput = document.getElementById('userLng');
+
+// *** FIXED DUKAN LOCATION ***
+const storeLocation = {
+  lat: 26.6468571, // Yahan apni dukan ki latitude daalein
+  lng: 92.0754806  // Yahan apni dukan ki longitude daalein
+};
+
+// Convert degrees to radians helper
+function deg2rad(deg) {
+  return deg * (Math.PI / 180);
+}
+
+// Calculate distance (in km) between two lat/lng points using Haversine formula
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Earth radius in km
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
 
 // Initialize Store
 function initStore(filterCategory = 'all', searchTerm = '') {
@@ -170,15 +201,7 @@ function initStore(filterCategory = 'all', searchTerm = '') {
     let badgeHTML = item.badge ? `<span class="item-badge">${item.badge}</span>` : '';
 
     // Rating stars
-    let stars = '';
-    if(item.rating) {
-      for(let i = 1; i <= 5; i++) {
-        if(i <= Math.floor(item.rating)) stars += '<i class="fas fa-star"></i>';
-        else if(i === Math.ceil(item.rating) && !Number.isInteger(item.rating)) stars += '<i class="fas fa-star-half-alt"></i>';
-        else stars += '<i class="far fa-star"></i>';
-      }
-      stars = `<div class="item-rating">${stars} (${item.rating})</div>`;
-    }
+    
 
     div.innerHTML = `
       <div class="item-image-container">
@@ -187,7 +210,7 @@ function initStore(filterCategory = 'all', searchTerm = '') {
       </div>
       <div class="item-details">
         <h3 class="item-name">${item.name}</h3>
-        ${stars}
+       
         <div class="item-price">₹${item.price}</div>
         <div class="item-actions">
           <div class="quantity-control">
@@ -200,7 +223,6 @@ function initStore(filterCategory = 'all', searchTerm = '') {
       </div>
     `;
 
-    // Add event listeners to the buttons
     div.querySelector('.qty-minus').addEventListener('click', () => updateQuantity(div, -1));
     div.querySelector('.qty-plus').addEventListener('click', () => updateQuantity(div, 1));
     div.querySelector('.add-to-cart-btn').addEventListener('click', () => addToCart(div));
@@ -209,7 +231,7 @@ function initStore(filterCategory = 'all', searchTerm = '') {
   });
 }
 
-// Update quantity for each product
+// Update quantity
 function updateQuantity(itemElement, change) {
   const quantitySpan = itemElement.querySelector('.quantity-control span');
   let quantity = parseInt(quantitySpan.textContent);
@@ -277,14 +299,14 @@ function updateCartUI() {
   localStorage.setItem('quickKartCart', JSON.stringify(cart));
 }
 
-// Remove item from cart by index
+// Remove from cart
 function removeFromCart(index) {
   const removed = cart.splice(index,1)[0];
   updateCartUI();
   showNotification(`${removed.name} removed from cart`);
 }
 
-// Show notification message
+// Notification
 function showNotification(msg) {
   notification.textContent = msg;
   notification.classList.add('show');
@@ -293,13 +315,12 @@ function showNotification(msg) {
   }, 3000);
 }
 
-// Cart toggle functions
+// Cart toggle
 function openCart() {
   document.body.classList.add('cart-open');
   cartElement.classList.add('open');
   cartOverlay.classList.add('show');
 }
-
 function closeCart() {
   document.body.classList.remove('cart-open');
   cartElement.classList.remove('open');
@@ -310,14 +331,8 @@ function closeCart() {
 cartToggle.addEventListener('click', openCart);
 closeCartBtn.addEventListener('click', closeCart);
 continueShoppingBtn.addEventListener('click', closeCart);
-
-// Close cart when clicking outside
 cartOverlay.addEventListener('click', closeCart);
-
-// Prevent clicks inside cart from closing it
-cartElement.addEventListener('click', function(e) {
-  e.stopPropagation();
-});
+cartElement.addEventListener('click', e => e.stopPropagation());
 
 // Search filtering
 let searchTimer;
@@ -343,11 +358,13 @@ categoryBtns.forEach(btn => {
   });
 });
 
-// Place order with WhatsApp
+// Place order with WhatsApp (with location link)
 document.getElementById('orderBtn').addEventListener('click', () => {
   const name = document.getElementById('customerName').value.trim();
-  const address = document.getElementById('customerAddress').value.trim();
+  const address = customerAddressInput.value.trim();
   const phone = document.getElementById('customerPhone').value.trim();
+  const lat = userLatInput.value.trim();
+  const lng = userLngInput.value.trim();
 
   if(!name || !address || !phone || cart.length === 0) {
     showNotification("Please fill all details and add items to cart");
@@ -360,19 +377,98 @@ document.getElementById('orderBtn').addEventListener('click', () => {
   }
 
   let message = `*New Order from QuickKart!*%0A%0A`;
-  message += `*Customer Details:*%0AName: ${name}%0AAddress: ${address}%0APhone: ${phone}%0A%0A*Order Items:*%0A`;
+  message += `*Customer Details:*%0AName: ${name}%0AAddress: ${address}%0APhone: ${phone}%0A`;
+
+  if(lat && lng) {
+    message += `Location: https://www.google.com/maps?q=${lat},${lng}%0A`;
+  }
+
+  message += `%0A*Order Items:*%0A`;
   cart.forEach(item => {
     message += `- ${item.name} (${item.quantity} × ₹${item.price}) = ₹${item.price * item.quantity}%0A`;
   });
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   message += `%0A*Total: ₹${total}*%0A%0APlease confirm this order and provide delivery time. Thank you!`;
 
-  const whatsappNumber = "918447122439"; // change to your WhatsApp number
+  const whatsappNumber = "919716940448"; // Change to your WhatsApp number
   const url = `https://wa.me/${whatsappNumber}?text=${message}`;
   window.open(url, '_blank');
 });
 
-// Load cart from localStorage and initialize store on page load
+// Get user location and check distance from store
+getLocationBtn.addEventListener('click', () => {
+  locationDisplay.textContent = 'Fetching location...';
+  if (!navigator.geolocation) {
+    locationDisplay.textContent = 'Geolocation is not supported by your browser.';
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      // Calculate distance from store
+      const distance = getDistanceFromLatLonInKm(storeLocation.lat, storeLocation.lng, lat, lng);
+
+      if(distance > 5) {
+        locationDisplay.textContent = `Sorry, you are ${distance.toFixed(2)} km away. Delivery available only within 5 km radius.`;
+        customerAddressInput.value = '';
+        userLatInput.value = '';
+        userLngInput.value = '';
+        return;
+      }
+
+      // Store coordinates in hidden inputs
+      userLatInput.value = lat;
+      userLngInput.value = lng;
+
+      // Reverse geocode using OpenStreetMap Nominatim API
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
+        .then(response => response.json())
+        .then(data => {
+          if(data && data.address) {
+            const addr = data.address;
+            const parts = [
+              addr.house_number || '',
+              addr.road || '',
+              addr.suburb || '',
+              addr.city || addr.town || addr.village || '',
+              addr.state || '',
+              addr.postcode || '',
+              addr.country || ''
+            ].filter(Boolean);
+            const fullAddress = parts.join(', ');
+
+            customerAddressInput.value = fullAddress;
+            locationDisplay.textContent = 'Location fetched and address filled!';
+          } else {
+            locationDisplay.textContent = 'Could not determine address.';
+          }
+        })
+        .catch(() => {
+          locationDisplay.textContent = 'Failed to fetch address.';
+        });
+    },
+    error => {
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          locationDisplay.textContent = 'Permission denied. Please allow location access.';
+          break;
+        case error.POSITION_UNAVAILABLE:
+          locationDisplay.textContent = 'Location unavailable.';
+          break;
+        case error.TIMEOUT:
+          locationDisplay.textContent = 'Location request timed out.';
+          break;
+        default:
+          locationDisplay.textContent = 'An unknown error occurred.';
+      }
+    }
+  );
+});
+
+// Load cart from localStorage and initialize store
 document.addEventListener('DOMContentLoaded', () => {
   const savedCart = JSON.parse(localStorage.getItem('quickKartCart'));
   if(savedCart && Array.isArray(savedCart)) {

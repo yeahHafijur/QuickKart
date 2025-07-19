@@ -85,46 +85,60 @@
   </main>
 
   <!-- Cart Sidebar -->
-  <div id="cart" class="quickkart-cart">
-    <div class="cart-header">
-      <h2>Your Cart</h2>
-      <button class="close-cart" id="closeCart">&times;</button>
+<div id="cart" class="quickkart-cart">
+  <div class="cart-header">
+    <h2>Your Cart</h2>
+    <button class="close-cart" id="closeCart">&times;</button>
+  </div>
+
+  <div id="cartContent">
+    <ul id="cartList"></ul>
+    <div id="cartEmpty" class="empty-cart">
+      <img src="images/emptyCart.webp" alt="Empty Cart">
+      <h3>Your cart is empty</h3>
+      <p>Add items to get started</p>
+      <button id="continueShopping">Continue Shopping</button>
     </div>
-    <div id="cartContent">
-      <ul id="cartList"></ul>
-      <div id="cartEmpty" class="empty-cart">
-        <img src="images/emptyCart.webp" alt="Empty Cart">
-        <h3>Your cart is empty</h3>
-        <p>Add items to get started</p>
-        <button id="continueShopping">Continue Shopping</button>
+  </div>
+
+  <div id="cartFull" class="cart-summary">
+    <div class="bill-details">
+      <div class="bill-row">
+        <span>Item Total</span>
+        <span id="itemTotal">₹0</span>
+      </div>
+      <div class="bill-row">
+        <span>Delivery Fee</span>
+        <span id="deliveryFee">FREE</span>
+      </div>
+      <div class="bill-row total">
+        <span>Total</span>
+        <span id="cartTotal">₹0</span>
       </div>
     </div>
 
-    <div id="cartFull" class="cart-summary">
-      <div class="bill-details">
-        <div class="bill-row">
-          <span>Item Total</span>
-          <span id="itemTotal">₹0</span>
-        </div>
-        <div class="bill-row">
-          <span>Delivery Fee</span>
-          <span>FREE</span>
-        </div>
-        <div class="bill-row total">
-          <span>Total</span>
-          <span id="cartTotal">₹0</span>
-        </div>
+    <div class="cart-form">
+      <input type="text" id="customerName" placeholder="Your Name" required>
+
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <input type="text" id="customerAddress" placeholder="Delivery Address" required style="flex: 1;">
+        <button type="button" id="getLocationBtn" style="padding: 8px 12px;" title="Auto-fill your address using current location">📍</button>
       </div>
-      <div class="cart-form">
-        <input type="text" id="customerName" placeholder="Your Name" required>
-        <input type="text" id="customerAddress" placeholder="Delivery Address" required>
-        <input type="tel" id="customerPhone" placeholder="Phone Number" required>
-        <button id="orderBtn" class="quickkart-btn">
-          <i class="fab fa-whatsapp"></i> Place Order
-        </button>
-      </div>
+
+      <input type="tel" id="customerPhone" placeholder="Phone Number" required>
+
+      <p id="locationDisplay" style="font-size: 14px; color: green; margin-top: 5px;"></p>
+
+      <!-- Hidden Inputs for Latitude and Longitude -->
+      <input type="hidden" id="userLat">
+      <input type="hidden" id="userLng">
+
+      <button id="orderBtn" class="quickkart-btn" style="margin-top: 10px;">
+        <i class="fab fa-whatsapp"></i> Place Order
+      </button>
     </div>
   </div>
+</div>
 
   <!-- Overlay -->
   <div id="cartOverlay" class="cart-overlay"></div>
