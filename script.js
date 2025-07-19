@@ -549,3 +549,97 @@ phoneInput.addEventListener("input", function () {
     this.value = this.value.slice(0, 10);
   }
 });
+// SHOP STATUS CONTROLLER - SIMPLIFIED
+// ======================
+const OWNER_PASSWORD = "bismillah"; // CHANGE THIS TO YOUR SECURE PASSWORD
+
+// DOM Elements
+const shopStatusToggle = document.getElementById('shopStatusToggle');
+const shopStatusText = document.getElementById('shopStatusText');
+const body = document.body;
+
+// Initialize shop status from localStorage
+const savedStatus = localStorage.getItem('quickKartShopStatus');
+const isShopOpen = savedStatus ? savedStatus === 'open' : true;
+
+// Set initial toggle state
+shopStatusToggle.checked = isShopOpen;
+updateShopStatus(isShopOpen);
+
+// Toggle change event
+shopStatusToggle.addEventListener('change', function() {
+  const password = prompt("🔒 Owner Access Required\nEnter password to change shop status:");
+  
+  if (password === OWNER_PASSWORD) {
+    const newStatus = this.checked;
+    updateShopStatus(newStatus);
+    localStorage.setItem('quickKartShopStatus', newStatus ? 'open' : 'closed');
+    showNotification(`Shop is now ${newStatus ? 'OPEN' : 'CLOSED'}`);
+  } else {
+    this.checked = !this.checked; // Revert toggle
+    if (password !== null) { // Only show alert if user didn't cancel
+      alert("⛔ Access Denied\nOnly shop owner can change status.");
+    }
+  }
+});
+
+// Update shop status UI and functionality
+function updateShopStatus(isOpen) {
+  const notification = document.getElementById('shopClosedNotification') || createShopClosedNotification();
+  
+  if (isOpen) {
+    body.classList.remove('shop-closed');
+    shopStatusText.textContent = "Open";
+    shopStatusText.style.color = "var(--primary)";
+    notification.classList.remove('show');
+  } else {
+    body.classList.add('shop-closed');
+    shopStatusText.textContent = "Closed";
+    shopStatusText.style.color = "#ff4444";
+    notification.classList.add('show');
+    closeCart(); // Close cart if open
+  }
+  
+  // Disable/enable all add to cart buttons
+  document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+    btn.disabled = !isOpen;
+  });
+}
+
+// Create simple closed notification
+function createShopClosedNotification() {
+  const notification = document.createElement('div');
+  notification.id = 'shopClosedNotification';
+  notification.className = 'shop-closed-notification';
+  notification.innerHTML = `
+    <div class="notification-content">
+      <h3>We're Currently Closed</h3>
+      <p>Our shop is not accepting orders at this time.</p>
+      <p>Please come back later.</p>
+      <button class="close-btn">OK</button>
+    </div>
+  `;
+  
+  // Add close button functionality
+  notification.querySelector('.close-btn').addEventListener('click', () => {
+    notification.classList.remove('show');
+  });
+  
+  document.body.appendChild(notification);
+  return notification;
+}
+
+// Modify addToCart function to check shop status
+const originalAddToCart = window.addToCart;
+window.addToCart = function(itemElement) {
+  if (!shopStatusToggle.checked) {
+    showNotification("Shop is currently closed. Orders not accepted.");
+    return;
+  }
+  originalAddToCart(itemElement);
+};
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+  updateShopStatus(isShopOpen);
+});

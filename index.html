@@ -15,6 +15,26 @@
       <div class="logo-box">
         <span class="logo-text">Quick<span>Kart</span></span>
       </div>
+      <!-- Add this right after the logo-box div in your header -->
+<div class="shop-status-container">
+  <label class="switch">
+    <input type="checkbox" id="shopStatusToggle">
+    <span class="slider round"></span>
+  </label>
+  <span id="shopStatusText">Open</span>
+</div>
+<!-- Enhanced Shop Closed Notification -->
+<div id="shopClosedNotification" class="shop-closed-alert">
+  <div class="alert-content">
+    <i class="fas fa-store-slash"></i>
+    <div class="alert-text">
+      <h3>আমাৰ দোকানখন এতিয়া বন্ধ হৈ আছে</h3>
+      <p>কাইলৈ ৰাতিপুৱা খোলা হ'ব!</p>
+      
+    </div>
+    <button class="close-alert">&times;</button>
+  </div>
+</div>
       
       
       <div class="header-actions">
@@ -155,14 +175,15 @@
     </div>
 
     <div class="cart-form">
-      <input type="text" id="customerName" placeholder="Your Name" required>
+      <input type="text" id="customerName" placeholder="আপোনাৰ নাম" required>
 
       <div style="display: flex; gap: 10px; align-items: center;">
-        <input type="text" id="customerAddress" placeholder="Delivery Address" required style="flex: 1;">
-        <button type="button" id="getLocationBtn" style="padding: 8px 12px;" title="Auto-fill your address using current location">📍</button>
+        <input type="text" id="customerAddress" hidden placeholder="Delivery Address" required style="flex: 1;">
+        <p style="color: chartreuse;"> ইয়াত ক্লিক কৰক👉</p>
+        <button type="button" id="getLocationBtn" style="padding: 8px 12px; margin:10px" title="Auto-fill your address using current location">📍</button>
       </div>
 
-      <input type="tel" id="customerPhone" pattern="[0-9]{10}" maxlength="10" placeholder="Phone Number" required >
+      <input type="tel" id="customerPhone" pattern="[0-9]{10}" maxlength="10" placeholder="📞মোবাইল নম্বৰ" required >
 
       <p id="locationDisplay" style="font-size: 14px; color: green; margin-top: 5px;"></p>
 
