@@ -137,6 +137,40 @@ const items = [
     { name: 'Bikaji Bhujia(200gm)', price: 65,category:'Bakery & Biscuits', image: 'images/BikajiBhujia.png' },
     { name: 'Parle G(1pkt)', price: 10,category:'Bakery & Biscuits', image: 'images/parleG.jpg' },
     { name: 'Rusk(1pkt)', price: 10,category:'Bakery & Biscuits', image: 'images/rusk.jpg' },
+
+    { name: 'C to C type cable(1m) samsung', price: 150,category:'Electronics', image: 'images/' },
+    { name: 'iPhone Data Cable(1m)', price: 150,category:'Electronics', image: 'images/' },
+    { name: 'Samsung 25W type C addopter', price:520 ,category:'Electronics', image: 'images/' },
+    { name: '3 in 1 Black Kat Data cable', price:210 ,category:'Electronics', image: 'images/' },
+    { name: '120W B type Data Cable', price:150 ,category:'Electronics', image: 'images/' },
+    { name: '120W C type Data Cable', price:150 ,category:'Electronics', image: 'images/' },
+    { name: 'Black Kat C type Data Cable', price:60 ,category:'Electronics', image: 'images/' },
+    { name: 'Black Kat B type Data Cable', price:60 ,category:'Electronics', image: 'images/' },
+    { name: 'Fast Charging Cable C type', price: 170,category:'Electronics', image: 'images/' },
+    { name: 'Fast Charging Cable B type', price:170 ,category:'Electronics', image: 'images/' },
+    { name: 'Car Charger', price:280 ,category:'Electronics', image: 'images/' },
+    { name: 'Black Kat wireless blutooth Speaker', price:399 ,category:'Electronics', image: 'images/' },
+    { name: 'realme Buds Wireless 3 Neo', price:520 ,category:'Electronics', image: 'images/' },
+    { name: 'Boat Rockerz 255 blutooth earphone', price:520 ,category:'Electronics', image: 'images/' },
+
+
+
+    { name: 'Graph Book(Pages 10)', price:20 ,category:'Stationary', image: 'images/' },
+    { name: 'Plain Notebook(Page 50)', price:30 ,category:'Stationary', image: 'images/' },
+    { name: 'Plain Notebook(Page 100)', price:50 ,category:'Stationary', image: 'images/' },
+    { name: 'Role Notebook(Page 50)', price:30 ,category:'Stationary', image: 'images/' },
+    { name: 'Role Notebook(Page 100)', price:50 ,category:'Stationary', image: 'images/' },
+    { name: 'English Notebook(Page 50)', price:30 ,category:'Stationary', image: 'images/' },
+    { name: 'Flair Writo-meter Ball Pen(Black)', price: 20,category:'Stationary', image: 'images/' },
+    { name: 'Flair Writo-meter Ball Pen(blue)', price: 20,category:'Stationary', image: 'images/' },
+    { name: 'Apsara Pencil(1 box)', price: 49,category:'Stationary', image: 'images/' },
+    { name: 'Apsara Eraser(2 pc)', price: 10,category:'Stationary', image: 'images/' },
+    { name: 'Apsara Sharpner(2 pc)', price: 10,category:'Stationary', image: 'images/' },
+    { name: 'Permanent Marker Pen ', price: 15,category:'Stationary', image: 'images/' },
+    { name: 'Fevicol MR (20gm)', price: 10,category:'Stationary', image: 'images/' },
+    { name: 'Elkos Pen(Pack of 5)', price: 30,category:'Stationary', image: 'images/' },
+    
+
 ];
 
 
