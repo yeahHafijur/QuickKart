@@ -204,6 +204,21 @@ body.cart-open {
 .category-btn[data-category="Cleaning Care"] {
   background-image: url('images/cleaning-bg.png');
 }
+.category-btn[data-category="Dry Fruits"] {
+  background-image: url('images/dry-fruits-bg.png');
+}
+.category-btn[data-category="Baby Care"] {
+  background-image: url('images/baby-care-bg.png');
+}
+.category-btn[data-category="Maxo Killer"] {
+  background-image: url('images/agarbatti.png');
+}
+.category-btn[data-category="Personal Care"] {
+  background-image: url('images/personal-care-bg.png');
+}
+.category-btn[data-category="Gass"] {
+  background-image: url('images/gass-bg.png');
+}
 
 /* Hover Effects */
 .category-btn:hover {
