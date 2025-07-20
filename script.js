@@ -1,6 +1,26 @@
-// Sample products data
-  
-const items = [
+// ======================
+// Firebase Initialization
+// ======================
+const firebaseConfig = {
+  apiKey: "AIzaSyBieX9ymlSZH_nGc17YukhmrIvNOpBzF_M",
+  authDomain: "quickkart-shop-status.firebaseapp.com",
+  databaseURL: "https://quickkart-shop-status-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "quickkart-shop-status",
+  storageBucket: "quickkart-shop-status.appspot.com",
+  messagingSenderId: "603872368115",
+  appId: "1:603872368115:web:3ed732f3c7afe934ee2e86"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+const shopStatusRef = db.ref('shopStatus');
+
+// ======================
+// Store Configuration
+// ======================
+// Sample products data (your existing products array)
+ const items = [
     //{ name: 'Aata Ashirwaad (5kg)', price: 250, category:'Atta Rice & Daal', image: 'images/ashirwaad.png', rating: 4.5, badge: 'Best Seller' },
     { name: 'Daal (1kg)', price: 99,category:'Atta Rice & Daal', image: 'images/daal.png', rating: 4.0, badge: 'Popular' },
     { name: 'Sugar (1kg)', price: 49,category:'Atta Rice & Daal', image: 'https://imgs.search.brave.com/_3uakTkU_af6b0KhyeXE4Xlnv1-Pca02WwE2UtZ5snA/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly90aHVt/YnMuZHJlYW1zdGlt/ZS5jb20vYi9waWxl/LXN1Z2FyLTEzNDE5/MDQ4LmpwZw', rating: 3.8 },
@@ -40,6 +60,10 @@ const items = [
      { name: 'Huggies(S size)', price: 55,category:'Baby Care', image: 'images/huggies.png' },
     { name: 'Huggies(M size)', price: 65,category:'Baby Care', image: 'images/huggies.png' },
     { name: 'Huggies(L size)', price: 75,category:'Baby Care', image: 'images/huggies.png' },
+    { name: 'Johnsonis baby oil(50mL) ', price:75 ,category:'Baby Care', image: 'images/' },
+    { name: 'Johnsonis baby soap(25gm)', price:20 ,category:'Baby Care', image: 'images/' },
+    { name: 'Himalaya Baby Powder(30gm)', price:30 ,category:'Baby Care', image: 'images/' },
+    
 
 
     { name: 'Maxo(1pkt)', price: 29,category:'Maxo Killer & candle', image: 'images/maxo.jpg' },
@@ -169,477 +193,459 @@ const items = [
     { name: 'Permanent Marker Pen ', price: 15,category:'Stationary', image: 'images/' },
     { name: 'Fevicol MR (20gm)', price: 10,category:'Stationary', image: 'images/' },
     { name: 'Elkos Pen(Pack of 5)', price: 30,category:'Stationary', image: 'images/' },
-    
-
 ];
 
-
-
-
-// Cart data
 const cart = [];
+const storeLocation = { lat: 26.6468571, lng: 92.0754806 };
+let isShopOpen = true;
 
+// ======================
 // DOM Elements
-const storeDiv = document.getElementById('storeItems');
-const cartList = document.getElementById('cartList');
-const cartCount = document.getElementById('cartCount');
-const cartTotal = document.getElementById('cartTotal');
-const itemTotal = document.getElementById('itemTotal');
-const cartToggle = document.getElementById('cartToggle');
-const closeCartBtn = document.getElementById('closeCart');
-const notification = document.getElementById('notification');
-const searchInput = document.getElementById('searchInput');
-const categoryBtns = document.querySelectorAll('.category-btn');
-const cartElement = document.getElementById('cart');
-const cartEmpty = document.getElementById('cartEmpty');
-const cartFull = document.getElementById('cartFull');
-const continueShoppingBtn = document.getElementById('continueShopping');
-const cartOverlay = document.getElementById('cartOverlay');
-
-const getLocationBtn = document.getElementById('getLocationBtn');
-const locationDisplay = document.getElementById('locationDisplay');
-const customerAddressInput = document.getElementById('customerAddress');
-const userLatInput = document.getElementById('userLat');
-const userLngInput = document.getElementById('userLng');
-
-// *** FIXED DUKAN LOCATION ***
-const storeLocation = {
-  lat: 26.6468571, // Yahan apni dukan ki latitude daalein
-  lng: 92.0754806  // Yahan apni dukan ki longitude daalein
+// ======================
+const elements = {
+    storeDiv: document.getElementById('storeItems'),
+    cartList: document.getElementById('cartList'),
+    cartCount: document.getElementById('cartCount'),
+    cartTotal: document.getElementById('cartTotal'),
+    itemTotal: document.getElementById('itemTotal'),
+    cartToggle: document.getElementById('cartToggle'),
+    closeCartBtn: document.getElementById('closeCart'),
+    notification: document.getElementById('notification'),
+    searchInput: document.getElementById('searchInput'),
+    categoryBtns: document.querySelectorAll('.category-btn'),
+    cartElement: document.getElementById('cart'),
+    cartEmpty: document.getElementById('cartEmpty'),
+    cartFull: document.getElementById('cartFull'),
+    continueShoppingBtn: document.getElementById('continueShopping'),
+    cartOverlay: document.getElementById('cartOverlay'),
+    getLocationBtn: document.getElementById('getLocationBtn'),
+    locationDisplay: document.getElementById('locationDisplay'),
+    customerAddressInput: document.getElementById('customerAddress'),
+    userLatInput: document.getElementById('userLat'),
+    userLngInput: document.getElementById('userLng'),
+    orderBtn: document.getElementById('orderBtn'),
+    phoneInput: document.getElementById("customerPhone"),
+    shopStatusToggle: document.getElementById('shopStatusToggle'),
+    shopStatusText: document.getElementById('shopStatusText'),
+    customerNameInput: document.getElementById('customerName')
 };
 
-// Convert degrees to radians helper
-function deg2rad(deg) {
-  return deg * (Math.PI / 180);
-}
-
-// Calculate distance (in km) between two lat/lng points using Haversine formula
-function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Earth radius in km
-  const dLat = deg2rad(lat2 - lat1);
-  const dLon = deg2rad(lon2 - lon1);
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
-}
-
-// Initialize Store
-function initStore(filterCategory = 'all', searchTerm = '') {
-  storeDiv.innerHTML = '';
-
-  const filteredItems = items.filter(item => {
-    const matchesCategory = filterCategory === 'all' || 
-                         item.category.toLowerCase() === filterCategory.toLowerCase();
-    const matchesSearch = searchTerm === '' || 
-                       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       (item.category && item.category.toLowerCase().includes(searchTerm.toLowerCase()));
-    return matchesCategory && matchesSearch;
-  });
-
-  if(filteredItems.length === 0) {
-    storeDiv.innerHTML = '<p style="padding:20px; text-align:center;">No items found.</p>';
-    return;
-  }
-
-  filteredItems.forEach(item => {
-    const div = document.createElement('div');
-    div.className = 'item';
-
-    let badgeHTML = item.badge ? `<span class="item-badge">${item.badge}</span>` : '';
-
-    div.innerHTML = `
-      <div class="item-image-container">
-        ${badgeHTML}
-        <img src="${item.image}" alt="${item.name}" class="item-img">
-      </div>
-      <div class="item-details">
-        <h3 class="item-name">${item.name}</h3>
-        <div class="item-price">₹${item.price}</div>
-        <div class="item-actions">
-          <div class="quantity-control">
-            <button class="qty-minus">-</button>
-            <span>1</span>
-            <button class="qty-plus">+</button>
-          </div>
-          <button class="add-to-cart-btn">Add</button>
-        </div>
-      </div>
-    `;
-
-    div.querySelector('.qty-minus').addEventListener('click', () => updateQuantity(div, -1));
-    div.querySelector('.qty-plus').addEventListener('click', () => updateQuantity(div, 1));
-    div.querySelector('.add-to-cart-btn').addEventListener('click', () => addToCart(div));
-
-    storeDiv.appendChild(div);
-  });
-}
-
-// Update quantity
-function updateQuantity(itemElement, change) {
-  const quantitySpan = itemElement.querySelector('.quantity-control span');
-  let quantity = parseInt(quantitySpan.textContent);
-  quantity += change;
-  if(quantity < 1) quantity = 1;
-  if(quantity > 10) quantity = 10;
-  quantitySpan.textContent = quantity;
-}
-
-// Add product to cart
-function addToCart(itemElement) {
-  const name = itemElement.querySelector('.item-name').textContent;
-  const price = parseInt(itemElement.querySelector('.item-price').textContent.replace('₹', ''));
-  const quantity = parseInt(itemElement.querySelector('.quantity-control span').textContent);
-
-  const existing = cart.find(c => c.name === name);
-  if(existing) {
-    existing.quantity += quantity;
-  } else {
-    cart.push({name, price, quantity});
-  }
-
-  updateCartUI();
-  showNotification(`${quantity} ${name} added to cart`);
-  itemElement.querySelector('.quantity-control span').textContent = '1';
-  openCart();
-}
-
-// Update cart UI
-function updateCartUI() {
-  cartList.innerHTML = '';
-
-  if(cart.length === 0) {
-    cartEmpty.style.display = 'block';
-    cartFull.style.display = 'none';
-  } else {
-    cartEmpty.style.display = 'none';
-    cartFull.style.display = 'block';
-
-    let total = 0;
-    cart.forEach((item, index) => {
-      const itemTotalPrice = item.price * item.quantity;
-      total += itemTotalPrice;
-
-      const li = document.createElement('li');
-      li.className = 'cart-item';
-      li.innerHTML = `
-        <div class="cart-item-info">
-          <div class="cart-item-name">${item.name} × ${item.quantity}</div>
-          <div class="cart-item-price">₹${itemTotalPrice}</div>
-        </div>
-        <button class="cart-item-remove">
-          <i class="fas fa-trash"></i>
-        </button>
-      `;
-      li.querySelector('.cart-item-remove').addEventListener('click', () => removeFromCart(index));
-      cartList.appendChild(li);
+// ======================
+// Firebase Shop Status
+// ======================
+function setupShopStatus() {
+    shopStatusRef.on('value', (snapshot) => {
+        const statusData = snapshot.val();
+        if (statusData) {
+            isShopOpen = statusData.isOpen;
+            elements.shopStatusToggle.checked = isShopOpen;
+            updateShopStatus(isShopOpen);
+        }
     });
 
-    cartTotal.textContent = `₹${total}`;
-    itemTotal.textContent = `₹${total}`;
-  }
-
-  cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
-  localStorage.setItem('quickKartCart', JSON.stringify(cart));
+    elements.shopStatusToggle.addEventListener('change', async function() {
+        const password = prompt("Owner Access Required\nEnter password:");
+        
+        if (password === "bismillah") {
+            try {
+                const newStatus = this.checked;
+                await shopStatusRef.set({
+                    isOpen: newStatus,
+                    lastUpdated: firebase.database.ServerValue.TIMESTAMP
+                });
+                showNotification(`Shop is now ${newStatus ? 'OPEN' : 'CLOSED'}`);
+            } catch (error) {
+                console.error("Status update failed:", error);
+                this.checked = !this.checked;
+                showNotification("Failed to update status", 'error');
+            }
+        } else {
+            this.checked = !this.checked;
+            if (password !== null) {
+                showNotification("Wrong password!", 'error');
+            }
+        }
+    });
 }
 
-// Remove from cart
-function removeFromCart(index) {
-  const removed = cart.splice(index,1)[0];
-  updateCartUI();
-  showNotification(`${removed.name} removed from cart`);
-}
-
-// Notification
-function showNotification(msg) {
-  notification.textContent = msg;
-  notification.classList.add('show');
-  setTimeout(() => {
-    notification.classList.remove('show');
-  }, 3000);
-}
-
-// Cart toggle
-function openCart() {
-  document.body.classList.add('cart-open');
-  cartElement.classList.add('open');
-  cartOverlay.classList.add('show');
-}
-function closeCart() {
-  document.body.classList.remove('cart-open');
-  cartElement.classList.remove('open');
-  cartOverlay.classList.remove('show');
-}
-
-// Event listeners
-cartToggle.addEventListener('click', openCart);
-closeCartBtn.addEventListener('click', closeCart);
-continueShoppingBtn.addEventListener('click', closeCart);
-cartOverlay.addEventListener('click', closeCart);
-cartElement.addEventListener('click', e => e.stopPropagation());
-
-// Search filtering
-let searchTimer;
-searchInput.addEventListener('input', () => {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => {
-    const searchTerm = searchInput.value.trim().toLowerCase();
-    const activeBtn = document.querySelector('.category-btn.active');
-    const category = activeBtn ? activeBtn.getAttribute('data-category') : 'all';
-    initStore(category, searchTerm);
-  }, 300);
-});
-
-// Category filtering
-categoryBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    categoryBtns.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-
-    const category = btn.getAttribute('data-category');
-    const searchTerm = searchInput.value.trim().toLowerCase();
-    initStore(category, searchTerm);
-  });
-});
-
-// Make customerAddressInput readonly to prevent manual input
-customerAddressInput.setAttribute('readonly', true);
-
-// Disable order button initially till location valid
-const orderBtn = document.getElementById('orderBtn');
-orderBtn.disabled = true;
-
-// Place order with WhatsApp (with location link)
-orderBtn.addEventListener('click', () => {
-  const name = document.getElementById('customerName').value.trim();
-  const address = customerAddressInput.value.trim();
-  const phone = document.getElementById('customerPhone').value.trim();
-  const lat = userLatInput.value.trim();
-  const lng = userLngInput.value.trim();
-
-  if(!name || !address || !phone || cart.length === 0) {
-    showNotification("Please fill all details and add items to cart");
-    return;
-  }
-
-  if(!/^\d{10}$/.test(phone)) {
-    showNotification("Please enter a valid 10-digit phone number");
-    return;
-  }
-
-  let message = `*New Order from QuickKart!*%0A%0A`;
-  message += `*Customer Details:*%0AName: ${name}%0AAddress: ${address}%0APhone: ${phone}%0A`;
-
-  if(lat && lng) {
-    message += `Location: https://www.google.com/maps?q=${lat},${lng}%0A`;
-  }
-
-  message += `%0A*Order Items:*%0A`;
-  cart.forEach(item => {
-    message += `- ${item.name} (${item.quantity} × ₹${item.price}) = ₹${item.price * item.quantity}%0A`;
-  });
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  message += `%0A*Total: ₹${total}*%0A%0APlease confirm this order and provide delivery time. Thank you!`;
-
-  const whatsappNumber = "919716940448"; // Change to your WhatsApp number
-  const url = `https://wa.me/${whatsappNumber}?text=${message}`;
-  window.open(url, '_blank');
-});
-
-// Get user location and check distance from store
-getLocationBtn.addEventListener('click', () => {
-  locationDisplay.textContent = 'Fetching location...';
-  orderBtn.disabled = true; // Disable order till location confirmed
-
-  if (!navigator.geolocation) {
-    locationDisplay.textContent = 'Geolocation is not supported by your browser.';
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(
-    position => {
-      const lat = position.coords.latitude;
-      const lng = position.coords.longitude;
-
-      // Calculate distance from store
-      const distance = getDistanceFromLatLonInKm(storeLocation.lat, storeLocation.lng, lat, lng);
-
-      if(distance > 5) {
-        locationDisplay.textContent = `Sorry, you are ${distance.toFixed(2)} km away. Delivery available only within 5 km radius.`;
-        customerAddressInput.value = '';
-        userLatInput.value = '';
-        userLngInput.value = '';
-        orderBtn.disabled = true; // Disable order button
-        return;
-      }
-
-      // Store coordinates in hidden inputs
-      userLatInput.value = lat;
-      userLngInput.value = lng;
-
-      // Reverse geocode using OpenStreetMap Nominatim API
-      fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
-        .then(response => response.json())
-        .then(data => {
-          if(data && data.address) {
-            const addr = data.address;
-            const parts = [
-              addr.house_number || '',
-              addr.road || '',
-              addr.suburb || '',
-              addr.city || addr.town || addr.village || '',
-              addr.state || '',
-              addr.postcode || '',
-              addr.country || ''
-            ].filter(Boolean);
-            const fullAddress = parts.join(', ');
-
-            customerAddressInput.value = fullAddress;
-            locationDisplay.textContent = 'Location fetched and address filled!';
-            orderBtn.disabled = false; // Enable order button now
-          } else {
-            locationDisplay.textContent = 'Could not determine address.';
-            orderBtn.disabled = true;
-          }
-        })
-        .catch(() => {
-          locationDisplay.textContent = 'Failed to fetch address.';
-          orderBtn.disabled = true;
-        });
-    },
-    error => {
-      switch(error.code) {
-        case error.PERMISSION_DENIED:
-          locationDisplay.textContent = 'Permission denied. Please allow location access.';
-          break;
-        case error.POSITION_UNAVAILABLE:
-          locationDisplay.textContent = 'Location unavailable.';
-          break;
-        case error.TIMEOUT:
-          locationDisplay.textContent = 'Location request timed out.';
-          break;
-        default:
-          locationDisplay.textContent = 'An unknown error occurred.';
-      }
-      orderBtn.disabled = true;
-    }
-  );
-});
-
-// Load cart from localStorage and initialize store
-document.addEventListener('DOMContentLoaded', () => {
-  const savedCart = JSON.parse(localStorage.getItem('quickKartCart'));
-  if(savedCart && Array.isArray(savedCart)) {
-    cart.push(...savedCart);
-    updateCartUI();
-  }
-  initStore();
-});
-
-const phoneInput = document.getElementById("customerPhone");
-
-phoneInput.addEventListener("input", function () {
-  // Only allow digits, remove everything else
-  this.value = this.value.replace(/\D/g, "");
-
-  // Limit to max 10 digits (for safety)
-  if (this.value.length > 10) {
-    this.value = this.value.slice(0, 10);
-  }
-});
-// SHOP STATUS CONTROLLER - SIMPLIFIED
-// ======================
-const OWNER_PASSWORD = "bismillah"; // CHANGE THIS TO YOUR SECURE PASSWORD
-
-// DOM Elements
-const shopStatusToggle = document.getElementById('shopStatusToggle');
-const shopStatusText = document.getElementById('shopStatusText');
-const body = document.body;
-
-// Initialize shop status from localStorage
-const savedStatus = localStorage.getItem('quickKartShopStatus');
-const isShopOpen = savedStatus ? savedStatus === 'open' : true;
-
-// Set initial toggle state
-shopStatusToggle.checked = isShopOpen;
-updateShopStatus(isShopOpen);
-
-// Toggle change event
-shopStatusToggle.addEventListener('change', function() {
-  const password = prompt("🔒 Owner Access Required\nEnter password to change shop status:");
-  
-  if (password === OWNER_PASSWORD) {
-    const newStatus = this.checked;
-    updateShopStatus(newStatus);
-    localStorage.setItem('quickKartShopStatus', newStatus ? 'open' : 'closed');
-    showNotification(`Shop is now ${newStatus ? 'OPEN' : 'CLOSED'}`);
-  } else {
-    this.checked = !this.checked; // Revert toggle
-    if (password !== null) { // Only show alert if user didn't cancel
-      alert("⛔ Access Denied\nOnly shop owner can change status.");
-    }
-  }
-});
-
-// Update shop status UI and functionality
 function updateShopStatus(isOpen) {
-  const notification = document.getElementById('shopClosedNotification') || createShopClosedNotification();
-  
-  if (isOpen) {
-    body.classList.remove('shop-closed');
-    shopStatusText.textContent = "Open";
-    shopStatusText.style.color = "var(--primary)";
-    notification.classList.remove('show');
-  } else {
-    body.classList.add('shop-closed');
-    shopStatusText.textContent = "Closed";
-    shopStatusText.style.color = "#ff4444";
-    notification.classList.add('show');
-    closeCart(); // Close cart if open
-  }
-  
-  // Disable/enable all add to cart buttons
-  document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-    btn.disabled = !isOpen;
-  });
+    if (isOpen) {
+        document.body.classList.remove('shop-closed');
+        elements.shopStatusText.textContent = "Open";
+        elements.shopStatusText.style.color = "var(--primary)";
+    } else {
+        document.body.classList.add('shop-closed');
+        elements.shopStatusText.textContent = "Closed";
+        elements.shopStatusText.style.color = "#ff4444";
+        closeCart();
+    }
+    localStorage.setItem('quickKartShopStatus', isOpen ? 'open' : 'closed');
 }
 
-// Create simple closed notification
-function createShopClosedNotification() {
-  const notification = document.createElement('div');
-  notification.id = 'shopClosedNotification';
-  notification.className = 'shop-closed-notification';
-  notification.innerHTML = `
-    <div class="notification-content">
-      <h3>We're Currently Closed</h3>
-      <p>Our shop is not accepting orders at this time.</p>
-      <p>Please come back later.</p>
-      <button class="close-btn">OK</button>
-    </div>
-  `;
-  
-  // Add close button functionality
-  notification.querySelector('.close-btn').addEventListener('click', () => {
-    notification.classList.remove('show');
-  });
-  
-  document.body.appendChild(notification);
-  return notification;
+// ======================
+// Store Functions
+// ======================
+function initStore(filterCategory = 'all', searchTerm = '') {
+    elements.storeDiv.innerHTML = '';
+
+    const filteredItems = items.filter(item => {
+        const matchesCategory = filterCategory === 'all' || 
+                             item.category.toLowerCase() === filterCategory.toLowerCase();
+        const matchesSearch = searchTerm === '' || 
+                           item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           (item.category && item.category.toLowerCase().includes(searchTerm.toLowerCase()));
+        return matchesCategory && matchesSearch;
+    });
+
+    if(filteredItems.length === 0) {
+        elements.storeDiv.innerHTML = '<p style="padding:20px; text-align:center;">No items found.</p>';
+        return;
+    }
+
+    filteredItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'item';
+
+        let badgeHTML = item.badge ? `<span class="item-badge">${item.badge}</span>` : '';
+        const imageHTML = item.image ? 
+            `<img src="${item.image}" alt="${item.name}" class="item-img">` :
+            '<div class="item-img-placeholder"><i class="fas fa-box-open"></i></div>';
+
+        div.innerHTML = `
+            <div class="item-image-container">
+                ${badgeHTML}
+                ${imageHTML}
+            </div>
+            <div class="item-details">
+                <h3 class="item-name">${item.name}</h3>
+                <div class="item-price">₹${item.price}</div>
+                <div class="item-actions">
+                    <div class="quantity-control">
+                        <button class="qty-minus">-</button>
+                        <span>1</span>
+                        <button class="qty-plus">+</button>
+                    </div>
+                    <button class="add-to-cart-btn">Add</button>
+                </div>
+            </div>
+        `;
+
+        div.querySelector('.qty-minus').addEventListener('click', () => updateQuantity(div, -1));
+        div.querySelector('.qty-plus').addEventListener('click', () => updateQuantity(div, 1));
+        div.querySelector('.add-to-cart-btn').addEventListener('click', () => addToCart(div));
+
+        elements.storeDiv.appendChild(div);
+    });
 }
 
-// Modify addToCart function to check shop status
-const originalAddToCart = window.addToCart;
-window.addToCart = function(itemElement) {
-  if (!shopStatusToggle.checked) {
-    showNotification("Shop is currently closed. Orders not accepted.");
-    return;
-  }
-  originalAddToCart(itemElement);
-};
+// ======================
+// Cart Functions
+// ======================
+function addToCart(itemElement) {
+    if (!isShopOpen) {
+        showNotification("Shop is currently closed. Orders not accepted.", 'error');
+        return;
+    }
 
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
-  updateShopStatus(isShopOpen);
+    const name = itemElement.querySelector('.item-name').textContent;
+    const price = parseInt(itemElement.querySelector('.item-price').textContent.replace('₹', ''));
+    const quantity = parseInt(itemElement.querySelector('.quantity-control span').textContent);
+
+    const existingItem = cart.find(item => item.name === name);
+    if (existingItem) {
+        existingItem.quantity += quantity;
+    } else {
+        cart.push({ name, price, quantity });
+    }
+
+    updateCartUI();
+    showNotification(`${quantity} ${name} added to cart`);
+    itemElement.querySelector('.quantity-control span').textContent = '1';
+    openCart();
+}
+
+function updateCartUI() {
+    elements.cartList.innerHTML = '';
+
+    if (cart.length === 0) {
+        elements.cartEmpty.style.display = 'block';
+        elements.cartFull.style.display = 'none';
+    } else {
+        elements.cartEmpty.style.display = 'none';
+        elements.cartFull.style.display = 'block';
+
+        let total = 0;
+        cart.forEach((item, index) => {
+            const itemTotalPrice = item.price * item.quantity;
+            total += itemTotalPrice;
+
+            const li = document.createElement('li');
+            li.className = 'cart-item';
+            li.innerHTML = `
+                <div class="cart-item-info">
+                    <div class="cart-item-name">${item.name} × ${item.quantity}</div>
+                    <div class="cart-item-price">₹${itemTotalPrice}</div>
+                </div>
+                <button class="cart-item-remove">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            li.querySelector('.cart-item-remove').addEventListener('click', () => removeFromCart(index));
+            elements.cartList.appendChild(li);
+        });
+
+        elements.cartTotal.textContent = `₹${total}`;
+        elements.itemTotal.textContent = `₹${total}`;
+    }
+
+    elements.cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+    localStorage.setItem('quickKartCart', JSON.stringify(cart));
+}
+
+function removeFromCart(index) {
+    const removedItem = cart.splice(index, 1)[0];
+    updateCartUI();
+    showNotification(`${removedItem.name} removed from cart`);
+}
+
+// ======================
+// Location & Delivery
+// ======================
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+function deg2rad(deg) {
+    return deg * (Math.PI / 180);
+}
+
+elements.getLocationBtn.addEventListener('click', () => {
+    elements.locationDisplay.textContent = 'Fetching location...';
+    elements.orderBtn.disabled = true;
+
+    if (!navigator.geolocation) {
+        elements.locationDisplay.textContent = 'Geolocation not supported by your browser';
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        position => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const distance = getDistanceFromLatLonInKm(storeLocation.lat, storeLocation.lng, lat, lng);
+
+            if (distance > 5) {
+                elements.locationDisplay.textContent = `Sorry, you are ${distance.toFixed(2)} km away. Delivery available only within 5 km radius.`;
+                elements.customerAddressInput.value = '';
+                elements.userLatInput.value = '';
+                elements.userLngInput.value = '';
+                elements.orderBtn.disabled = true;
+                return;
+            }
+
+            elements.userLatInput.value = lat;
+            elements.userLngInput.value = lng;
+
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data?.address) {
+                        const addr = data.address;
+                        const parts = [
+                            addr.house_number, addr.road, addr.suburb,
+                            addr.city || addr.town || addr.village,
+                            addr.state, addr.postcode, addr.country
+                        ].filter(Boolean);
+                        elements.customerAddressInput.value = parts.join(', ');
+                        elements.locationDisplay.textContent = 'Location fetched and address filled!';
+                        elements.orderBtn.disabled = false;
+                    } else {
+                        elements.locationDisplay.textContent = 'Could not determine address';
+                    }
+                })
+                .catch(() => {
+                    elements.locationDisplay.textContent = 'Failed to fetch address details';
+                });
+        },
+        error => {
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    elements.locationDisplay.textContent = 'Permission denied. Please allow location access.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    elements.locationDisplay.textContent = 'Location information unavailable.';
+                    break;
+                case error.TIMEOUT:
+                    elements.locationDisplay.textContent = 'The request to get location timed out.';
+                    break;
+                default:
+                    elements.locationDisplay.textContent = 'An unknown error occurred.';
+            }
+            elements.orderBtn.disabled = true;
+        }
+    );
 });
+
+// ======================
+// Order Processing
+// ======================
+elements.orderBtn.addEventListener('click', () => {
+    if (!isShopOpen) {
+        showNotification("Cannot place orders when shop is closed", 'error');
+        return;
+    }
+
+    const name = elements.customerNameInput.value.trim();
+    const address = elements.customerAddressInput.value.trim();
+    const phone = elements.phoneInput.value.trim();
+    const lat = elements.userLatInput.value.trim();
+    const lng = elements.userLngInput.value.trim();
+
+    if (!name || !address || !phone || cart.length === 0) {
+        showNotification("Please fill all details and add items to cart", 'error');
+        return;
+    }
+
+    if (!/^\d{10}$/.test(phone)) {
+        showNotification("Please enter a valid 10-digit phone number", 'error');
+        return;
+    }
+
+    let message = `*New Order from QuickKart!*%0A%0A`;
+    message += `*Customer Details:*%0AName: ${name}%0AAddress: ${address}%0APhone: ${phone}%0A`;
+    
+    if (lat && lng) {
+        message += `Location: https://www.google.com/maps?q=${lat},${lng}%0A`;
+    }
+
+    message += `%0A*Order Items:*%0A`;
+    cart.forEach(item => {
+        message += `- ${item.name} (${item.quantity} × ₹${item.price}) = ₹${item.price * item.quantity}%0A`;
+    });
+    
+    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    message += `%0A*Total: ₹${total}*%0A%0APlease confirm this order. Thank you!`;
+
+    const whatsappNumber = "919716940448"; // Replace with your number
+    window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
+});
+
+// ======================
+// UI Functions
+// ======================
+function showNotification(msg, type = 'success') {
+    elements.notification.textContent = msg;
+    elements.notification.className = `quickkart-notification show ${type}`;
+    setTimeout(() => {
+        elements.notification.classList.remove('show');
+    }, 3000);
+}
+
+function openCart() {
+    document.body.classList.add('cart-open');
+    elements.cartElement.classList.add('open');
+    elements.cartOverlay.classList.add('show');
+}
+
+function closeCart() {
+    document.body.classList.remove('cart-open');
+    elements.cartElement.classList.remove('open');
+    elements.cartOverlay.classList.remove('show');
+}
+
+function updateQuantity(itemElement, change) {
+    const quantitySpan = itemElement.querySelector('.quantity-control span');
+    let quantity = parseInt(quantitySpan.textContent);
+    quantity += change;
+    if (quantity < 1) quantity = 1;
+    if (quantity > 10) quantity = 10;
+    quantitySpan.textContent = quantity;
+}
+
+// ======================
+// Event Listeners
+// ======================
+function setupEventListeners() {
+    elements.cartToggle.addEventListener('click', openCart);
+    elements.closeCartBtn.addEventListener('click', closeCart);
+    elements.continueShoppingBtn.addEventListener('click', closeCart);
+    elements.cartOverlay.addEventListener('click', closeCart);
+    elements.cartElement.addEventListener('click', e => e.stopPropagation());
+
+    // Search with debouncing
+    let searchTimer;
+    elements.searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            const searchTerm = elements.searchInput.value.trim().toLowerCase();
+            const activeBtn = document.querySelector('.category-btn.active');
+            const category = activeBtn ? activeBtn.getAttribute('data-category') : 'all';
+            initStore(category, searchTerm);
+        }, 300);
+    });
+
+    // Category filtering
+    elements.categoryBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            elements.categoryBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const category = btn.getAttribute('data-category');
+            const searchTerm = elements.searchInput.value.trim().toLowerCase();
+            initStore(category, searchTerm);
+        });
+    });
+
+    // Phone number validation
+    elements.phoneInput.addEventListener("input", function() {
+        this.value = this.value.replace(/\D/g, "");
+        if (this.value.length > 10) {
+            this.value = this.value.slice(0, 10);
+        }
+    });
+
+    // Make address input readonly
+    elements.customerAddressInput.setAttribute('readonly', true);
+}
+
+// ======================
+// Initialization
+// ======================
+function initializeApp() {
+    // Load cart from localStorage
+    const savedCart = JSON.parse(localStorage.getItem('quickKartCart'));
+    if (savedCart && Array.isArray(savedCart)) {
+        cart.push(...savedCart);
+        updateCartUI();
+    }
+
+    // Load shop status from localStorage as fallback
+    const localStatus = localStorage.getItem('quickKartShopStatus');
+    if (localStatus) {
+        isShopOpen = localStatus === 'open';
+        elements.shopStatusToggle.checked = isShopOpen;
+        updateShopStatus(isShopOpen);
+    }
+
+    // Initialize store
+    initStore();
+
+    // Setup Firebase shop status
+    setupShopStatus();
+
+    // Setup all event listeners
+    setupEventListeners();
+
+    // Disable order button initially
+    elements.orderBtn.disabled = true;
+}
+
+// Start the app
+document.addEventListener('DOMContentLoaded', initializeApp);

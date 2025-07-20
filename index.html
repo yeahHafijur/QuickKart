@@ -7,6 +7,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
 </head>
 <body>
   <!-- Header -->
@@ -15,27 +19,15 @@
       <div class="logo-box">
         <span class="logo-text">Quick<span>Kart</span></span>
       </div>
-      <!-- Add this right after the logo-box div in your header -->
-<div class="shop-status-container">
-  <label class="switch">
-    <input type="checkbox" id="shopStatusToggle">
-    <span class="slider round"></span>
-  </label>
-  <span id="shopStatusText">Open</span>
-</div>
-<!-- Enhanced Shop Closed Notification -->
-<div id="shopClosedNotification" class="shop-closed-alert">
-  <div class="alert-content">
-    <i class="fas fa-store-slash"></i>
-    <div class="alert-text">
-      <h3>আমাৰ দোকানখন এতিয়া বন্ধ হৈ আছে</h3>
-      <p>কাইলৈ ৰাতিপুৱা খোলা হ'ব!</p>
       
-    </div>
-    <button class="close-alert">&times;</button>
-  </div>
-</div>
-      
+      <!-- Shop Status Toggle -->
+      <div class="shop-status-container">
+        <label class="switch">
+          <input type="checkbox" id="shopStatusToggle" checked>
+          <span class="slider round"></span>
+        </label>
+        <span id="shopStatusText">Open</span>
+      </div>
       
       <div class="header-actions">
         <div class="location">
@@ -48,7 +40,6 @@
         </div>
       </div>
     </div>
-    
 
     <!-- Search Bar -->
     <div class="search-section">
@@ -57,21 +48,19 @@
         <input type="text" placeholder="Search for products..." id="searchInput">
       </div>
     </div>
-    
 
     <!-- Categories -->
-
     <div class="categories-scroll">
-  <div class="categories">
-    <button class="category-btn active" data-category="all">
-      <img src="images/all-category-bg.png" alt="All Items" class="category-image">
-      <span class="category-name">All</span>
-    </button>
-    <button class="category-btn" data-category="Atta Rice & Daal">
-      <img src="images/atta-rice-bg.png" alt="Atta Rice & Daal" class="category-image">
-      <span class="category-name">Atta Rice & Daal</span>
-    </button>
-    <button class="category-btn" data-category="Masala & Oil">
+      <div class="categories">
+        <button class="category-btn active" data-category="all">
+          <img src="images/all-category-bg.png" alt="All Items" class="category-image">
+          <span class="category-name">All</span>
+        </button>
+        <button class="category-btn" data-category="Atta Rice & Daal">
+          <img src="images/atta-rice-bg.png" alt="Atta Rice & Daal" class="category-image">
+          <span class="category-name">Atta Rice & Daal</span>
+        </button>
+        <button class="category-btn" data-category="Masala & Oil">
       <img src="images/masala-oil-bg.png" alt="Masala & Oil" class="category-image">
       <span class="category-name">Masala & Oil</span>
     </button>
@@ -119,84 +108,81 @@
       <img src="images/stationary-bg.png" alt="Stationary" class="category-image">
       <span class="category-name">Stationary</span>
     </button>
-    
-
-    
-
-    
-  </div>
-</div>
+      </div>
+    </div>
   </header>
 
   <!-- Main Content -->
   <main class="container">
     <section class="product-section">
       <h2 class="section-title">Daily Essentials</h2>
-      <div class="store" id="storeItems"></div>
+      <div class="store" id="storeItems">
+        <!-- Products will be inserted here by JavaScript -->
+      </div>
     </section>
 
     <section class="product-section">
       <h2 class="section-title">Popular Items</h2>
-      <div class="store" id="popularItems"></div>
+      <div class="store" id="popularItems">
+        <!-- Popular items will be inserted here by JavaScript -->
+      </div>
     </section>
   </main>
 
   <!-- Cart Sidebar -->
-<div id="cart" class="quickkart-cart">
-  <div class="cart-header">
-    <h2>Your Cart</h2>
-    <button class="close-cart" id="closeCart">&times;</button>
-  </div>
-
-  <div id="cartContent">
-    <ul id="cartList"></ul>
-    <div id="cartEmpty" class="empty-cart">
-      <img src="images/emptyCart.webp" alt="Empty Cart">
-      <h3>Your cart is empty</h3>
-      <p>Add items to get started</p>
-      <button id="continueShopping">Continue Shopping</button>
+  <div id="cart" class="quickkart-cart">
+    <div class="cart-header">
+      <h2>Your Cart</h2>
+      <button class="close-cart" id="closeCart">&times;</button>
     </div>
-  </div>
 
-  <div id="cartFull" class="cart-summary">
-    <div class="bill-details">
-      <div class="bill-row">
-        <span>Item Total</span>
-        <span id="itemTotal">₹0</span>
-      </div>
-      <div class="bill-row">
-        <span>Delivery Fee</span>
-        <span id="deliveryFee">FREE</span>
-      </div>
-      <div class="bill-row total">
-        <span>Total</span>
-        <span id="cartTotal">₹0</span>
+    <div id="cartContent">
+      <ul id="cartList"></ul>
+      <div id="cartEmpty" class="empty-cart">
+        <img src="images/emptyCart.webp" alt="Empty Cart">
+        <h3>Your cart is empty</h3>
+        <p>Add items to get started</p>
+        <button id="continueShopping">Continue Shopping</button>
       </div>
     </div>
 
-    <div class="cart-form">
-      <input type="text" id="customerName" placeholder="আপোনাৰ নাম" required>
+    <div id="cartFull" class="cart-summary">
+      <div class="bill-details">
+        <div class="bill-row">
+          <span>Item Total</span>
+          <span id="itemTotal">₹0</span>
+        </div>
+        <div class="bill-row">
+          <span>Delivery Fee</span>
+          <span id="deliveryFee">FREE</span>
+        </div>
+        <div class="bill-row total">
+          <span>Total</span>
+          <span id="cartTotal">₹0</span>
+        </div>
+      </div>
 
-      <div style="display: flex; gap: 10px; align-items: center;">
+      <div class="cart-form">
+        <input type="text" id="customerName" placeholder="আপোনাৰ নাম" required>
+        
+        <div style="display: flex; gap: 10px; align-items: center;">
         <input type="text" id="customerAddress" hidden placeholder="Delivery Address" required style="flex: 1;">
         <p style="color: chartreuse;"> ইয়াত ক্লিক কৰক👉</p>
         <button type="button" id="getLocationBtn" style="padding: 8px 12px; margin:10px" title="Auto-fill your address using current location">📍</button>
       </div>
+        
+        <input type="tel" id="customerPhone" pattern="[0-9]{10}" maxlength="10" placeholder="📞মোবাইল নম্বৰ" required>
+        
+        <p id="locationDisplay"></p>
+        <input type="hidden" id="userLat">
+        <input type="hidden" id="userLng">
 
-      <input type="tel" id="customerPhone" pattern="[0-9]{10}" maxlength="10" placeholder="📞মোবাইল নম্বৰ" required >
-
-      <p id="locationDisplay" style="font-size: 14px; color: green; margin-top: 5px;"></p>
-
-      <!-- Hidden Inputs for Latitude and Longitude -->
-      <input type="hidden" id="userLat">
-      <input type="hidden" id="userLng">
-
-      <button id="orderBtn" class="quickkart-btn" style="margin-top: 10px;">
-        <i class="fab fa-whatsapp"></i> Place Order
-      </button>
+        <button id="orderBtn" class="quickkart-btn">
+          <i class="fab fa-whatsapp"></i> Place Order
+        </button>
+      </div>
     </div>
   </div>
-</div>
 
   <!-- Overlay -->
   <div id="cartOverlay" class="cart-overlay"></div>
@@ -204,6 +190,36 @@
   <!-- Notification -->
   <div id="notification" class="quickkart-notification"></div>
 
+  <!-- Shop Closed Notification -->
+  <div id="shopClosedNotification" class="shop-closed-alert">
+    <div class="alert-content">
+      <i class="fas fa-store-slash"></i>
+      <div class="alert-text">
+        <h3>Shop is Currently Closed</h3>
+        <p>Will open tomorrow morning!</p>
+      </div>
+      <button class="close-alert">&times;</button>
+    </div>
+  </div>
+
+  <!-- JavaScript Files -->
+  
+  
   <script src="script.js"></script>
+  
+  <script>
+    // Initialize after DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Your initialization code here
+      if (typeof initStore === 'function') {
+        initStore();
+      }
+      
+      // Setup other event listeners
+      document.getElementById('cartToggle').addEventListener('click', openCart);
+      document.getElementById('closeCart').addEventListener('click', closeCart);
+      // Add other event listeners as needed
+    });
+  </script>
 </body>
 </html>
