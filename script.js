@@ -60,9 +60,9 @@ const shopStatusRef = db.ref('shopStatus');
      { name: 'Huggies(S size)', price: 55,category:'Baby Care', image: 'images/huggies.png' },
     { name: 'Huggies(M size)', price: 65,category:'Baby Care', image: 'images/huggies.png' },
     { name: 'Huggies(L size)', price: 75,category:'Baby Care', image: 'images/huggies.png' },
-    { name: 'Johnsonis baby oil(50mL) ', price:75 ,category:'Baby Care', image: 'images/' },
-    { name: 'Johnsonis baby soap(25gm)', price:20 ,category:'Baby Care', image: 'images/' },
-    { name: 'Himalaya Baby Powder(30gm)', price:30 ,category:'Baby Care', image: 'images/' },
+    { name: 'Johnsonis baby oil(50mL) ', price:75 ,category:'Baby Care', image: 'images/babyOil.png' },
+    { name: 'Johnsonis baby soap(25gm)', price:20 ,category:'Baby Care', image: 'images/babySoap.png' },
+    { name: 'Himalaya Baby Powder(30gm)', price:30 ,category:'Baby Care', image: 'images/babyPowder.png' },
     
 
 
