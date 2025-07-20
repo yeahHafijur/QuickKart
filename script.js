@@ -394,8 +394,17 @@ function updateCartUI() {
             elements.cartList.appendChild(li);
         });
 
-        elements.cartTotal.textContent = `₹${total}`;
+        // Update item total (without delivery)
         elements.itemTotal.textContent = `₹${total}`;
+        
+        // Check if delivery fee is already calculated
+        const deliveryFeeText = document.getElementById('deliveryFee').textContent;
+        if (deliveryFeeText && deliveryFeeText !== 'FREE' && !deliveryFeeText.includes('Not Available')) {
+            const deliveryFee = parseInt(deliveryFeeText.replace('₹', ''));
+            elements.cartTotal.textContent = `₹${total + deliveryFee}`;
+        } else {
+            elements.cartTotal.textContent = `₹${total}`;
+        }
     }
 
     elements.cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -442,38 +451,46 @@ elements.getLocationBtn.addEventListener('click', () => {
             const lng = position.coords.longitude;
             const distance = getDistanceFromLatLonInKm(storeLocation.lat, storeLocation.lng, lat, lng);
 
+            // Update delivery fee based on distance
             if (distance > 5) {
-                elements.locationDisplay.textContent = `Sorry, you are ${distance.toFixed(2)} km away. Delivery available only within 5 km radius.`;
+                elements.locationDisplay.textContent = `Sorry, delivery not available beyond 5 km (You are ${distance.toFixed(2)} km away)`;
+                document.getElementById('deliveryFee').textContent = 'Not Available';
                 elements.customerAddressInput.value = '';
                 elements.userLatInput.value = '';
                 elements.userLngInput.value = '';
                 elements.orderBtn.disabled = true;
-                return;
+            } else {
+                const deliveryFee = Math.round(distance * 5); // ₹5 per km
+                document.getElementById('deliveryFee').textContent = `₹${deliveryFee}`;
+                
+                // Update total with delivery fee
+                const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+                elements.cartTotal.textContent = `₹${cartTotal + deliveryFee}`;
+                
+                elements.userLatInput.value = lat;
+                elements.userLngInput.value = lng;
+
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data?.address) {
+                            const addr = data.address;
+                            const parts = [
+                                addr.house_number, addr.road, addr.suburb,
+                                addr.city || addr.town || addr.village,
+                                addr.state, addr.postcode, addr.country
+                            ].filter(Boolean);
+                            elements.customerAddressInput.value = parts.join(', ');
+                            elements.locationDisplay.textContent = 'Location fetched! Delivery fee calculated.';
+                            elements.orderBtn.disabled = false;
+                        } else {
+                            elements.locationDisplay.textContent = 'Could not determine address';
+                        }
+                    })
+                    .catch(() => {
+                        elements.locationDisplay.textContent = 'Failed to fetch address details';
+                    });
             }
-
-            elements.userLatInput.value = lat;
-            elements.userLngInput.value = lng;
-
-            fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data?.address) {
-                        const addr = data.address;
-                        const parts = [
-                            addr.house_number, addr.road, addr.suburb,
-                            addr.city || addr.town || addr.village,
-                            addr.state, addr.postcode, addr.country
-                        ].filter(Boolean);
-                        elements.customerAddressInput.value = parts.join(', ');
-                        elements.locationDisplay.textContent = 'Location fetched and address filled!';
-                        elements.orderBtn.disabled = false;
-                    } else {
-                        elements.locationDisplay.textContent = 'Could not determine address';
-                    }
-                })
-                .catch(() => {
-                    elements.locationDisplay.textContent = 'Failed to fetch address details';
-                });
         },
         error => {
             switch(error.code) {
@@ -519,6 +536,19 @@ elements.orderBtn.addEventListener('click', () => {
         return;
     }
 
+    // Check if delivery is available
+    const deliveryFeeText = document.getElementById('deliveryFee').textContent;
+    if (deliveryFeeText.includes('Not Available')) {
+        showNotification("Delivery not available for your location", 'error');
+        return;
+    }
+
+    // Calculate delivery fee (₹5 per km)
+    let deliveryFee = 0;
+    if (deliveryFeeText !== 'FREE') {
+        deliveryFee = parseInt(deliveryFeeText.replace('₹', '')) || 0;
+    }
+
     let message = `*New Order from QuickKart!*%0A%0A`;
     message += `*Customer Details:*%0AName: ${name}%0AAddress: ${address}%0APhone: ${phone}%0A`;
     
@@ -531,11 +561,18 @@ elements.orderBtn.addEventListener('click', () => {
         message += `- ${item.name} (${item.quantity} × ₹${item.price}) = ₹${item.price * item.quantity}%0A`;
     });
     
-    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    message += `%0A*Total: ₹${total}*%0A%0APlease confirm this order. Thank you!`;
+    const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    message += `%0A*Subtotal: ₹${subtotal}*%0A`;
+    message += `*Delivery Fee: ₹${deliveryFee}*%0A`;
+    message += `*Total: ₹${subtotal + deliveryFee}*%0A%0APlease confirm this order. Thank you!`;
 
     const whatsappNumber = "919716940448"; // Replace with your number
     window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
+    
+    // Optional: Clear cart after order
+    cart.length = 0;
+    updateCartUI();
+    closeCart();
 });
 
 // ======================

@@ -148,28 +148,32 @@
 
     <div id="cartFull" class="cart-summary">
       <div class="bill-details">
-        <div class="bill-row">
-          <span>Item Total</span>
-          <span id="itemTotal">₹0</span>
-        </div>
-        <div class="bill-row">
-          <span>Delivery Fee</span>
-          <span id="deliveryFee">FREE</span>
-        </div>
-        <div class="bill-row total">
-          <span>Total</span>
-          <span id="cartTotal">₹0</span>
-        </div>
-      </div>
+    <div class="bill-row">
+        <span>Item Total</span>
+        <span id="itemTotal">₹0</span>
+    </div>
+    <div class="bill-row">
+        <span>Delivery Fee</span>
+        <span id="deliveryFee">FREE</span> <!-- Update this line -->
+    </div>
+    <div class="bill-row total">
+        <span>Total</span>
+        <span id="cartTotal">₹0</span>
+    </div>
+</div>
 
       <div class="cart-form">
         <input type="text" id="customerName" placeholder="আপোনাৰ নাম" required>
         
-        <div style="display: flex; gap: 10px; align-items: center;">
-        <input type="text" id="customerAddress" hidden placeholder="Delivery Address" required style="flex: 1;">
-        <p style="color: chartreuse;"> ইয়াত ক্লিক কৰক👉</p>
-        <button type="button" id="getLocationBtn" style="padding: 8px 12px; margin:10px" title="Auto-fill your address using current location">📍</button>
-      </div>
+        <div class="location-input-group">
+    <input type="text" id="customerAddress" placeholder="Delivery Address" required readonly>
+    <button type="button" id="getLocationBtn" title="Auto-fill address">
+        <i class="fas fa-map-marker-alt"></i> Get Location
+    </button>
+</div>
+<p id="locationDisplay" class="location-message"></p>
+<input type="hidden" id="userLat">
+<input type="hidden" id="userLng">
         
         <input type="tel" id="customerPhone" pattern="[0-9]{10}" maxlength="10" placeholder="📞মোবাইল নম্বৰ" required>
         

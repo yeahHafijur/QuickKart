@@ -791,3 +791,48 @@ input:checked + .slider:before {
   margin: 10px;
   margin-bottom: 5px;
 }
+/* Delivery fee styles */
+#deliveryFee.not-available {
+    color: #ff4444;
+    font-weight: bold;
+}
+
+#deliveryFee.free {
+    color: var(--primary);
+    font-weight: bold;
+}
+
+#deliveryFee.paid {
+    color: var(--text);
+}
+.location-message {
+    font-size: 0.8rem;
+    margin: 5px 0 10px;
+    color: var(--muted);
+    min-height: 20px;
+}
+
+.location-input-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.location-input-group input {
+    flex-grow: 1;
+}
+
+.location-input-group button {
+    background: var(--primary-light);
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    border-radius: var(--radius);
+    padding: 0 12px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.location-input-group button:hover {
+    background: var(--primary);
+    color: white;
+}
