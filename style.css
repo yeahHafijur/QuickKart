@@ -836,3 +836,118 @@ input:checked + .slider:before {
     background: var(--primary);
     color: white;
 }
+/* Add this to your existing CSS */
+.cart-form {
+    display: none;
+}
+
+#cartFull:not([style*="display: none"]) .cart-form {
+    display: block;
+}
+
+/* Add button animations */
+.add-to-cart-btn {
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.add-to-cart-btn:active {
+    transform: scale(0.95);
+}
+
+.add-to-cart-btn::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+}
+
+.add-to-cart-btn:active::after {
+    animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0);
+        opacity: 1;
+    }
+    20% {
+        transform: scale(25, 25);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(40, 40);
+        opacity: 0;
+    }
+}
+
+/* Quantity controls */
+.quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.quantity-control button {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: #f0f0f0;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.quantity-control button:active {
+    background: #e0e0e0;
+}
+
+/* Cart summary visibility */
+.cart-summary {
+    display: none;
+    padding: 16px;
+    border-top: 1px solid var(--border);
+    background: var(--white);
+}
+
+#cartFull:not([style*="display: none"]) .cart-summary {
+    display: block;
+}
+/* Shop Closed Banner Styles */
+/* Shop Closed Banner Styles */
+.shop-closed-banner {
+  display: none;
+  background: #ff4444;
+  color: white;
+  text-align: center;
+  padding: 12px;
+  margin: 0 16px 15px;
+  border-radius: 8px;
+  font-weight: 600;
+  position: sticky;
+  top: 190px;
+  z-index: 45;
+  animation: pulse 1.5s infinite;
+}
+
+.shop-closed .shop-closed-banner {
+  display: block;
+}
+
+@keyframes pulse {
+  0% { background: #ff4444; }
+  50% { background: #ff0000; }
+  100% { background: #ff4444; }
+}
+
+/* Ensure categories stay on top */
+.categories-scroll { z-index: 50 !important; }
