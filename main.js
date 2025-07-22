@@ -171,7 +171,7 @@ function initializeApp() {
     resetCorruptedCart();
     initStore('all', '', elements.storeDiv);
     setupShopStatus(elements);
-    setupLocation(elements);
+    setupLocation();
     setupEventListeners();
     elements.orderBtn.disabled = true;
     // Initial UI update - important!

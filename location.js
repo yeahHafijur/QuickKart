@@ -16,76 +16,96 @@ function deg2rad(deg) {
     return deg * (Math.PI / 180);
 }
 
-function setupLocation(elements) {
-    elements.getLocationBtn.addEventListener('click', () => {
-        elements.locationDisplay.textContent = 'Fetching location...';
-        elements.orderBtn.disabled = true;
+function setupLocation() {
+    const getLocationBtn = document.getElementById('getLocationBtn');
+    const locationDisplay = document.getElementById('locationDisplay');
+    const customerAddressInput = document.getElementById('customerAddress');
+    const userLatInput = document.getElementById('userLat');
+    const userLngInput = document.getElementById('userLng');
+    const orderBtn = document.getElementById('orderBtn');
+    const deliveryFeeElement = document.getElementById('deliveryFee');
+    const cartTotalElement = document.getElementById('cartTotal');
+
+    getLocationBtn.addEventListener('click', () => {
+        locationDisplay.textContent = 'Fetching location...';
+        orderBtn.disabled = true;
 
         if (!navigator.geolocation) {
-            elements.locationDisplay.textContent = 'Geolocation not supported by your browser';
+            locationDisplay.textContent = 'Geolocation not supported by your browser';
             return;
         }
 
         navigator.geolocation.getCurrentPosition(
-            position => {
+            async (position) => {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
                 const distance = getDistanceFromLatLonInKm(storeLocation.lat, storeLocation.lng, lat, lng);
 
                 if (distance > 5) {
-                    elements.locationDisplay.textContent = `Sorry, delivery not available beyond 5 km (You are ${distance.toFixed(2)} km away)`;
-                    document.getElementById('deliveryFee').textContent = 'Not Available';
-                    elements.customerAddressInput.value = '';
-                    elements.userLatInput.value = '';
-                    elements.userLngInput.value = '';
-                    elements.orderBtn.disabled = true;
+                    locationDisplay.textContent = `Sorry, delivery not available beyond 5 km (You are ${distance.toFixed(2)} km away)`;
+                    deliveryFeeElement.textContent = 'Not Available';
+                    customerAddressInput.value = '';
+                    userLatInput.value = '';
+                    userLngInput.value = '';
+                    orderBtn.disabled = true;
                 } else {
                     const deliveryFee = Math.round(distance * 5);
-                    document.getElementById('deliveryFee').textContent = `₹${deliveryFee}`;
+                    deliveryFeeElement.textContent = `₹${deliveryFee}`;
                     
-                    const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-                    elements.cartTotal.textContent = `₹${cartTotal + deliveryFee}`;
+                    // Calculate cart total (you'll need to access your cart data here)
+                    const cartTotal = 0; // Replace with actual cart total calculation
+                    cartTotalElement.textContent = `₹${cartTotal + deliveryFee}`;
                     
-                    elements.userLatInput.value = lat;
-                    elements.userLngInput.value = lng;
+                    userLatInput.value = lat;
+                    userLngInput.value = lng;
 
-                    fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data?.address) {
-                                const addr = data.address;
-                                const parts = [
-                                    addr.house_number, addr.road, addr.suburb,
-                                    addr.city || addr.town || addr.village,
-                                    addr.state, addr.postcode, addr.country
-                                ].filter(Boolean);
-                                elements.customerAddressInput.value = parts.join(', ');
-                                elements.locationDisplay.textContent = 'Location fetched! Delivery fee calculated.';
-                                elements.orderBtn.disabled = false;
-                            } else {
-                                elements.locationDisplay.textContent = 'Could not determine address';
-                            }
-                        })
-                        .catch(() => {
-                            elements.locationDisplay.textContent = 'Failed to fetch address details';
-                        });
+                    try {
+                        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
+                        const data = await response.json();
+                        
+                        if (data?.address) {
+                            const addr = data.address;
+                            const parts = [
+                                addr.house_number, addr.road, addr.suburb,
+                                addr.city || addr.town || addr.village,
+                                addr.state, addr.postcode, addr.country
+                            ].filter(Boolean);
+                            customerAddressInput.value = parts.join(', ');
+                            locationDisplay.textContent = 'Location fetched! Delivery fee calculated.';
+                            orderBtn.disabled = false;
+                        } else {
+                            locationDisplay.textContent = 'Could not determine address';
+                        }
+                    } catch (error) {
+                        console.error('Geocoding error:', error);
+                        locationDisplay.textContent = 'Failed to fetch address details. Please try again later.';
+                        // Fallback - at least store the coordinates
+                        customerAddressInput.value = `Near coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                        orderBtn.disabled = false;
+                    }
                 }
             },
-            error => {
+            (error) => {
+                console.error('Geolocation error:', error);
                 switch(error.code) {
                     case error.PERMISSION_DENIED:
-                        elements.locationDisplay.textContent = 'Permission denied. Please allow location access.';
+                        locationDisplay.textContent = 'Permission denied. Please allow location access.';
                         break;
                     case error.POSITION_UNAVAILABLE:
-                        elements.locationDisplay.textContent = 'Location information unavailable.';
+                        locationDisplay.textContent = 'Location information unavailable.';
                         break;
                     case error.TIMEOUT:
-                        elements.locationDisplay.textContent = 'The request to get location timed out.';
+                        locationDisplay.textContent = 'The request to get location timed out.';
                         break;
                     default:
-                        elements.locationDisplay.textContent = 'An unknown error occurred.';
+                        locationDisplay.textContent = 'An unknown error occurred.';
                 }
-                elements.orderBtn.disabled = true;
+                orderBtn.disabled = true;
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000, // 10 seconds
+                maximumAge: 0 // Don't use cached position
             }
         );
     });

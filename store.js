@@ -192,7 +192,7 @@ const items = [
     { name: 'Permanent Marker Pen ', price: 15,category:'Stationary', image: 'images/' },
     { name: 'Fevicol MR (20gm)', price: 10,category:'Stationary', image: 'images/' },
     { name: 'Elkos Pen(Pack of 5)', price: 30,category:'Stationary', image: 'images/' },
-    { name: 'Fevi kwik(1Pc)', price: 10,category:'Stationary', image: 'images/feviKwik.png' },
+    //{ name: 'Fevi kwik(1Pc)', price: 10,category:'Stationary', image: 'images/feviKwik.png' },
 ];
 
 
