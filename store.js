@@ -192,10 +192,8 @@ const items = [
     { name: 'Permanent Marker Pen ', price: 15,category:'Stationary', image: 'images/' },
     { name: 'Fevicol MR (20gm)', price: 10,category:'Stationary', image: 'images/' },
     { name: 'Elkos Pen(Pack of 5)', price: 30,category:'Stationary', image: 'images/' },
-    //{ name: 'Fevi kwik(1Pc)', price: 10,category:'Stationary', image: 'images/feviKwik.png' },
+    { name: 'Fevi kwik(1Pc)', price: 10,category:'Stationary', image: 'images/feviKwik.png' },
 ];
-
-
 
 function addToCart(itemElement) {
     if (!itemElement || !itemElement.classList.contains('item')) {
@@ -297,28 +295,18 @@ function initStore(filterCategory = 'all', searchTerm = '', storeDiv = document.
             </div>
         `;
 
-        // Clone buttons to prevent duplicate listeners
-        const cloneButton = (btn) => {
-            const newBtn = btn.cloneNode(true);
-            btn.replaceWith(newBtn);
-            return newBtn;
-        };
-
-        const minusBtn = cloneButton(div.querySelector('.qty-minus'));
-        const plusBtn = cloneButton(div.querySelector('.qty-plus'));
-        const addBtn = cloneButton(div.querySelector('.add-to-cart-btn'));
-
-        minusBtn.addEventListener('click', (e) => {
+        // Add event listeners
+        div.querySelector('.qty-minus').addEventListener('click', (e) => {
             e.stopPropagation();
             updateQuantity(div, -1);
         });
 
-        plusBtn.addEventListener('click', (e) => {
+        div.querySelector('.qty-plus').addEventListener('click', (e) => {
             e.stopPropagation();
             updateQuantity(div, 1);
         });
 
-        addBtn.addEventListener('click', (e) => {
+        div.querySelector('.add-to-cart-btn').addEventListener('click', (e) => {
             e.stopPropagation();
             addToCart(div);
         });
@@ -326,5 +314,8 @@ function initStore(filterCategory = 'all', searchTerm = '', storeDiv = document.
         storeDiv.appendChild(div);
     });
 }
+
+// Make initStore available globally
+window.initStore = initStore;
 
 export { initStore, addToCart, updateQuantity };

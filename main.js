@@ -8,12 +8,12 @@ import {
     closeCart,
     setupCartElements
 } from './cart.js';
-import { setupLocation } from './location.js';
 import { showNotification } from './utils.js';
 
 // DOM Elements
 const elements = {
     storeDiv: document.getElementById('storeItems'),
+    popularDiv: document.getElementById('popularItems'),
     cartList: document.getElementById('cartList'),
     cartCount: document.getElementById('cartCount'),
     cartTotal: document.getElementById('cartTotal'),
@@ -28,16 +28,12 @@ const elements = {
     cartFull: document.getElementById('cartFull'),
     continueShoppingBtn: document.getElementById('continueShopping'),
     cartOverlay: document.getElementById('cartOverlay'),
-    getLocationBtn: document.getElementById('getLocationBtn'),
-    locationDisplay: document.getElementById('locationDisplay'),
-    customerAddressInput: document.getElementById('customerAddress'),
-    userLatInput: document.getElementById('userLat'),
-    userLngInput: document.getElementById('userLng'),
-    orderBtn: document.getElementById('orderBtn'),
-    phoneInput: document.getElementById("customerPhone"),
+    placeOrderBtn: document.getElementById('placeOrderBtn'),
+    locationStatus: document.getElementById('locationStatus'),
+    customerNameInput: document.getElementById('customerName'),
+    customerPhoneInput: document.getElementById('customerPhone'),
     shopStatusToggle: document.getElementById('shopStatusToggle'),
     shopStatusText: document.getElementById('shopStatusText'),
-    customerNameInput: document.getElementById('customerName'),
     resetCartBtn: document.getElementById('resetCartBtn')
 };
 
@@ -59,65 +55,6 @@ function resetCorruptedCart() {
     }
 }
 
-// Place Order Button
-elements.orderBtn.addEventListener('click', () => {
-    if (!isShopOpen) {
-        showNotification("Cannot place orders when shop is closed", 'error');
-        return;
-    }
-
-    const name = elements.customerNameInput.value.trim();
-    const address = elements.customerAddressInput.value.trim();
-    const phone = elements.phoneInput.value.trim();
-    const lat = elements.userLatInput.value.trim();
-    const lng = elements.userLngInput.value.trim();
-
-    if (!name || !address || !phone || cart.length === 0) {
-        showNotification("Please fill all details and add items to cart", 'error');
-        return;
-    }
-
-    if (!/^[0-9]{10}$/.test(phone)) {
-        showNotification("Please enter a valid 10-digit phone number", 'error');
-        return;
-    }
-
-    const deliveryFeeText = document.getElementById('deliveryFee').textContent;
-    if (deliveryFeeText.includes('Not Available')) {
-        showNotification("Delivery not available for your location", 'error');
-        return;
-    }
-
-    let deliveryFee = 0;
-    if (deliveryFeeText !== 'FREE') {
-        deliveryFee = parseInt(deliveryFeeText.replace('₹', '')) || 0;
-    }
-
-    let message = `*New Order from QuickKart!*%0A%0A`;
-    message += `*Customer Details:*%0AName: ${name}%0AAddress: ${address}%0APhone: ${phone}%0A`;
-
-    if (lat && lng) {
-        message += `Location: https://www.google.com/maps?q=${lat},${lng}%0A`;
-    }
-
-    message += `%0A*Order Items:*%0A`;
-    cart.forEach(item => {
-        message += `- ${item.name} (${item.quantity} × ₹${item.price}) = ₹${item.price * item.quantity}%0A`;
-    });
-
-    const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    message += `%0A*Subtotal: ₹${subtotal}*%0A`;
-    message += `*Delivery Fee: ₹${deliveryFee}*%0A`;
-    message += `*Total: ₹${subtotal + deliveryFee}*%0A%0APlease confirm this order. Thank you!`;
-
-    const whatsappNumber = "919716940448";
-    window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
-
-    cart.length = 0;
-    updateCartUI();
-    closeCart();
-});
-
 // Setup Event Listeners
 function setupEventListeners() {
     elements.cartToggle.addEventListener('click', openCart);
@@ -134,7 +71,7 @@ function setupEventListeners() {
             const searchTerm = elements.searchInput.value.trim().toLowerCase();
             const activeBtn = document.querySelector('.category-btn.active');
             const category = activeBtn ? activeBtn.getAttribute('data-category') : 'all';
-            initStore(category, searchTerm);
+            initStore(category, searchTerm, elements.storeDiv);
         }, 300);
     });
 
@@ -145,15 +82,13 @@ function setupEventListeners() {
             btn.classList.add('active');
             const category = btn.getAttribute('data-category');
             const searchTerm = elements.searchInput.value.trim().toLowerCase();
-            initStore(category, searchTerm);
+            initStore(category, searchTerm, elements.storeDiv);
         });
     });
 
-    elements.phoneInput.addEventListener("input", function () {
+    elements.customerPhoneInput.addEventListener("input", function() {
         this.value = this.value.replace(/\D/g, "").slice(0, 10);
     });
-
-    elements.customerAddressInput.setAttribute('readonly', true);
 
     // Manual cart reset button
     if (elements.resetCartBtn) {
@@ -166,15 +101,22 @@ function setupEventListeners() {
     }
 }
 
-// In your initializeApp() function:
+// Initialize the app
 function initializeApp() {
     resetCorruptedCart();
-    initStore('all', '', elements.storeDiv);
     setupShopStatus(elements);
-    setupLocation();
     setupEventListeners();
-    elements.orderBtn.disabled = true;
-    // Initial UI update - important!
+    
+    // Initialize store with all items
+    initStore('all', '', elements.storeDiv);
+    
+    // Initialize popular items (you can customize this)
+    const popularItems = items.filter(item => item.rating >= 4.0);
+    if (elements.popularDiv) {
+        initStore('all', '', elements.popularDiv);
+    }
+    
+    // Initial UI update
     updateCartUI();
 }
 

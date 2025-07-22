@@ -170,24 +170,23 @@
       </div>
 
       <div class="cart-form">
-        <input type="text" id="customerName" placeholder="আপোনাৰ নাম" required>
-        
-        <div class="location-input-group">
-          <input type="text" id="customerAddress" placeholder="Delivery Address" required readonly>
-          <button type="button" id="getLocationBtn" title="Auto-fill address">
-            <i class="fas fa-map-marker-alt"></i> Get Location
-          </button>
-        </div>
-        <p id="locationDisplay" class="location-message"></p>
-        <input type="hidden" id="userLat">
-        <input type="hidden" id="userLng">
-        
-        <input type="tel" id="customerPhone" pattern="[0-9]{10}" maxlength="10" placeholder="📞মোবাইল নম্বৰ" required>
+          <input type="text" id="customerName" placeholder="আপোনাৰ নাম" required>
+          <input type="hidden" id="autoAddress">
+          <input type="hidden" id="userLat">
+          <input type="hidden" id="userLng">
+          
+          <input type="tel" id="customerPhone" pattern="[0-9]{10}" maxlength="10" placeholder="📞 মোবাইল নম্বৰ" required>
 
-        <button id="orderBtn" class="quickkart-btn">
-          <i class="fab fa-whatsapp"></i> Place Order
-        </button>
-      </div>
+          <button id="placeOrderBtn" class="quickkart-btn">
+            <i class="fab fa-whatsapp"></i> 
+            <span id="btnText">Place Order</span>
+            <span id="locationSpinner" style="display:none;">
+              <i class="fas fa-spinner fa-spin"></i> Fetching Location...
+            </span>
+          </button>
+          
+          <div id="locationStatus" class="location-message"></div>
+        </div>
     </div>
   </div>
 
