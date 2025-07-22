@@ -112,3 +112,4 @@ document.getElementById('shopStatusToggle').addEventListener('change', toggleSho
 document.querySelector('.close-alert').addEventListener('click', function() {
   document.getElementById('shopClosedNotification').classList.remove('show');
 });
+window.cart = cart;

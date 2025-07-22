@@ -1,4 +1,6 @@
-const storeLocation = { lat: 26.6468571, lng: 92.0754806 };//{ lat:24.757293, lng: 92.787320 }
+import cart from './cart-data.js';
+
+const storeLocation = { lat: 26.6468571, lng: 92.0754806 };//{lat :24.757568,lng:92.784526};//
 
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
     const R = 6371;
@@ -18,23 +20,32 @@ function deg2rad(deg) {
 
 async function getCurrentPosition() {
     return new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
-        });
+        if (!navigator.geolocation) {
+            reject(new Error('Geolocation not supported'));
+            return;
+        }
+        
+        navigator.geolocation.getCurrentPosition(
+            position => resolve(position),
+            error => reject(error),
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
     });
 }
 
 async function getAddressFromCoords(lat, lng) {
     try {
         const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, {
-            headers: {
-                'User-Agent': 'QuickKart/1.0'
-            }
+            headers: { 'User-Agent': 'QuickKart/1.0' }
         });
-        const data = await response.json();
         
+        if (!response.ok) throw new Error('Geocoding failed');
+        
+        const data = await response.json();
         if (data?.address) {
             const addr = data.address;
             const parts = [
@@ -51,6 +62,43 @@ async function getAddressFromCoords(lat, lng) {
     }
 }
 
+function sendWhatsAppOrder(customerName, customerPhone, address, lat, lng, deliveryFee, cartTotal) {
+    try {
+        // Format cart items
+        const cartItems = cart.map(item => 
+            `➤ ${item.name} (${item.quantity} × ₹${item.price}) = ₹${item.price * item.quantity}`
+        ).join('\n');
+        
+        // Create Google Maps link
+        const mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
+        
+        // Create the WhatsApp message
+        const message = `📦 *QuickKart Order*\n\n` +
+            `👤 *Customer:* ${customerName}\n` +
+            `📞 *Phone:* ${customerPhone}\n\n` +
+            `📍 *Delivery Address:*\n${address}\n` +
+            `🗺️ *Location:* ${mapsLink}\n\n` +
+            `🛒 *Order Items:*\n${cartItems}\n\n` +
+            `💰 *Subtotal:* ₹${cartTotal - deliveryFee}\n` +
+            `🚚 *Delivery Fee:* ₹${deliveryFee}\n` +
+            `💵 *Total:* ₹${cartTotal}\n\n` +
+            `📝 *Special Instructions:* `;
+        
+        // Encode the message while preserving formatting
+        const encodedMessage = encodeURIComponent(message)
+            .replace(/%2A/g, '*')  // Keep asterisks for bold
+            .replace(/%0A/g, '%0D%0A')  // Proper line breaks
+            .replace(/%E2%9D%A4/g, '➤')  // Preserve bullet points
+            .replace(/%F0%9F%93%8D/g, '🗺️');  // Preserve map icon
+        
+        window.open(`https://wa.me/919716940448?text=${encodedMessage}`, '_blank');
+        return true;
+    } catch (error) {
+        console.error('WhatsApp error:', error);
+        return false;
+    }
+}
+
 async function handleOrderWithLocation() {
     const btn = document.getElementById('placeOrderBtn');
     const spinner = document.getElementById('locationSpinner');
@@ -59,55 +107,66 @@ async function handleOrderWithLocation() {
     const customerName = document.getElementById('customerName').value.trim();
     const customerPhone = document.getElementById('customerPhone').value.trim();
     
-    // Basic validation
     if (!customerName || !customerPhone || customerPhone.length !== 10) {
-        statusEl.textContent = 'Please enter your name and correct mobile number';
+        statusEl.textContent = 'Please enter valid name and 10-digit mobile number';
         return;
     }
 
-    // Disable button during processing
     btn.disabled = true;
     spinner.style.display = 'inline-block';
     btnText.style.display = 'none';
-    statusEl.textContent = 'Your location is being detected...';
-    
+    statusEl.textContent = 'Detecting your location...';
+
     try {
-        // Step 1: Get current location
         const position = await getCurrentPosition();
         const { latitude: lat, longitude: lng } = position.coords;
         
-        // Step 2: Check delivery area
         const distance = getDistanceFromLatLonInKm(storeLocation.lat, storeLocation.lng, lat, lng);
         
         if (distance > 5) {
-            statusEl.innerHTML = `We do not deliver to your area (${distance.toFixed(1)} km away)<br>
-                                 We deliver only in 5km from our store`;
+            statusEl.innerHTML = `Delivery not available (${distance.toFixed(1)} km away)<br>We deliver within 5km only`;
             document.getElementById('deliveryFee').textContent = 'Not Available';
             return;
         }
         
-        // Step 3: Get address from coordinates
+        statusEl.textContent = 'Getting your address...';
         const address = await getAddressFromCoords(lat, lng);
+        
         document.getElementById('autoAddress').value = address;
         document.getElementById('userLat').value = lat;
         document.getElementById('userLng').value = lng;
         
-        // Step 4: Calculate delivery fee
-        const deliveryFee = Math.round(distance * 5);
-        document.getElementById('deliveryFee').textContent = `₹${deliveryFee}`;
+        const deliveryFee = distance <= 1 ? 0 : Math.round(distance * 5);
+        document.getElementById('deliveryFee').textContent = deliveryFee > 0 ? `₹${deliveryFee}` : 'FREE';
         
-        // Step 5: Submit order
-        submitOrder();
+        const itemTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        const total = itemTotal + deliveryFee;
+        document.getElementById('cartTotal').textContent = `₹${total}`;
         
-    } catch (error) {
-        console.error('Location/Order error:', error);
-        if (error.code === error.PERMISSION_DENIED) {
-            statusEl.innerHTML = `Location access permission denied<br>
-                               Please send us your address on WhatsApp: 9716940448`;
+        const success = sendWhatsAppOrder(customerName, customerPhone, address, lat, lng, deliveryFee, total);
+        
+        if (success) {
+            cart.length = 0;
+            localStorage.setItem('quickKartCart', JSON.stringify(cart));
+            if (window.updateCartUI) window.updateCartUI();
+            statusEl.textContent = 'Order sent to WhatsApp!';
         } else {
-            statusEl.innerHTML = `location not detected<br>
-                              Please send us your address on WhatsApp: 9716940448`;
+            throw new Error('Failed to open WhatsApp');
         }
+    } catch (error) {
+        console.error('Order error:', error);
+        let errorMessage = 'Order processing failed';
+        
+        if (error.message === 'Geolocation not supported') {
+            errorMessage = 'Your browser does not support location services';
+        } else if (error.code === error.PERMISSION_DENIED) {
+            errorMessage = 'Please enable location permissions';
+        } else if (error.code === error.TIMEOUT) {
+            errorMessage = 'Location detection timed out';
+        }
+        
+        statusEl.innerHTML = `${errorMessage}<br>Contact us at 9716940448`;
+        document.getElementById('deliveryFee').textContent = '--';
     } finally {
         spinner.style.display = 'none';
         btnText.style.display = 'inline-block';
@@ -115,45 +174,12 @@ async function handleOrderWithLocation() {
     }
 }
 
-function submitOrder() {
-    const name = document.getElementById('customerName').value.trim();
-    const phone = document.getElementById('customerPhone').value.trim();
-    const address = document.getElementById('autoAddress').value;
-    const lat = document.getElementById('userLat').value;
-    const lng = document.getElementById('userLng').value;
-    const deliveryFeeText = document.getElementById('deliveryFee').textContent;
-    
-    if (deliveryFeeText.includes('Not Available')) {
-        showNotification("Delivery not available for your location", 'error');
-        return;
+function initLocation() {
+    const orderBtn = document.getElementById('placeOrderBtn');
+    if (orderBtn) {
+        window.cart = cart;
+        orderBtn.addEventListener('click', handleOrderWithLocation);
     }
-
-    const deliveryFee = deliveryFeeText === 'FREE' ? 0 : parseInt(deliveryFeeText.replace('₹', '')) || 0;
-    const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    
-    let message = `*New Order from QuickKart!*%0A%0A`;
-    message += `*Customer Details:*%0AName: ${name}%0APhone: ${phone}%0AAddress: ${address}%0A`;
-    message += `Location: https://www.google.com/maps?q=${lat},${lng}%0A`;
-    message += `%0A*Order Items:*%0A`;
-    
-    cart.forEach(item => {
-        message += `- ${item.name} (${item.quantity} × ₹${item.price}) = ₹${item.price * item.quantity}%0A`;
-    });
-    
-    message += `%0A*Subtotal: ₹${subtotal}*%0A`;
-    message += `*Delivery Fee: ₹${deliveryFee}*%0A`;
-    message += `*Total: ₹${subtotal + deliveryFee}*%0A%0APlease confirm this order. Thank you!`;
-
-    const whatsappNumber = "919716940448";
-    window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
-
-    // Reset cart
-    cart.length = 0;
-    updateCartUI();
-    closeCart();
 }
 
-// Initialize
-document.getElementById('placeOrderBtn').addEventListener('click', handleOrderWithLocation);
-
-export { storeLocation };
+export { storeLocation, initLocation };

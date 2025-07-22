@@ -1,6 +1,7 @@
 import { setupShopStatus, updateShopStatus, isShopOpen } from './firebase-config.js';
 import { initStore } from './store.js';
 import cart from './cart-data.js';
+import { initLocation } from './location.js'
 import {
     updateCartUI,
     removeFromCart,
@@ -101,22 +102,23 @@ function setupEventListeners() {
     }
 }
 
+/// ... [keep all existing imports]
+
 // Initialize the app
 function initializeApp() {
     resetCorruptedCart();
     setupShopStatus(elements);
     setupEventListeners();
+    initLocation(); // Make sure this is called
     
     // Initialize store with all items
     initStore('all', '', elements.storeDiv);
     
-    // Initialize popular items (you can customize this)
-    const popularItems = items.filter(item => item.rating >= 4.0);
-    if (elements.popularDiv) {
-        initStore('all', '', elements.popularDiv);
-    }
+    // Remove or comment out the popular items section if it causes errors
+    // if (elements.popularDiv) {
+    //     initStore('all', '', elements.popularDiv);
+    // }
     
-    // Initial UI update
     updateCartUI();
 }
 
