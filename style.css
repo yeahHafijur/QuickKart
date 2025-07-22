@@ -371,7 +371,7 @@ body.cart-open {
   right: -100%;
   width: 80%;
   max-width: 380px;
-  height: 70vh;
+  height: 80vh;
   background: var(--white);
   z-index: 1001;
   box-shadow: -6px 0 12px rgba(0, 0, 0, 0.1);
