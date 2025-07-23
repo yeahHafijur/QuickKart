@@ -86,30 +86,5 @@ export function closeCart() {
     elements.cartElement.classList.remove('open');
     elements.cartOverlay.classList.remove('show');
 }
-// Shop Status Toggle Function
-function toggleShopStatus() {
-  const body = document.body;
-  const isClosed = !body.classList.contains('shop-closed');
-  
-  body.classList.toggle('shop-closed');
-  document.getElementById('shopStatusText').textContent = isClosed ? 'Closed' : 'Open';
-  
-  // Update Firebase if needed (keep your existing code)
-  if(window.updateShopStatus) {
-    updateShopStatus(isClosed);
-  }
-  
-  // Show/hide closed notification
-  if(isClosed) {
-    document.getElementById('shopClosedNotification').classList.add('show');
-  }
-}
 
-// Initialize shop status
-document.getElementById('shopStatusToggle').addEventListener('change', toggleShopStatus);
-
-// Close notification button
-document.querySelector('.close-alert').addEventListener('click', function() {
-  document.getElementById('shopClosedNotification').classList.remove('show');
-});
 window.cart = cart;
