@@ -324,9 +324,9 @@ main.container {
   position: fixed;
   top: 0;
   right: -100%;
-  width: 100%;
+  width: 80%;
   max-width: 380px;
-  height: 100vh;
+  height: 80vh;
   background: var(--white);
   z-index: 1001;
   box-shadow: -6px 0 12px rgba(0, 0, 0, 0.1);
@@ -729,6 +729,7 @@ main.container {
 .cart-empty #cartEmpty { display: flex; }
 .cart-has-items #cartFull { display: block; }
 
+/* --- Notification --- */
 .quickkart-notification {
   position: fixed;
   bottom: 80px;
@@ -742,9 +743,18 @@ main.container {
   box-shadow: var(--shadow);
   z-index: 1100;
   opacity: 0;
-  transition: var(--transition);
+  transition: all 0.4s ease;
   max-width: 90%;
   text-align: center;
+  /* YEH LINE SABSE ZAROORI HAI */
+  pointer-events: none; /* Jab invisible ho to click aar-paar ho jayega */
+}
+
+/* Jab notification dikhega tab click kaam karega */
+.quickkart-notification.show {
+  opacity: 1;
+  bottom: 90px; /* Thoda upar aane ka effect */
+  pointer-events: auto; /* Click ko wapas enable karega */
 }
 
 
