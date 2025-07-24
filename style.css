@@ -890,3 +890,16 @@ input:checked + .slider:before {
   -ms-transform: translateX(26px);
   transform: translateX(26px);
 }
+/* =================================
+   FIX FOR BOTTOM BUTTON CLICKS
+   ================================= */
+
+/* Isse product page ke end mein extra space add hogi */
+main.container {
+    padding-bottom: 80px; /* Nav bar ke liye extra jagah */
+}
+
+/* Jab cart khula ho, to neeche ki navigation bar hide ho jayegi */
+body.cart-open .bottom-nav-bar {
+    display: none;
+}
