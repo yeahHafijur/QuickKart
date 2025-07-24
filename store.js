@@ -1,3 +1,7 @@
+// store.js
+
+// 'isShopOpen' ko firebase-config se import karein
+import { isShopOpen } from './firebase-config.js'; 
 import cart from './cart-data.js';
 import { showNotification, debugCart } from './utils.js';
 
@@ -31,16 +35,9 @@ const items = [
     { name: 'Fanta(750ml)', price: 40,category:'Cold Drinks & Juices', image: 'images/fanta.png' },
     { name: 'Amul kool(150ml)', price: 25,category:'Cold Drinks & Juices', image: 'images/amulKool.png' },
     { name: 'Campa lemon flavour(500mL)', price: 20,category:'Cold Drinks & Juices', image: 'images/campaLemon.png' },
-    { name: 'Campa Orange flavour(500mL)', price: 25,category:'Cold Drinks & Juices', image: 'images/campaOrange.png' },
+    { name: 'Campa Orange flavour(500mL)', price: 20,category:'Cold Drinks & Juices', image: 'images/campaOrange.png' },
     
-   
-    
-    
-    
-
-
-
-    { name: 'Indane Gas(14kg)', price: 999,category:'Gass', image: 'images/indanegas.png' },
+    { name: 'Indane Gas(14kg)', price: 988,category:'Gass', image: 'images/indanegas.png' },
 
 
     { name: 'Almond(100gm)', price: 120,category:'Dry Fruits', image: 'images/almond.png' },
@@ -57,27 +54,19 @@ const items = [
     { name: 'Himalaya Baby Powder(30gm)', price:30 ,category:'Baby Care', image: 'images/babyPowder.png' },
     { name: 'Himalaya Baby cream(30mL)', price:50 ,category:'Baby Care', image: 'images/babycream.png' },
     
-    
-
-
     { name: 'Maxo(1pkt)', price: 29,category:'Maxo Killer & candle', image: 'images/maxo.jpg' },
     { name: 'Candle(1pkt)', price: 75,category:'Maxo Killer & candle', image: 'images/candle.jpg' },
     { name: 'Agar Batti Man Mandir(1pkt)', price: 10,category:'Maxo Killer & candle', image: 'images/AgarBattiManMandir.png' },
     { name: 'Agar Batti Amena(1pkt)', price: 10,category:'Maxo Killer & candle', image: 'images/amenaAgarbatti.jpg' },
-    
+    { name: 'Aladin killer(1pkt)', price: 20,category:'Maxo Killer & candle', image: 'images/aladinkiller.jpg' },
     
     { name: 'zig Zag Brush(1P)', price: 25,category:'Colgate & Brush', image: 'images/zigzag.png' },
     { name: 'Colgate(38gm)', price: 20,category:'Colgate & Brush', image: 'images/colgate.png' },
     { name: 'Colgate(16gm)', price: 10,category:'Colgate & Brush', image: 'images/colgate.png' },
-    
-    { name: 'Aladin killer(1pkt)', price: 20,category:'Maxo Killer & candle', image: 'images/aladinkiller.jpg' },
-
-    
 
     { name: 'Gold Flake Premium(1Pkt)', price: 99,category:'Pan Corner', image: 'images/goldFlakePremium.png' },
     { name: 'Flake Excel(1Pkt)', price: 80,category:'Pan Corner', image: 'images/flakewills.png' },
     { name: 'Mint(1Pkt)', price: 99,category:'Pan Corner', image: 'images/mint.jpg' },
-
 
     { name: 'Mustard Oil Hansh(1L)', price: 180,category:'Masala & Oil', image: 'images/hansh1L.jpg' },
     { name: 'Mustard Oil Hansh(500ml)', price: 90,category:'Masala & Oil', image: 'images/hansh500mL.jpg' },
@@ -110,7 +99,10 @@ const items = [
     { name: 'Nihar Oil(40mL)', price: 10,category:'Personal Care', image: 'images/NiharOil.png' },
     { name: 'Brahmol oil(45mL)', price: 20,category:'Personal Care', image: 'images/brahmolOil.png' },
     { name: 'Pears Saboon(1p)', price: 25,category:'Personal Care', image: 'images/pearsSoap.png' },
-    { name: 'Lux Saboon(1p)', price: 40,category:'Personal Care', image: 'images/lux.png' },,
+    // ==========================================================
+    // YAHAN PAR EK EXTRA COMMA (,,) THA, JISE HATA DIYA GAYA HAI
+    // ==========================================================
+    { name: 'Lux Saboon(1p)', price: 40,category:'Personal Care', image: 'images/lux.png' },
     { name: 'Detol Saboon(1p)', price: 10,category:'Personal Care', image: 'images/detolSoap.png' },
     { name: 'Dabur Colgate(1p)', price: 10,category:'Personal Care', image: 'images/dabur.png' },
     { name: 'Almond Drops Oil(190mL)', price: 142,category:'Personal Care', image: 'images/almondOil.png' },
@@ -123,9 +115,7 @@ const items = [
     { name: 'Gillete Guard Blade(10)', price: 30,category:'Personal Care', image: 'images/blade.jpg' },
     { name: 'Dermi Cool(50gm)', price:50 ,category:'Personal Care', image: 'images/dermiCool.png' },
     { name: 'VI-JOHN(100gm)', price:70 ,category:'Personal Care', image: 'images/vi-john.png' },
-    
 
-    
     { name: 'Harpic(200ml)', price: 46,category:'Cleaning Care', image: 'images/harpic.png' },
     { name: 'Surf Excel(500gm)', price: 68,category:'Cleaning Care', image: 'images/surfExcel.png' },
     { name: 'Nirma Blue(500gm)', price: 55,category:'Cleaning Care', image: 'images/nirmaBlue.png' },
@@ -140,7 +130,6 @@ const items = [
     { name: 'Snuball Saboon(1p)', price: 45,category:'Cleaning Care', image: 'images/idashaban.jpg' },
     { name: 'Surf Excel(75g)', price: 10,category:'Cleaning Care', image: 'images/surfExcel.png' },
     { name: 'Jhama(1Pc)', price: 10,category:'Cleaning Care', image: 'images/jhama.jpg' },
-    
     
     { name: 'Sweat Toast(Big)', price: 49,category:'Bakery & Biscuits', image: 'images/sweatToast.jpg' },
     { name: 'Sweat Toast(Small)', price: 30,category:'Bakery & Biscuits', image: 'images/sweatToast.jpg' },
@@ -158,44 +147,82 @@ const items = [
     { name: 'Parle G(1pkt)', price: 10,category:'Bakery & Biscuits', image: 'images/parleG.jpg' },
     { name: 'Rusk(1pkt)', price: 10,category:'Bakery & Biscuits', image: 'images/rusk.jpg' },
 
-    { name: 'C to C type cable(1m) samsung', price: 150,category:'Electronics', image: 'images/' },
-    { name: 'iPhone Data Cable(1m)', price: 150,category:'Electronics', image: 'images/' },
-    { name: 'Samsung 25W type C addopter', price:520 ,category:'Electronics', image: 'images/' },
-    { name: '3 in 1 Black Kat Data cable', price:210 ,category:'Electronics', image: 'images/' },
-    { name: '120W B type Data Cable', price:150 ,category:'Electronics', image: 'images/' },
-    { name: '120W C type Data Cable', price:150 ,category:'Electronics', image: 'images/' },
-    { name: 'Black Kat C type Data Cable', price:60 ,category:'Electronics', image: 'images/' },
-    { name: 'Black Kat B type Data Cable', price:60 ,category:'Electronics', image: 'images/' },
-    { name: 'Fast Charging Cable C type', price: 170,category:'Electronics', image: 'images/' },
-    { name: 'Fast Charging Cable B type', price:170 ,category:'Electronics', image: 'images/' },
-    { name: 'Car Charger', price:280 ,category:'Electronics', image: 'images/' },
-    { name: 'Black Kat wireless blutooth Speaker', price:399 ,category:'Electronics', image: 'images/' },
-    { name: 'realme Buds Wireless 3 Neo', price:520 ,category:'Electronics', image: 'images/' },
-    { name: 'Boat Rockerz 255 blutooth earphone', price:520 ,category:'Electronics', image: 'images/' },
+    { name: 'C to C type cable(1m) samsung', price: 150,category:'Electronics', image: 'images/placeholder.png' },
+    { name: 'iPhone Data Cable(1m)', price: 150,category:'Electronics', image: 'images/placeholder.png' },
+    { name: 'Samsung 25W type C addopter', price:520 ,category:'Electronics', image: 'images/placeholder.png' },
+    { name: '3 in 1 Black Kat Data cable', price:210 ,category:'Electronics', image: 'images/placeholder.png' },
+    { name: '120W B type Data Cable', price:150 ,category:'Electronics', image: 'images/placeholder.png' },
+    { name: '120W C type Data Cable', price:150 ,category:'Electronics', image: 'images/placeholder.png' },
+    { name: 'Black Kat C type Data Cable', price:60 ,category:'Electronics', image: 'images/placeholder.png' },
+    { name: 'Black Kat B type Data Cable', price:60 ,category:'Electronics', image: 'images/placeholder.png' },
+    { name: 'Fast Charging Cable C type', price: 170,category:'Electronics', image: 'images/placeholder.png' },
+    { name: 'Fast Charging Cable B type', price:170 ,category:'Electronics', image: 'images/placeholder.png' },
+    { name: 'Car Charger', price:280 ,category:'Electronics', image: 'images/placeholder.png' },
+    { name: 'Black Kat wireless blutooth Speaker', price:399 ,category:'Electronics', image: 'images/placeholder.png' },
+    { name: 'realme Buds Wireless 3 Neo', price:520 ,category:'Electronics', image: 'images/placeholder.png' },
+    { name: 'Boat Rockerz 255 blutooth earphone', price:520 ,category:'Electronics', image: 'images/placeholder.png' },
     { name: 'Eveready Battery(1p)', price: 18,category:'Electronics', image: 'images/evereadyBattery.png' },
     { name: 'Panasonic Battery(1P)', price: 12, category:'Electronics',image: 'images/panasonicBattery.png' },
-    
 
-
-
-    { name: 'Graph Book(Pages 10)', price:20 ,category:'Stationary', image: 'images/' },
-    { name: 'Plain Notebook(Page 50)', price:30 ,category:'Stationary', image: 'images/' },
-    { name: 'Plain Notebook(Page 100)', price:50 ,category:'Stationary', image: 'images/' },
-    { name: 'Role Notebook(Page 50)', price:30 ,category:'Stationary', image: 'images/' },
-    { name: 'Role Notebook(Page 100)', price:50 ,category:'Stationary', image: 'images/' },
-    { name: 'English Notebook(Page 50)', price:30 ,category:'Stationary', image: 'images/' },
-    { name: 'Flair Writo-meter Ball Pen(Black)', price: 20,category:'Stationary', image: 'images/' },
-    { name: 'Flair Writo-meter Ball Pen(blue)', price: 20,category:'Stationary', image: 'images/' },
-    { name: 'Apsara Pencil(1 box)', price: 49,category:'Stationary', image: 'images/' },
-    { name: 'Apsara Eraser(2 pc)', price: 10,category:'Stationary', image: 'images/' },
-    { name: 'Apsara Sharpner(2 pc)', price: 10,category:'Stationary', image: 'images/' },
-    { name: 'Permanent Marker Pen ', price: 15,category:'Stationary', image: 'images/' },
-    { name: 'Fevicol MR (20gm)', price: 10,category:'Stationary', image: 'images/' },
-    { name: 'Elkos Pen(Pack of 5)', price: 30,category:'Stationary', image: 'images/' },
+    { name: 'Graph Book(Pages 10)', price:20 ,category:'Stationary', image: 'images/placeholder.png' },
+    { name: 'Plain Notebook(Page 50)', price:30 ,category:'Stationary', image: 'images/placeholder.png' },
+    { name: 'Plain Notebook(Page 100)', price:50 ,category:'Stationary', image: 'images/placeholder.png' },
+    { name: 'Role Notebook(Page 50)', price:30 ,category:'Stationary', image: 'images/placeholder.png' },
+    { name: 'Role Notebook(Page 100)', price:50 ,category:'Stationary', image: 'images/placeholder.png' },
+    { name: 'English Notebook(Page 50)', price:30 ,category:'Stationary', image: 'images/placeholder.png' },
+    { name: 'Flair Writo-meter Ball Pen(Black)', price: 20,category:'Stationary', image: 'images/placeholder.png' },
+    { name: 'Flair Writo-meter Ball Pen(blue)', price: 20,category:'Stationary', image: 'images/placeholder.png' },
+    { name: 'Apsara Pencil(1 box)', price: 49,category:'Stationary', image: 'images/placeholder.png' },
+    { name: 'Apsara Eraser(2 pc)', price: 10,category:'Stationary', image: 'images/placeholder.png' },
+    { name: 'Apsara Sharpner(2 pc)', price: 10,category:'Stationary', image: 'images/placeholder.png' },
+    { name: 'Permanent Marker Pen ', price: 15,category:'Stationary', image: 'images/placeholder.png' },
+    { name: 'Fevicol MR (20gm)', price: 10,category:'Stationary', image: 'images/placeholder.png' },
+    { name: 'Elkos Pen(Pack of 5)', price: 30,category:'Stationary', image: 'images/placeholder.png' },
     { name: 'Fevi kwik(1Pc)', price: 10,category:'Stationary', image: 'images/feviKwik.png' },
 ];
 
+
+function animateToCart(itemElement) {
+    const cartIcon = document.querySelector('#navCart');
+    const itemImage = itemElement.querySelector('.item-img');
+
+    if (!itemImage || !cartIcon) return;
+
+    const startRect = itemImage.getBoundingClientRect();
+    const cartRect = cartIcon.getBoundingClientRect();
+
+    const flyingAnim = document.createElement('div');
+    flyingAnim.className = 'cart-animation';
+    flyingAnim.style.backgroundImage = `url('${itemImage.src}')`;
+    
+    flyingAnim.style.left = `${startRect.left}px`;
+    flyingAnim.style.top = `${startRect.top}px`;
+    flyingAnim.style.width = `${startRect.width}px`;
+    flyingAnim.style.height = `${startRect.height}px`;
+
+    document.body.appendChild(flyingAnim);
+    flyingAnim.offsetWidth;
+    const endX = cartRect.left + cartRect.width / 2;
+    const endY = cartRect.top + cartRect.height / 2;
+    flyingAnim.style.transform = `translate(${endX - startRect.left - startRect.width/2}px, ${endY - startRect.top - startRect.height/2}px) scale(0.1)`;
+    flyingAnim.style.opacity = '0';
+    
+    setTimeout(() => {
+        flyingAnim.remove();
+    }, 800);
+}
+
+
 function addToCart(itemElement) {
+    // ==========================================================
+    // YEH CHECK ADD KIYA GAYA HAI
+    // Agar dukaan band hai to function yahin ruk jayega
+    // ==========================================================
+    if (!isShopOpen) {
+        showNotification('Shop is currently closed');
+        return;
+    }
+
     if (!itemElement || !itemElement.classList.contains('item')) {
         console.error('Invalid item element');
         return;
@@ -206,27 +233,26 @@ function addToCart(itemElement) {
         const priceText = itemElement.querySelector('.item-price').textContent;
         const price = parseInt(priceText.replace('₹', '').trim());
         const quantity = parseInt(itemElement.querySelector('.quantity-control span').textContent);
+        const originalItem = items.find(i => i.name === name);
+        const image = originalItem ? originalItem.image : 'images/placeholder.png';
 
         if (isNaN(price)) throw new Error(`Invalid price: ${priceText}`);
         if (isNaN(quantity)) throw new Error('Invalid quantity');
 
-        let notificationMessage = `${quantity} ${name} added to cart`;
+        let notificationMessage = `${quantity} ${name} cart mein daal diya gaya hai`;
         let isNewItem = true;
-
         const existingItem = cart.find(item => item.name === name);
         if (existingItem) {
             const oldQuantity = existingItem.quantity;
             existingItem.quantity = Math.min(oldQuantity + quantity, 100);
-            notificationMessage = `${name} quantity updated from ${oldQuantity} to ${existingItem.quantity}`;
+            notificationMessage = `${name} ki quantity ${oldQuantity} se ${existingItem.quantity} kar di gayi hai`;
             isNewItem = false;
         } else {
-            cart.push({ name, price, quantity: Math.min(quantity, 100) });
+            cart.push({ name, price, quantity: Math.min(quantity, 100), image });
         }
 
-        // Reset quantity to 1 after adding
+        animateToCart(itemElement);
         itemElement.querySelector('.quantity-control span').textContent = '1';
-
-        // Show appropriate notification
         showNotification(notificationMessage, isNewItem ? 'success' : 'info');
         
         if (window.updateCartUI) {
@@ -234,9 +260,11 @@ function addToCart(itemElement) {
         }
     } catch (error) {
         console.error('Add to cart failed:', error);
-        showNotification('Failed to add item. Please try again.', 'error');
+        showNotification('Item add nahi ho paya. Phir se try karein.', 'error');
     }
 }
+
+// Baaki ka poora code (updateQuantity, initStore, renderCategoryGrid, export) waisa hi rahega...
 
 function updateQuantity(itemElement, change) {
     const quantitySpan = itemElement.querySelector('.quantity-control span');
@@ -255,7 +283,7 @@ function initStore(filterCategory = 'all', searchTerm = '', storeDiv = document.
 
     const filteredItems = items.filter(item => {
         const matchesCategory = filterCategory === 'all' || 
-                              item.category.toLowerCase() === filterCategory.toLowerCase();
+                              (item.category && item.category.toLowerCase() === filterCategory.toLowerCase());
         const matchesSearch = searchTerm === '' ||
                             item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             (item.category && item.category.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -263,7 +291,7 @@ function initStore(filterCategory = 'all', searchTerm = '', storeDiv = document.
     });
 
     if (filteredItems.length === 0) {
-        storeDiv.innerHTML = '<p style="padding:20px; text-align:center;">No items found.</p>';
+        storeDiv.innerHTML = '<p style="padding:20px; text-align:center;">Koi item nahi mila.</p>';
         return;
     }
 
@@ -282,8 +310,10 @@ function initStore(filterCategory = 'all', searchTerm = '', storeDiv = document.
                 ${imageHTML}
             </div>
             <div class="item-details">
-                <h3 class="item-name">${item.name}</h3>
-                <div class="item-price">₹${item.price}</div>
+                <div>
+                  <h3 class="item-name">${item.name}</h3>
+                  <div class="item-price">₹${item.price}</div>
+                </div>
                 <div class="item-actions">
                     <div class="quantity-control">
                         <button class="qty-minus">-</button>
@@ -295,7 +325,6 @@ function initStore(filterCategory = 'all', searchTerm = '', storeDiv = document.
             </div>
         `;
 
-        // Add event listeners
         div.querySelector('.qty-minus').addEventListener('click', (e) => {
             e.stopPropagation();
             updateQuantity(div, -1);
@@ -315,7 +344,48 @@ function initStore(filterCategory = 'all', searchTerm = '', storeDiv = document.
     });
 }
 
-// Make initStore available globally
-window.initStore = initStore;
+export function renderCategoryGrid(storeDiv) {
+    if (!storeDiv) {
+        console.error('Store container not found');
+        return;
+    }
+    storeDiv.innerHTML = '';
+
+    const categoryButtons = document.querySelectorAll('.categories .category-btn');
+    const uniqueCategories = Array.from(categoryButtons)
+        .map(btn => {
+            const categoryName = btn.dataset.category;
+            if (categoryName === 'all') return null;
+            const image = btn.querySelector('.category-image')?.src || 'images/placeholder.png';
+            return { name: categoryName, image };
+        })
+        .filter(Boolean);
+
+    uniqueCategories.forEach(category => {
+        if (!category.name) return;
+
+        const div = document.createElement('div');
+        div.className = 'item category-grid-item'; 
+        div.dataset.category = category.name;
+
+        const imageHTML = `<img src="${category.image}" alt="${category.name}" class="item-img" onerror="this.onerror=null;this.src='images/placeholder.png'">`;
+
+        div.innerHTML = `
+            <div class="item-image-container">
+                ${imageHTML}
+            </div>
+            <div class="item-details">
+                <h3 class="item-name">${category.name}</h3>
+            </div>
+        `;
+
+        div.addEventListener('click', () => {
+            window.showProductView(category.name);
+        });
+
+        storeDiv.appendChild(div);
+    });
+}
+
 
 export { initStore, addToCart, updateQuantity };

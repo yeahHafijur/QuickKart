@@ -46,10 +46,6 @@
           <i class="fas fa-map-marker-alt"></i>
           <span>Home</span>
         </div>
-        <div class="cart-icon" id="cartToggle">
-          <i class="fas fa-shopping-cart"></i>
-          <span class="cart-count" id="cartCount">0</span>
-        </div>
         <button id="logoutBtn" style="display: none; margin-left: 15px; background: #ff4444; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer;">Logout</button>
       </div>
     </div>
@@ -63,10 +59,6 @@
 
     <div class="categories-scroll">
       <div class="categories">
-        <button class="category-btn active" data-category="all">
-          <img src="images/all-category-bg.png" alt="All Items" class="category-image">
-          <span class="category-name">All</span>
-        </button>
         <button class="category-btn" data-category="Atta Rice & Daal">
           <img src="images/atta-rice-bg.png" alt="Atta Rice & Daal" class="category-image">
           <span class="category-name">Atta Rice & Daal</span>
@@ -136,7 +128,7 @@
         </div>
     </section>
 
-    <section class="product-section">
+    <section class="product-section" style="display: none;">
       <h2 class="section-title">Popular Items</h2>
       <div class="store" id="popularItems">
         </div>
@@ -200,7 +192,26 @@
 
   <div id="notification" class="quickkart-notification"></div>
   
-  <button id="resetCartBtn" style="position: fixed; bottom: 20px; right: 20px; z-index: 10000; padding: 10px; background: red; color: white; border: none; border-radius: 5px; cursor: pointer;">Reset Cart</button>
+  
+  <nav class="bottom-nav-bar">
+    <button class="nav-btn" id="navHome">
+      <i class="fas fa-home"></i>
+      <span>Home</span>
+    </button>
+    <button class="nav-btn" id="navAllItems">
+        <i class="fas fa-box-open"></i>
+        <span>All Items</span>
+    </button>
+    <button class="nav-btn" id="navSearch">
+      <i class="fas fa-search"></i>
+      <span>Search</span>
+    </button>
+    <button class="nav-btn" id="navCart">
+      <i class="fas fa-shopping-cart"></i>
+      <span>Cart</span>
+      <span class="cart-count" id="navCartCount">0</span>
+    </button>
+  </nav>
 
   <script type="module" src="firebase-config.js"></script>
   <script type="module" src="store.js"></script>

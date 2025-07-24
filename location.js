@@ -1,4 +1,8 @@
+// location.js
+
 import cart from './cart-data.js';
+// 'isShopOpen' ko firebase-config se import karein
+import { isShopOpen } from './firebase-config.js';
 
 const storeLocation = { lat: 26.6468571, lng: 92.0754806 };//{lat :24.757568,lng:92.784526};//
 
@@ -64,15 +68,12 @@ async function getAddressFromCoords(lat, lng) {
 
 function sendWhatsAppOrder(customerName, customerPhone, address, lat, lng, deliveryFee, cartTotal) {
     try {
-        // Format cart items
         const cartItems = cart.map(item => 
             `➤ ${item.name} (${item.quantity} × ₹${item.price}) = ₹${item.price * item.quantity}`
         ).join('\n');
         
-        // Create Google Maps link
-        const mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
+        const mapsLink = `http://maps.google.com/?q=${lat},${lng}`;
         
-        // Create the WhatsApp message
         const message = `📦 *QuickKart Order*\n\n` +
             `👤 *Customer:* ${customerName}\n` +
             `📞 *Phone:* ${customerPhone}\n\n` +
@@ -84,12 +85,11 @@ function sendWhatsAppOrder(customerName, customerPhone, address, lat, lng, deliv
             `💵 *Total:* ₹${cartTotal}\n\n` +
             `📝 *Special Instructions:* `;
         
-        // Encode the message while preserving formatting
         const encodedMessage = encodeURIComponent(message)
-            .replace(/%2A/g, '*')  // Keep asterisks for bold
-            .replace(/%0A/g, '%0D%0A')  // Proper line breaks
-            .replace(/%E2%9D%A4/g, '➤')  // Preserve bullet points
-            .replace(/%F0%9F%93%8D/g, '🗺️');  // Preserve map icon
+            .replace(/%2A/g, '*')
+            .replace(/%0A/g, '%0D%0A')
+            .replace(/%E2%9C%A4/g, '➤')
+            .replace(/%F0%9F%93%8D/g, '🗺️');
         
         window.open(`https://wa.me/919716940448?text=${encodedMessage}`, '_blank');
         return true;
@@ -106,6 +106,15 @@ async function handleOrderWithLocation() {
     const statusEl = document.getElementById('locationStatus');
     const customerName = document.getElementById('customerName').value.trim();
     const customerPhone = document.getElementById('customerPhone').value.trim();
+
+    // ==========================================================
+    // YEH CHECK ADD KIYA GAYA HAI
+    // Agar dukaan band hai to order place nahi hoga
+    // ==========================================================
+    if (!isShopOpen) {
+        statusEl.textContent = 'Shop is closed. Cannot place order.';
+        return;
+    }
     
     if (!customerName || !customerPhone || customerPhone.length !== 10) {
         statusEl.textContent = 'Please enter valid name and 10-digit mobile number';
@@ -120,7 +129,6 @@ async function handleOrderWithLocation() {
     try {
         const position = await getCurrentPosition();
         const { latitude: lat, longitude: lng } = position.coords;
-        
         const distance = getDistanceFromLatLonInKm(storeLocation.lat, storeLocation.lng, lat, lng);
         
         if (distance > 5) {
@@ -131,7 +139,6 @@ async function handleOrderWithLocation() {
         
         statusEl.textContent = 'Getting your address...';
         const address = await getAddressFromCoords(lat, lng);
-        
         document.getElementById('autoAddress').value = address;
         document.getElementById('userLat').value = lat;
         document.getElementById('userLng').value = lng;
@@ -156,7 +163,6 @@ async function handleOrderWithLocation() {
     } catch (error) {
         console.error('Order error:', error);
         let errorMessage = 'Order processing failed';
-        
         if (error.message === 'Geolocation not supported') {
             errorMessage = 'Your browser does not support location services';
         } else if (error.code === error.PERMISSION_DENIED) {
