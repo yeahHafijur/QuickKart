@@ -126,7 +126,7 @@ body.cart-open {
   border-bottom: 1px solid #f0f0f0;
 }
 
-body.category-view + .main-header .categories-scroll {
+body.category-view .main-header .categories-scroll {
     top: 65px;
 }
 
@@ -189,6 +189,10 @@ body.category-view + .main-header .categories-scroll {
 }
 
 /* Product Section */
+main.container {
+    padding-bottom: 80px; /* Nav bar ke liye extra jagah */
+}
+
 .product-section {
   margin-bottom: 24px;
 }
@@ -320,7 +324,7 @@ body.category-view + .main-header .categories-scroll {
   position: fixed;
   top: 0;
   right: -100%;
-  width: 70%;
+  width: 80%;
   max-width: 380px;
   height: 80vh;
   background: var(--white);
@@ -346,7 +350,7 @@ body.category-view + .main-header .categories-scroll {
 #cartContent {
   flex-grow: 1;
   overflow-y: auto;
-  padding-bottom: 300px; /* Increased padding for summary */
+  padding-bottom: 300px;
 }
 
 #cartList {
@@ -412,7 +416,6 @@ body.category-view + .main-header .categories-scroll {
     margin-left: 10px;
 }
 
-/* --- IMPROVED CART SUMMARY STYLES --- */
 .cart-summary {
   padding: 16px;
   border-top: 2px solid #f0f0f0;
@@ -454,26 +457,14 @@ body.category-view + .main-header .categories-scroll {
     color: var(--primary);
 }
 
-.cart-form .input-group {
-    position: relative;
-    margin-bottom: 12px;
-}
-
-.cart-form .input-group i {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--muted);
-}
-
 .cart-form input {
     width: 100%;
-    padding: 12px 12px 12px 40px; /* Add padding for icon */
+    padding: 12px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     font-size: 0.95rem;
     transition: border-color 0.2s ease;
+    margin-bottom: 10px;
 }
 
 .cart-form input:focus {
@@ -513,10 +504,7 @@ body.category-view + .main-header .categories-scroll {
     margin-top: 10px;
     color: var(--muted);
 }
-/* --- END OF IMPROVED STYLES --- */
 
-
-/* Overlay */
 .cart-overlay {
   position: fixed;
   top: 0;
@@ -535,26 +523,7 @@ body.category-view + .main-header .categories-scroll {
   pointer-events: auto;
 }
 
-/* Notification */
-.quickkart-notification {
-  position: fixed;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--primary);
-  color: white;
-  padding: 12px 24px;
-  border-radius: var(--radius);
-  font-size: 0.9rem;
-  box-shadow: var(--shadow);
-  z-index: 1100;
-  opacity: 0;
-  transition: var(--transition);
-  max-width: 90%;
-  text-align: center;
-}
-
-/* Bottom Navigation Bar */
+/* --- Bottom Navigation Bar --- */
 .bottom-nav-bar {
     position: fixed;
     bottom: 0;
@@ -628,7 +597,7 @@ body.category-view + .main-header .categories-scroll {
     border: 2px solid white;
 }
 
-/* Login Modal */
+/* --- Login Modal, Banners, Notifications --- */
 .login-modal {
   display: none;
   position: fixed;
@@ -689,7 +658,6 @@ body.category-view + .main-header .categories-scroll {
   margin-top: 10px;
 }
 
-/* Shop Closed Banner */
 .shop-closed-banner {
   display: none;
   background: #ff4444;
@@ -700,15 +668,16 @@ body.category-view + .main-header .categories-scroll {
   border-radius: 8px;
   font-weight: 600;
   position: sticky;
-  top: 190px;
   z-index: 99;
   animation: pulse 1.5s infinite;
 }
 
-body.shop-closed .shop-closed-banner {
-  display: block;
+@keyframes pulse {
+  0% { background: #ff4444; }
+  50% { background: #e60000; }
+  100% { background: #ff4444; }
 }
-/* Empty Cart Styles */
+
 .empty-cart {
   display: flex;
   flex-direction: column;
@@ -755,85 +724,43 @@ body.shop-closed .shop-closed-banner {
   transform: translateY(-2px);
 }
 
-/* Show/hide empty/full cart states */
-#cartEmpty {
-  display: none;
+#cartEmpty { display: none; }
+#cartFull { display: none; }
+.cart-empty #cartEmpty { display: flex; }
+.cart-has-items #cartFull { display: block; }
+
+.quickkart-notification {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: white;
+  padding: 12px 24px;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  box-shadow: var(--shadow);
+  z-index: 1100;
+  opacity: 0;
+  transition: var(--transition);
+  max-width: 90%;
+  text-align: center;
 }
 
-#cartFull {
-  display: none;
-}
 
-.cart-empty #cartEmpty {
-  display: flex;
-}
-
-.cart-has-items #cartFull {
-  display: block;
-}
-
-/* style.css */
-
-.cart-animation {
-    position: fixed;
-    z-index: 1100;
-    border-radius: 8px;
-    /* DURATION 0.5s SE 0.8s KI GAYI HAI AUR TIMING FUNCTION BADLA GAYA HAI */
-    transition: all 0.8s ease-in-out; 
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    pointer-events: none;
-    pointer-events: none;
- } /* Iske upar click na ho */
-/* style.css ke end mein yeh code add karein */
-
-/* "Shop Closed" hone par item ke 'Add' button ko hide karega */
-body.shop-closed .item-actions {
-    display: none;
-}
-
-/* "Shop Closed" hone par cart ke 'Place Order' button ko disable karega */
-body.shop-closed #placeOrderBtn {
-    background-color: #b0b0b0; /* Grey color */
-    cursor: not-allowed;
-    pointer-events: none; /* Click disable karega */
-}
-
-/* "Shop Closed" banner ki position theek karega jab aap categories se bahar ho */
-body.shop-closed .shop-closed-banner {
-    top: 185px; /* Original header ki height ke hisaab se */
-}
-
-/* "Shop Closed" banner ki position theek karega jab aap category view mein ho */
-body.category-view.shop-closed .shop-closed-banner {
-    top: 65px; /* Category view ke header ki height ke hisaab se */
-}
-
-@keyframes pulse {
-  0% { background: #ff4444; }
-  50% { background: #e60000; }
-  100% { background: #ff4444; }
-}
-/* =================================
-   IMPROVED TOGGLE SWITCH STYLES
-   ================================= */
-
-/* Container jo switch aur text (Open/Closed) ko align karta hai */
+/* --- IMPROVED TOGGLE SWITCH --- */
 .shop-status-container {
   display: flex;
   align-items: center;
-  gap: 12px; /* Switch aur text ke beech mein space */
+  gap: 12px;
 }
 
-/* Text "Open/Closed" ke liye style */
 #shopStatusText {
   font-weight: 600;
   font-size: 0.95rem;
   transition: color 0.4s ease;
 }
 
-/* Switch ka main container */
 .switch {
   position: relative;
   display: inline-block;
@@ -841,14 +768,12 @@ body.category-view.shop-closed .shop-closed-banner {
   height: 34px;
 }
 
-/* Original HTML checkbox ko hide karein */
 .switch input {
   opacity: 0;
   width: 0;
   height: 0;
 }
 
-/* Switch ka background (slider) */
 .slider {
   position: absolute;
   cursor: pointer;
@@ -857,12 +782,10 @@ body.category-view.shop-closed .shop-closed-banner {
   right: 0;
   bottom: 0;
   background-color: #ccc;
-  -webkit-transition: .4s;
   transition: .4s;
-  border-radius: 34px; /* Isse yeh poora gol ho jayega */
+  border-radius: 34px;
 }
 
-/* Switch ka moving circle (knob) */
 .slider:before {
   position: absolute;
   content: "";
@@ -871,35 +794,57 @@ body.category-view.shop-closed .shop-closed-banner {
   left: 4px;
   bottom: 4px;
   background-color: white;
-  -webkit-transition: .4s;
   transition: .4s;
-  border-radius: 50%; /* Isse knob gol ho jayega */
+  border-radius: 50%;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-/* JAB SWITCH ON (CHECKED) HO */
-
-/* Background ka color Green ho jayega */
 input:checked + .slider {
-  background-color: var(--primary); /* Aapke theme ka primary green color */
+  background-color: var(--primary);
 }
 
-/* Knob right side mein move ho jayega */
 input:checked + .slider:before {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
   transform: translateX(26px);
 }
-/* =================================
-   FIX FOR BOTTOM BUTTON CLICKS
-   ================================= */
 
-/* Isse product page ke end mein extra space add hogi */
-main.container {
-    padding-bottom: 80px; /* Nav bar ke liye extra jagah */
+
+/* --- ADD TO CART ANIMATION --- */
+.cart-animation {
+  position: fixed;
+  z-index: 1100;
+  border-radius: 8px;
+  transition: all 0.8s ease-in-out; 
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  pointer-events: none;
 }
 
-/* Jab cart khula ho, to neeche ki navigation bar hide ho jayegi */
+
+/* --- FUNCTIONAL STYLES (SHOP STATUS & LAYOUT FIXES) --- */
+body.shop-closed .item-actions {
+    display: none;
+}
+
+body.shop-closed #placeOrderBtn {
+    background-color: #b0b0b0;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+body.shop-closed .shop-closed-banner {
+    display: block;
+    top: 185px;
+}
+
+body.category-view.shop-closed .shop-closed-banner {
+    top: 65px;
+}
+
 body.cart-open .bottom-nav-bar {
     display: none;
+}
+
+#cartFull.cart-summary {
+    padding-bottom: 20px;
 }
