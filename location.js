@@ -66,30 +66,45 @@ async function getAddressFromCoords(lat, lng) {
     }
 }
 
+// --- UPDATED FUNCTION ---
 function sendWhatsAppOrder(customerName, customerPhone, address, lat, lng, deliveryFee, cartTotal) {
     try {
         const cartItems = cart.map(item => 
-            `➤ ${item.name} (${item.quantity} × ₹${item.price}) = ₹${item.price * item.quantity}`
+            ` ➤ ${item.name} (${item.quantity} × ₹${item.price}) = ₹${item.price * item.quantity}`
         ).join('\n');
         
-        const mapsLink = `http://maps.google.com/?q=${lat},${lng}`;
+        // Corrected and cleaner Google Maps link
+        const mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
         
-        const message = `📦 *QuickKart Order*\n\n` +
-            `👤 *Customer:* ${customerName}\n` +
-            `📞 *Phone:* ${customerPhone}\n\n` +
-            `📍 *Delivery Address:*\n${address}\n` +
-            `🗺️ *Location:* ${mapsLink}\n\n` +
-            `🛒 *Order Items:*\n${cartItems}\n\n` +
-            `💰 *Subtotal:* ₹${cartTotal - deliveryFee}\n` +
-            `🚚 *Delivery Fee:* ₹${deliveryFee}\n` +
-            `💵 *Total:* ₹${cartTotal}\n\n` +
-            `📝 *Special Instructions:* `;
+        // New, well-formatted message template
+        const message = `✨ *New QuickKart Order!* ✨
+====================
+
+*CUSTOMER DETAILS*
+👤 *Name:* ${customerName}
+📞 *Phone:* +91${customerPhone}
+📍 *Address:*
+${address}
+
+🗺️ *Open Location on Map:*
+${mapsLink}
+
+----------------------------------------
+
+*ORDER SUMMARY*
+🛒 *Items:*
+${cartItems}
+
+----------------------------------------
+
+*BILL DETAILS*
+  Subtotal: ₹${cartTotal - deliveryFee}
+  Delivery Fee: ₹${deliveryFee}
+  *Total Amount: ₹${cartTotal}*
+
+`;
         
-        const encodedMessage = encodeURIComponent(message)
-            .replace(/%2A/g, '*')
-            .replace(/%0A/g, '%0D%0A')
-            .replace(/%E2%9C%A4/g, '➤')
-            .replace(/%F0%9F%93%8D/g, '🗺️');
+        const encodedMessage = encodeURIComponent(message);
         
         window.open(`https://wa.me/919716940448?text=${encodedMessage}`, '_blank');
         return true;
@@ -99,6 +114,7 @@ function sendWhatsAppOrder(customerName, customerPhone, address, lat, lng, deliv
     }
 }
 
+
 async function handleOrderWithLocation() {
     const btn = document.getElementById('placeOrderBtn');
     const spinner = document.getElementById('locationSpinner');
@@ -107,10 +123,6 @@ async function handleOrderWithLocation() {
     const customerName = document.getElementById('customerName').value.trim();
     const customerPhone = document.getElementById('customerPhone').value.trim();
 
-    // ==========================================================
-    // YEH CHECK ADD KIYA GAYA HAI
-    // Agar dukaan band hai to order place nahi hoga
-    // ==========================================================
     if (!isShopOpen) {
         statusEl.textContent = 'Shop is closed. Cannot place order.';
         return;
