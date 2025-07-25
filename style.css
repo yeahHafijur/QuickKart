@@ -14,6 +14,8 @@
   --shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   --header-height: 60px;
   --footer-height: 60px;
+  --error: #ff4444;
+  --info: #007bff;
 }
 
 * {
@@ -27,7 +29,6 @@ body {
   background: var(--bg);
   color: var(--text);
   padding-top: 190px;
-  /* YAHAN SE PADDING-BOTTOM HATA DIYA GAYA HAI */
   transition: padding-top 0.3s ease;
 }
 
@@ -189,7 +190,6 @@ body.category-view .main-header .categories-scroll {
 
 /* Product Section */
 main.container {
-    /* PADDING THODA AUR BADHA DIYA GAYA HAI FOR SAFETY */
     padding-bottom: 100px; 
 }
 
@@ -319,6 +319,58 @@ main.container {
     cursor: pointer;
 }
 
+/* --- SKELETON LOADER --- */
+.skeleton-item {
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.skeleton {
+    background: #e0e0e0;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+}
+.skeleton.sk-img {
+    width: 100%;
+    height: 120px;
+    border-radius: 0;
+}
+.skeleton.sk-text {
+    height: 16px;
+    margin-bottom: 8px;
+}
+.skeleton.sk-price {
+    height: 20px;
+    width: 50%;
+    margin-bottom: 10px;
+}
+.skeleton.sk-button {
+    height: 30px;
+    width: 60px;
+    border-radius: 20px;
+}
+.skeleton-details {
+    padding: 10px;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+.skeleton::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+    animation: shimmer 1.5s infinite linear;
+}
+
+
 /* Cart Styles */
 .quickkart-cart {
   position: fixed;
@@ -326,7 +378,7 @@ main.container {
   right: -100%;
   width: 80%;
   max-width: 380px;
-  height: 80vh;
+  height: 100vh; /* Changed to 100vh */
   background: var(--white);
   z-index: 1001;
   box-shadow: -6px 0 12px rgba(0, 0, 0, 0.1);
@@ -345,12 +397,38 @@ main.container {
   align-items: center;
   padding: 16px;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* NEW: Styles for cart title and clear button */
+.cart-title-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.clear-cart-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.clear-cart-btn:hover {
+    color: var(--error);
+    background-color: #fce8e8;
 }
 
 #cartContent {
   flex-grow: 1;
   overflow-y: auto;
-  padding-bottom: 300px;
+  position: relative;
 }
 
 #cartList {
@@ -410,7 +488,7 @@ main.container {
 .cart-item .remove-btn {
     background: none;
     border: none;
-    color: #ff4444;
+    color: var(--error);
     cursor: pointer;
     font-size: 1.1rem;
     margin-left: 10px;
@@ -420,11 +498,7 @@ main.container {
   padding: 16px;
   border-top: 2px solid #f0f0f0;
   background: #fafafa;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 10;
+  flex-shrink: 0;
 }
 
 .bill-details {
@@ -746,16 +820,19 @@ main.container {
   transition: all 0.4s ease;
   max-width: 90%;
   text-align: center;
-  /* YEH LINE SABSE ZAROORI HAI */
-  pointer-events: none; /* Jab invisible ho to click aar-paar ho jayega */
+  pointer-events: none;
 }
 
-/* Jab notification dikhega tab click kaam karega */
 .quickkart-notification.show {
   opacity: 1;
-  bottom: 90px; /* Thoda upar aane ka effect */
-  pointer-events: auto; /* Click ko wapas enable karega */
+  bottom: 90px;
+  pointer-events: auto;
 }
+
+/* NEW: Notification types */
+.quickkart-notification.success { background-color: var(--primary); }
+.quickkart-notification.error { background-color: var(--error); }
+.quickkart-notification.info { background-color: var(--info); }
 
 
 /* --- IMPROVED TOGGLE SWITCH --- */

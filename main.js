@@ -105,7 +105,7 @@ function showProductView(category, focusSearch = false) {
 
     window.scrollTo(0, 0);
 }
-// TYPO YAHAN THEEK KIYA GAYA HAI
+
 window.showProductView = showProductView;
 
 
@@ -149,15 +149,25 @@ function setupEventListeners() {
         clearTimeout(searchTimer);
         searchTimer = setTimeout(() => {
             const searchTerm = elements.searchInput.value.trim().toLowerCase();
-            const activeBtn = document.querySelector('.category-btn.active');
-            const category = activeBtn ? activeBtn.getAttribute('data-category') : 'all';
-            initStore(category, searchTerm, elements.storeDiv);
+            // --- CHANGE: ALWAYS SEARCH IN 'all' CATEGORIES ---
+            initStore('all', searchTerm, elements.storeDiv);
+            
+            // Visually deselect category buttons to indicate a global search
+            if (searchTerm) {
+                elements.categoryBtns.forEach(b => b.classList.remove('active'));
+                elements.sectionTitle.textContent = `Search results for "${searchTerm}"`;
+            } else {
+                // If search is cleared, go back to 'All Products' view
+                showProductView('all');
+            }
         }, 300);
     });
 
     elements.categoryBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const category = btn.getAttribute('data-category');
+            // Clear search input when a category is clicked
+            elements.searchInput.value = '';
             showProductView(category);
         });
     });
@@ -170,6 +180,7 @@ function setupEventListeners() {
 
     elements.navAllItems.addEventListener('click', () => {
         closeCart();
+        elements.searchInput.value = '';
         showProductView('all');
     });
     

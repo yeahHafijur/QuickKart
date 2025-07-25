@@ -4,9 +4,29 @@ import { showNotification, debugCart } from './utils.js';
 let elements;
 let navElements = {}; 
 
+function setupClearCart() {
+    const clearCartBtn = document.getElementById('clearCartBtn');
+    if (clearCartBtn) {
+        clearCartBtn.addEventListener('click', () => {
+            if (cart.length === 0) {
+                showNotification('Cart is already empty', 'info');
+                return;
+            }
+            
+            const confirmed = confirm('Are you sure you want to remove all items from the cart?');
+            if (confirmed) {
+                cart.length = 0; // Clear the cart array
+                showNotification('Cart has been cleared', 'info');
+                updateCartUI(); // Update the UI
+            }
+        });
+    }
+}
+
 export function setupCartElements(el, navEl = {}) {
     elements = el;
     navElements = navEl;
+    setupClearCart(); // Initialize the clear cart button
 }
 
 // Function to update an item's quantity from within the cart
@@ -43,13 +63,18 @@ export function updateCartUI() {
         elements.cartList.innerHTML = '';
         let total = 0;
         let totalItems = 0;
+        
+        // Toggle clear cart button visibility
+        const clearCartBtn = document.getElementById('clearCartBtn');
 
         if (cart.length === 0) {
             elements.cartEmpty.style.display = 'flex';
             elements.cartFull.style.display = 'none';
+            if(clearCartBtn) clearCartBtn.style.display = 'none';
         } else {
             elements.cartEmpty.style.display = 'none';
             elements.cartFull.style.display = 'block';
+            if(clearCartBtn) clearCartBtn.style.display = 'flex';
 
             cart.forEach((item, index) => {
                 const itemTotal = item.price * item.quantity;
@@ -57,7 +82,7 @@ export function updateCartUI() {
                 totalItems += item.quantity;
 
                 const li = document.createElement('li');
-                li.className = 'cart-item'; // Add class for styling
+                li.className = 'cart-item';
                 
                 const imageSrc = item.image || 'images/placeholder.png';
 
@@ -75,10 +100,11 @@ export function updateCartUI() {
                             <div class="cart-item-total">₹${itemTotal}</div>
                         </div>
                     </div>
-                    <button class="remove-btn">🗑️</button>
+                    <button class="remove-btn">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
                 `;
                 
-                // Event listeners for new controls
                 li.querySelector('.qty-minus').addEventListener('click', () => updateCartItemQuantity(index, -1));
                 li.querySelector('.qty-plus').addEventListener('click', () => updateCartItemQuantity(index, 1));
                 li.querySelector('.remove-btn').addEventListener('click', () => removeFromCart(index));
@@ -87,15 +113,9 @@ export function updateCartUI() {
             });
         }
 
-        // Yeh "Item Total" ko update karta hai
         elements.itemTotal.textContent = `₹${total}`;
-        
-        // ==========================================================
-        // YEH LINE ADD KI GAYI HAI FINAL TOTAL KO UPDATE KARNE KE LIYE
-        // ==========================================================
         elements.cartTotal.textContent = `₹${total}`;
         
-        // Yeh neeche navigation bar ke cart count ko update karta hai
         if (navElements.navCartCount) {
             navElements.navCartCount.textContent = totalItems;
             navElements.navCartCount.style.display = totalItems > 0 ? 'flex' : 'none';
@@ -111,7 +131,8 @@ export function updateCartUI() {
 export function removeFromCart(index) {
     try {
         const removedItem = cart.splice(index, 1)[0];
-        showNotification(`${removedItem.name} cart se hata diya gaya`);
+        // --- CHANGE: Using 'info' type for notification ---
+        showNotification(`${removedItem.name} removed from cart`, 'info');
         updateCartUI();
     } catch (error) {
         console.error('Remove item failed:', error);

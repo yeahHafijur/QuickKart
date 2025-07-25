@@ -1,9 +1,6 @@
-// store.js
-
-// 'isShopOpen' ko firebase-config se import karein
 import { isShopOpen } from './firebase-config.js'; 
 import cart from './cart-data.js';
-import { showNotification, debugCart } from './utils.js';
+import { showNotification } from './utils.js';
 
 const items = [
     //{ name: 'Aata Ashirwaad (5kg)', price: 250, category:'Atta Rice & Daal', image: 'images/ashirwaad.png', rating: 4.5, badge: 'Best Seller' },
@@ -99,9 +96,6 @@ const items = [
     { name: 'Nihar Oil(40mL)', price: 10,category:'Personal Care', image: 'images/NiharOil.png' },
     { name: 'Brahmol oil(45mL)', price: 20,category:'Personal Care', image: 'images/brahmolOil.png' },
     { name: 'Pears Saboon(1p)', price: 25,category:'Personal Care', image: 'images/pearsSoap.png' },
-    // ==========================================================
-    // YAHAN PAR EK EXTRA COMMA (,,) THA, JISE HATA DIYA GAYA HAI
-    // ==========================================================
     { name: 'Lux Saboon(1p)', price: 40,category:'Personal Care', image: 'images/lux.png' },
     { name: 'Detol Saboon(1p)', price: 10,category:'Personal Care', image: 'images/detolSoap.png' },
     { name: 'Dabur Colgate(1p)', price: 10,category:'Personal Care', image: 'images/dabur.png' },
@@ -214,12 +208,8 @@ function animateToCart(itemElement) {
 
 
 function addToCart(itemElement) {
-    // ==========================================================
-    // YEH CHECK ADD KIYA GAYA HAI
-    // Agar dukaan band hai to function yahin ruk jayega
-    // ==========================================================
     if (!isShopOpen) {
-        showNotification('Shop is currently closed');
+        showNotification('Shop is currently closed', 'error');
         return;
     }
 
@@ -239,32 +229,33 @@ function addToCart(itemElement) {
         if (isNaN(price)) throw new Error(`Invalid price: ${priceText}`);
         if (isNaN(quantity)) throw new Error('Invalid quantity');
 
-        let notificationMessage = `${quantity} ${name} cart mein daal diya gaya hai`;
-        let isNewItem = true;
+        let notificationMessage = '';
+        let notificationType = 'success';
         const existingItem = cart.find(item => item.name === name);
+
         if (existingItem) {
             const oldQuantity = existingItem.quantity;
             existingItem.quantity = Math.min(oldQuantity + quantity, 100);
-            notificationMessage = `${name} ki quantity ${oldQuantity} se ${existingItem.quantity} kar di gayi hai`;
-            isNewItem = false;
+            notificationMessage = `${name} quantity updated to ${existingItem.quantity}`;
+            notificationType = 'info'; // --- CHANGE: Using 'info' type
         } else {
             cart.push({ name, price, quantity: Math.min(quantity, 100), image });
+            notificationMessage = `${quantity} × ${name} added to cart`;
+            notificationType = 'success'; // --- CHANGE: Using 'success' type
         }
 
         animateToCart(itemElement);
         itemElement.querySelector('.quantity-control span').textContent = '1';
-        showNotification(notificationMessage, isNewItem ? 'success' : 'info');
+        showNotification(notificationMessage, notificationType);
         
         if (window.updateCartUI) {
             window.updateCartUI();
         }
     } catch (error) {
         console.error('Add to cart failed:', error);
-        showNotification('Item add nahi ho paya. Phir se try karein.', 'error');
+        showNotification('Failed to add item. Please try again.', 'error');
     }
 }
-
-// Baaki ka poora code (updateQuantity, initStore, renderCategoryGrid, export) waisa hi rahega...
 
 function updateQuantity(itemElement, change) {
     const quantitySpan = itemElement.querySelector('.quantity-control span');
@@ -273,75 +264,113 @@ function updateQuantity(itemElement, change) {
     quantitySpan.textContent = quantity;
 }
 
+// --- NEW ---
+// Function to create a single skeleton loader item
+function createSkeletonItem() {
+    const div = document.createElement('div');
+    div.className = 'skeleton-item';
+    div.innerHTML = `
+        <div class="skeleton sk-img"></div>
+        <div class="skeleton-details">
+            <div class="skeleton sk-text"></div>
+            <div class="skeleton sk-text" style="width: 70%;"></div>
+            <div class="skeleton sk-price"></div>
+            <div class="skeleton sk-button"></div>
+        </div>
+    `;
+    return div;
+}
+
+// --- NEW ---
+// Function to show skeleton loaders
+function showSkeletons(storeDiv, count = 8) {
+    storeDiv.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+        storeDiv.appendChild(createSkeletonItem());
+    }
+}
+
+
 function initStore(filterCategory = 'all', searchTerm = '', storeDiv = document.getElementById('storeItems')) {
     if (!storeDiv) {
         console.error('Store container not found');
         return;
     }
 
-    storeDiv.innerHTML = '';
+    // --- CHANGE: Show skeletons first ---
+    showSkeletons(storeDiv);
 
-    const filteredItems = items.filter(item => {
-        const matchesCategory = filterCategory === 'all' || 
-                              (item.category && item.category.toLowerCase() === filterCategory.toLowerCase());
-        const matchesSearch = searchTerm === '' ||
-                            item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (item.category && item.category.toLowerCase().includes(searchTerm.toLowerCase()));
-        return matchesCategory && matchesSearch;
-    });
+    // Use a short timeout to allow skeletons to render before main logic
+    setTimeout(() => {
+        storeDiv.innerHTML = ''; // Clear skeletons
 
-    if (filteredItems.length === 0) {
-        storeDiv.innerHTML = '<p style="padding:20px; text-align:center;">Koi item nahi mila.</p>';
-        return;
-    }
+        const filteredItems = items.filter(item => {
+            const matchesCategory = filterCategory === 'all' || 
+                                  (item.category && item.category.toLowerCase() === filterCategory.toLowerCase());
+            const matchesSearch = searchTerm === '' ||
+                                item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                (item.category && item.category.toLowerCase().includes(searchTerm.toLowerCase()));
+            return matchesCategory && matchesSearch;
+        });
 
-    filteredItems.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'item';
+        if (filteredItems.length === 0) {
+            storeDiv.innerHTML = `
+                <div class="empty-cart" style="grid-column: 1 / -1;">
+                    <img src="images/empty-search.png" alt="" style="width: 300px;">
+                    <h3>No items found</h3>
+                    <p>Try a different search term or category.</p>
+                </div>`;
+            return;
+        }
 
-        const badgeHTML = item.badge ? `<span class="item-badge">${item.badge}</span>` : '';
-        const imageHTML = item.image
-            ? `<img src="${item.image}" alt="${item.name}" class="item-img" onerror="this.onerror=null;this.src='images/placeholder.png'">`
-            : '<div class="item-img-placeholder"><i class="fas fa-box-open"></i></div>';
+        filteredItems.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'item';
 
-        div.innerHTML = `
-            <div class="item-image-container">
-                ${badgeHTML}
-                ${imageHTML}
-            </div>
-            <div class="item-details">
-                <div>
-                  <h3 class="item-name">${item.name}</h3>
-                  <div class="item-price">₹${item.price}</div>
+            const badgeHTML = item.badge ? `<span class="item-badge">${item.badge}</span>` : '';
+            const imageHTML = item.image
+                ? `<img src="${item.image}" alt="${item.name}" class="item-img" onerror="this.onerror=null;this.src='images/placeholder.png'">`
+                : '<div class="item-img-placeholder"><i class="fas fa-box-open"></i></div>';
+
+            div.innerHTML = `
+                <div class="item-image-container">
+                    ${badgeHTML}
+                    ${imageHTML}
                 </div>
-                <div class="item-actions">
-                    <div class="quantity-control">
-                        <button class="qty-minus">-</button>
-                        <span>1</span>
-                        <button class="qty-plus">+</button>
+                <div class="item-details">
+                    <div>
+                      <h3 class="item-name">${item.name}</h3>
+                      <div class="item-price">₹${item.price}</div>
                     </div>
-                    <button class="add-to-cart-btn">Add</button>
+                    <div class="item-actions">
+                        <div class="quantity-control">
+                            <button class="qty-minus">-</button>
+                            <span>1</span>
+                            <button class="qty-plus">+</button>
+                        </div>
+                        <button class="add-to-cart-btn">Add</button>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
 
-        div.querySelector('.qty-minus').addEventListener('click', (e) => {
-            e.stopPropagation();
-            updateQuantity(div, -1);
+            div.querySelector('.qty-minus').addEventListener('click', (e) => {
+                e.stopPropagation();
+                updateQuantity(div, -1);
+            });
+
+            div.querySelector('.qty-plus').addEventListener('click', (e) => {
+                e.stopPropagation();
+                updateQuantity(div, 1);
+            });
+
+            div.querySelector('.add-to-cart-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                addToCart(div);
+            });
+
+            storeDiv.appendChild(div);
         });
-
-        div.querySelector('.qty-plus').addEventListener('click', (e) => {
-            e.stopPropagation();
-            updateQuantity(div, 1);
-        });
-
-        div.querySelector('.add-to-cart-btn').addEventListener('click', (e) => {
-            e.stopPropagation();
-            addToCart(div);
-        });
-
-        storeDiv.appendChild(div);
-    });
+    }, 150); // Small delay for skeleton effect
 }
 
 export function renderCategoryGrid(storeDiv) {
@@ -349,42 +378,48 @@ export function renderCategoryGrid(storeDiv) {
         console.error('Store container not found');
         return;
     }
-    storeDiv.innerHTML = '';
+    
+    // --- CHANGE: Show skeletons first ---
+    showSkeletons(storeDiv);
+    
+    setTimeout(() => {
+        storeDiv.innerHTML = ''; // Clear skeletons
 
-    const categoryButtons = document.querySelectorAll('.categories .category-btn');
-    const uniqueCategories = Array.from(categoryButtons)
-        .map(btn => {
-            const categoryName = btn.dataset.category;
-            if (categoryName === 'all') return null;
-            const image = btn.querySelector('.category-image')?.src || 'images/placeholder.png';
-            return { name: categoryName, image };
-        })
-        .filter(Boolean);
+        const categoryButtons = document.querySelectorAll('.categories .category-btn');
+        const uniqueCategories = Array.from(categoryButtons)
+            .map(btn => {
+                const categoryName = btn.dataset.category;
+                if (categoryName === 'all') return null;
+                const image = btn.querySelector('.category-image')?.src || 'images/placeholder.png';
+                return { name: categoryName, image };
+            })
+            .filter(Boolean);
 
-    uniqueCategories.forEach(category => {
-        if (!category.name) return;
+        uniqueCategories.forEach(category => {
+            if (!category.name) return;
 
-        const div = document.createElement('div');
-        div.className = 'item category-grid-item'; 
-        div.dataset.category = category.name;
+            const div = document.createElement('div');
+            div.className = 'item category-grid-item'; 
+            div.dataset.category = category.name;
 
-        const imageHTML = `<img src="${category.image}" alt="${category.name}" class="item-img" onerror="this.onerror=null;this.src='images/placeholder.png'">`;
+            const imageHTML = `<img src="${category.image}" alt="${category.name}" class="item-img" onerror="this.onerror=null;this.src='images/placeholder.png'">`;
 
-        div.innerHTML = `
-            <div class="item-image-container">
-                ${imageHTML}
-            </div>
-            <div class="item-details">
-                <h3 class="item-name">${category.name}</h3>
-            </div>
-        `;
+            div.innerHTML = `
+                <div class="item-image-container">
+                    ${imageHTML}
+                </div>
+                <div class="item-details">
+                    <h3 class="item-name">${category.name}</h3>
+                </div>
+            `;
 
-        div.addEventListener('click', () => {
-            window.showProductView(category.name);
+            div.addEventListener('click', () => {
+                window.showProductView(category.name);
+            });
+
+            storeDiv.appendChild(div);
         });
-
-        storeDiv.appendChild(div);
-    });
+    }, 150); // Small delay for skeleton effect
 }
 
 
