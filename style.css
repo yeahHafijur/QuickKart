@@ -378,7 +378,7 @@ main.container {
   right: -100%;
   width: 80%;
   max-width: 380px;
-  height: 100vh; /* Changed to 100vh */
+  height: 80vh; /* Changed to 100vh */
   background: var(--white);
   z-index: 1001;
   box-shadow: -6px 0 12px rgba(0, 0, 0, 0.1);
