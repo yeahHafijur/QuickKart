@@ -2,6 +2,8 @@
 
 import cart from './cart-data.js';
 import { isShopOpen } from './firebase-config.js';
+// showNotification ko import karna zaroori hai
+import { showNotification } from './utils.js';
 
 const storeLocation = { lat: 26.6468571, lng: 92.0754806 };
 
@@ -113,6 +115,13 @@ async function handleOrderWithLocation() {
     const customerName = document.getElementById('customerName').value.trim();
     const customerPhone = document.getElementById('customerPhone').value.trim();
 
+    // --- NEW CHECK ADDED HERE ---
+    if (cart.length === 0) {
+        showNotification('Your cart is empty! Please add items to order.', 'error');
+        return; // Order ko yahin rok do
+    }
+    // --- END OF NEW CHECK ---
+
     if (!isShopOpen) {
         statusEl.textContent = 'Shop is closed. Cannot place order.';
         return;
@@ -145,23 +154,14 @@ async function handleOrderWithLocation() {
         document.getElementById('userLat').value = lat;
         document.getElementById('userLng').value = lng;
         
-        // --- DELIVERY CHARGE LOGIC UPDATED ---
-        // OLD LOGIC:
-        // const deliveryFee = distance <= 1 ? 0 : Math.round(distance * 5);
-        // document.getElementById('deliveryFee').textContent = deliveryFee > 0 ? `₹${deliveryFee}` : 'FREE';
-
-        // NEW LOGIC:
         let deliveryFee = 0;
         if (distance > 0 && distance <= 1) {
-            // Agar distance 1km tak hai, toh minimum ₹10 charge
             deliveryFee = 10;
         } else if (distance > 1) {
-            // Agar 1km se zyada hai, toh ₹10 base + ₹5 per extra km
             const extraDistance = distance - 1;
             deliveryFee = Math.round(10 + (extraDistance * 5));
         }
         document.getElementById('deliveryFee').textContent = `₹${deliveryFee}`;
-        // --- END OF UPDATE ---
         
         const itemTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
         const total = itemTotal + deliveryFee;
@@ -172,6 +172,7 @@ async function handleOrderWithLocation() {
         if (success) {
             cart.length = 0;
             localStorage.setItem('quickKartCart', JSON.stringify(cart));
+            // updateCartUI ko typeof se check karna zaroori hai
             if (typeof updateCartUI === 'function') updateCartUI();
             statusEl.textContent = 'Order sent to WhatsApp!';
         } else {
