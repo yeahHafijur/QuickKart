@@ -3,7 +3,6 @@
 import { isShopOpen, db } from './firebase-config.js'; 
 import cart from './cart-data.js';
 import { showNotification } from './utils.js';
-// NEW: updateCartUI function ko cart.js se import karein
 import { updateCartUI } from './cart.js';
 
 function animateToCart(itemElement) {
@@ -55,10 +54,7 @@ function addToCart(itemElement) {
         animateToCart(itemElement);
         itemElement.querySelector('.quantity-control span').textContent = '1';
         showNotification(notificationMessage, notificationType);
-        
-        // window.updateCartUI() ki jagah direct function call karein
         updateCartUI();
-
     } catch (error) {
         console.error('Add to cart failed:', error);
         showNotification('Failed to add item. Please try again.', 'error');
@@ -92,27 +88,58 @@ async function initStore(filterCategory = 'all', searchTerm = '', storeDiv) {
     try {
         const snapshot = await db.ref('products').once('value');
         const allItemsObject = snapshot.val();
-        const items = Object.values(allItemsObject || {});
+        const items = allItemsObject ? Object.entries(allItemsObject).map(([key, value]) => ({...value, key})) : [];
         setTimeout(() => {
             storeDiv.innerHTML = '';
             const filteredItems = items.filter(item => {
                 const searchStr = searchTerm.toLowerCase();
                 const matchesCategory = filterCategory === 'all' || (item.category && item.category.toLowerCase() === filterCategory.toLowerCase());
-                const matchesSearch = searchTerm === '' || item.name.toLowerCase().includes(searchStr) || (item.category && item.category.toLowerCase().includes(searchStr));
+                const matchesSearch = searchTerm === '' || (item.name && item.name.toLowerCase().includes(searchStr)) || (item.category && item.category.toLowerCase().includes(searchStr));
                 return matchesCategory && matchesSearch;
             });
+
             if (filteredItems.length === 0) {
                 storeDiv.innerHTML = `<div class="empty-cart" style="grid-column: 1 / -1;"><img src="images/empty-search.png" alt="No items found" style="width: 150px;"><h3>No items found</h3><p>Try a different search term or category.</p></div>`;
                 return;
             }
+
             filteredItems.forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'item';
+                const isInStock = item.inStock !== false;
+                div.className = `item ${isInStock ? '' : 'item-out-of-stock'}`;
                 div.dataset.item = JSON.stringify(item);
-                div.innerHTML = `<div class="item-image-container"><img src="${item.image}" alt="${item.name}" class="item-img" onerror="this.onerror=null;this.src='images/placeholder.png'"></div><div class="item-details"><div><h3 class="item-name">${item.name}</h3><div class="item-price">₹${item.price}</div></div><div class="item-actions"><div class="quantity-control"><button class="qty-minus">-</button><span>1</span><button class="qty-plus">+</button></div><button class="add-to-cart-btn">Add</button></div></div>`;
-                div.querySelector('.qty-minus').addEventListener('click', (e) => { e.stopPropagation(); updateQuantity(div, -1); });
-                div.querySelector('.qty-plus').addEventListener('click', (e) => { e.stopPropagation(); updateQuantity(div, 1); });
-                div.querySelector('.add-to-cart-btn').addEventListener('click', (e) => { e.stopPropagation(); addToCart(div); });
+
+                const actionHtml = isInStock ? `
+                    <div class="quantity-control">
+                        <button class="qty-minus">-</button>
+                        <span>1</span>
+                        <button class="qty-plus">+</button>
+                    </div>
+                    <button class="add-to-cart-btn">Add</button>
+                ` : `
+                    <div class="out-of-stock-label">Out of Stock</div>
+                `;
+
+                div.innerHTML = `
+                    <div class="item-image-container">
+                        <img src="${item.image}" alt="${item.name}" class="item-img" onerror="this.onerror=null;this.src='images/placeholder.png'">
+                    </div>
+                    <div class="item-details">
+                        <div>
+                          <h3 class="item-name">${item.name}</h3>
+                          <div class="item-price">₹${item.price}</div>
+                        </div>
+                        <div class="item-actions">
+                            ${actionHtml}
+                        </div>
+                    </div>
+                `;
+
+                if (isInStock) {
+                    div.querySelector('.qty-minus').addEventListener('click', (e) => { e.stopPropagation(); updateQuantity(div, -1); });
+                    div.querySelector('.qty-plus').addEventListener('click', (e) => { e.stopPropagation(); updateQuantity(div, 1); });
+                    div.querySelector('.add-to-cart-btn').addEventListener('click', (e) => { e.stopPropagation(); addToCart(div); });
+                }
                 storeDiv.appendChild(div);
             });
         }, 150);

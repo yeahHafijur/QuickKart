@@ -9,6 +9,7 @@ import { showNotification } from './utils.js';
 // --- MAIN APP INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
     
+    // Step 1: Saare zaroori HTML elements ko ek hi baar mein pakad lo
     const elements = {
         body: document.body,
         storeDiv: document.getElementById('storeItems'),
@@ -43,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
         navCartCount: document.getElementById('navCartCount'),
     };
     
+    // Function: Product view dikhane ke liye
     const showProductView = (category, focusSearch = false) => {
         elements.body.classList.remove('category-view');
         elements.searchSection.classList.remove('hidden');
@@ -50,18 +52,24 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.logoBox.innerHTML = `<i class="fas fa-arrow-left"></i> Back`;
         elements.logoBox.style.cursor = 'pointer';
         elements.sectionTitle.textContent = category === 'all' ? 'All Products' : category;
+        
         initStore(category, '', elements.storeDiv);
+
         elements.categoryBtns.forEach(b => b.classList.toggle('active', b.dataset.category === category));
         if (category !== 'all') {
             const activeBtn = document.querySelector(`.category-btn.active`);
             activeBtn?.scrollIntoView({ behavior: 'smooth', inline: 'center' });
         }
+        
         if (focusSearch) elements.searchInput.focus();
+        
         const activeNav = focusSearch ? elements.navSearch : (category === 'all' ? elements.navAllItems : elements.navHome);
         updateActiveNav(activeNav);
+        
         window.scrollTo(0, 0);
     };
 
+    // Function: Category view dikhane ke liye
     const showCategoryView = () => {
         elements.body.classList.add('category-view');
         elements.searchSection.classList.add('hidden');
@@ -69,11 +77,13 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.logoBox.innerHTML = `<span class="logo-text">Quick<span>Kart</span></span>`;
         elements.logoBox.style.cursor = 'default';
         elements.sectionTitle.textContent = 'Shop by Category';
+        // Pass showProductView function as a callback
         renderCategoryGrid(elements.storeDiv, showProductView);
         updateActiveNav(elements.navHome);
         window.scrollTo(0, 0);
     };
     
+    // Function: Active navigation button ko update karna
     const updateActiveNav = (activeButton) => {
         [elements.navHome, elements.navAllItems, elements.navSearch, elements.navCart].forEach(btn => {
             btn.classList.remove('active');
@@ -81,6 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activeButton) activeButton.classList.add('active');
     };
     
+    // Step 2: Saare event listeners ko ek jagah set karo
     function setupAllEventListeners() {
         const handleCloseCart = () => {
             closeCart();
@@ -127,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Initialize the App
+    // Step 3: App ko initialize karo
     setupShopStatus(elements); 
     setupAllEventListeners();
     setupCartElements(elements, { navCartCount: elements.navCartCount });
