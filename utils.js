@@ -17,7 +17,9 @@ export function showNotification(msg, type = 'success') {
     }
 }
 
-// New debug function
-export function debugCart() {
-    console.log('Current Cart:', JSON.parse(JSON.stringify(cart)));
+// CORRECTED: 'cart' ko as a parameter receive karega
+export function debugCart(cart) {
+    if (cart) {
+        console.log('Current Cart:', JSON.parse(JSON.stringify(cart)));
+    }
 }
