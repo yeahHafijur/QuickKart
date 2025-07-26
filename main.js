@@ -163,4 +163,25 @@ document.addEventListener('DOMContentLoaded', () => {
     initLocation();
     showCategoryView(); 
     updateCartUI(); 
+    
+    // ... aapka saara purana code yahan hai ...
+    setupShopStatus(elements, closeCart); 
+    setupAllEventListeners();
+    setupCartElements(elements, { navCartCount: elements.navCartCount });
+    initLocation();
+    showCategoryView(); 
+    updateCartUI(); 
+
+    // === YEH CODE ADD KAREIN START ===
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('ServiceWorker Registered with scope:', registration.scope);
+                })
+                .catch(err => {
+                    console.log('ServiceWorker Registration Failed:', err);
+                });
+        });
+    }
 });
