@@ -1,6 +1,8 @@
-// yeh poora code firebase-config.js mein daal dein
+// firebase-config.js (REPLACE THIS ENTIRE FILE)
 
-// Firebase Initialization
+import { showNotification } from './utils.js';
+
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBieX9ymlSZH_nGc17YukhmrIvNOpBzF_M",
   authDomain: "quickkart-shop-status.firebaseapp.com",
@@ -11,121 +13,85 @@ const firebaseConfig = {
   appId: "1:603872368115:web:3ed732f3c7afe934ee2e86"
 };
 
+// Firebase services ko initialize karna
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
+const storage = firebase.storage();
 const shopStatusRef = db.ref('shopStatus');
 
 let isShopOpen = true;
 
-// NAYA CODE: Login Modal ke elements ko access karna
-const loginModal = document.getElementById('loginModal');
-const loginForm = document.getElementById('loginForm');
-const closeLoginBtn = document.getElementById('closeLogin');
-const loginError = document.getElementById('loginError');
-
+// Shop status ka logic
 function setupShopStatus(elements) {
+    const { shopStatusToggle, loginModal, loginForm, closeLoginBtn, loginError, logoutBtn, adminPanelBtn } = elements;
+
     shopStatusRef.on('value', (snapshot) => {
         const statusData = snapshot.val();
         if (statusData) {
             isShopOpen = statusData.isOpen;
-            elements.shopStatusToggle.checked = isShopOpen;
+            shopStatusToggle.checked = isShopOpen;
             updateShopStatus(isShopOpen, elements);
         }
     });
 
-    // PURANA PROMPT WALA CODE HATA KAR YEH NAYA LOGIC DAALA GAYA HAI
-    elements.shopStatusToggle.addEventListener('change', async function(e) {
-        // Toggle ko foran change hone se rokein
+    shopStatusToggle.addEventListener('change', async function(e) {
         e.preventDefault();
-        
-        const currentUser = auth.currentUser;
-        
-        // Agar user (owner) logged in hai, to status change karne dein
-        if (currentUser) {
+        if (auth.currentUser) {
             try {
-                const newStatus = this.checked;
-                await shopStatusRef.set({
-                    isOpen: newStatus,
-                    lastUpdated: firebase.database.ServerValue.TIMESTAMP
-                });
-                showNotification(`Shop is now ${newStatus ? 'OPEN' : 'CLOSED'}`);
+                await shopStatusRef.set({ isOpen: this.checked });
+                showNotification(`Shop is now ${this.checked ? 'OPEN' : 'CLOSED'}`);
             } catch (error) {
-                console.error("Status update failed:", error);
                 showNotification("Failed to update status", 'error');
             }
         } else {
-            // Agar logged in nahi hai, to login form dikhayein
             loginModal.style.display = 'flex';
-            // Toggle ko wapas purani state mein le aayein
             this.checked = isShopOpen; 
         }
     });
 
-    // NAYA CODE: Login form ka logic
     loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const email = document.getElementById('ownerEmail').value;
         const password = document.getElementById('ownerPassword').value;
         
         auth.signInWithEmailAndPassword(email, password)
-            .then((userCredential) => {
-                // Login successful
+            .then(() => {
                 loginModal.style.display = 'none';
                 loginError.textContent = '';
-                document.getElementById('ownerEmail').value = '';
-                document.getElementById('ownerPassword').value = '';
-                showNotification('Login Successful! You can now change the status.');
+                loginForm.reset();
+                showNotification('Login Successful! You can now manage the shop.');
             })
-            .catch((error) => {
-                // Login failed
+            .catch(() => {
                 loginError.textContent = "Wrong email or password.";
             });
     });
 
-    // NAYA CODE: Login form ko band karne ka logic
     closeLoginBtn.addEventListener('click', () => {
         loginModal.style.display = 'none';
     });
-}
-
-function updateShopStatus(isOpen, elements) {
-    if (isOpen) {
-        document.body.classList.remove('shop-closed');
-        elements.shopStatusText.textContent = "Open";
-        elements.shopStatusText.style.color = "var(--primary)";
-    } else {
-        document.body.classList.add('shop-closed');
-        elements.shopStatusText.textContent = "Closed";
-        elements.shopStatusText.style.color = "#ff4444";
-        if (window.closeCart) {
-            window.closeCart();
+    
+    // Login status ke hisaab se buttons dikhana/chhipana
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            logoutBtn.style.display = 'block';
+            adminPanelBtn.style.display = 'block';
+        } else {
+            logoutBtn.style.display = 'none';
+            adminPanelBtn.style.display = 'none';
         }
-    }
-    localStorage.setItem('quickKartShopStatus', isOpen ? 'open' : 'closed');
+    });
+
+    // Logout aur Admin Panel ke click events ab main.js mein hain
 }
 
-export { db, auth, shopStatusRef, isShopOpen, setupShopStatus, updateShopStatus };
-// firebase-config.js mein sabse neeche yeh code add karein
+// Shop status ke hisaab se UI update karna
+function updateShopStatus(isOpen, elements) {
+    document.body.classList.toggle('shop-closed', !isOpen);
+    elements.shopStatusText.textContent = isOpen ? "Open" : "Closed";
+    elements.shopStatusText.style.color = isOpen ? "var(--primary)" : "var(--error)";
+    if (!isOpen && window.closeCart) window.closeCart();
+}
 
-const logoutBtn = document.getElementById('logoutBtn');
-
-// Yeh function check karega ki user logged in hai ya nahi
-auth.onAuthStateChanged((user) => {
-  if (user) {
-    // User logged in hai, to Logout button dikhao
-    logoutBtn.style.display = 'block';
-  } else {
-    // User logged out hai, to Logout button chhipao
-    logoutBtn.style.display = 'none';
-  }
-});
-
-// Logout button par click ka logic
-logoutBtn.addEventListener('click', () => {
-  auth.signOut().then(() => {
-    showNotification('You have been logged out.');
-  }).catch((error) => {
-    console.error('Logout failed:', error);
-  });
-});
+// Zaroori cheezein export karna taaki doosri files use kar sakein
+export { db, auth, storage, shopStatusRef, isShopOpen, setupShopStatus, updateShopStatus };

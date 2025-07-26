@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - QuickKart</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="admin-page">
+
+    <header class="admin-header">
+        <h1>🚀 QuickKart Admin Panel</h1>
+        <a href="index.html" class="back-to-shop-btn">Back to Shop</a>
+    </header>
+
+    <main class="admin-container">
+        <div class="admin-card">
+            <h2 id="formTitle">Add New Product</h2>
+            <form id="addProductForm">
+                <input type="hidden" id="editingId">
+                <div class="form-group"><label for="productName">Product Name</label><input type="text" id="productName" required></div>
+                <div class="form-group"><label for="productPrice">Price (₹)</label><input type="number" id="productPrice" required></div>
+                
+                <div class="form-group">
+                    <label for="productCategory">Category</label>
+                    <input list="categoryList" id="productCategory" class="admin-input" required>
+                    <datalist id="categoryList">
+                        </datalist>
+                </div>
+                
+                <div class="form-group" id="imageInputGroup">
+                    <label for="productImage">Product Image</label>
+                    <input type="file" id="productImage" accept="image/*">
+                </div>
+
+                <button type="submit" id="addProductBtn" class="admin-btn">Add Product</button>
+                <button type="button" id="cancelEditBtn" class="admin-btn-secondary" style="display: none;">Cancel Edit</button>
+            </form>
+        </div>
+        <div class="admin-card">
+            <h2>Existing Products</h2>
+            <div class="form-group">
+                <input type="text" id="adminSearchInput" class="admin-input" placeholder="Search existing products...">
+            </div>
+            <div id="productList"></div>
+        </div>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js"></script>
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="admin.js"></script>
+</body>
+</html>

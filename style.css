@@ -935,3 +935,119 @@ body.cart-open .bottom-nav-bar {
 #cartFull.cart-summary {
     padding-bottom: 20px;
 }
+/* ======================== */
+/* --- ADMIN PANEL STYLES --- */
+/* ======================== */
+.admin-page { background-color: #f9fafb; padding-top: 0; }
+.admin-header { background-color: var(--text); color: var(--white); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.admin-header h1 { font-size: 1.5rem; }
+.back-to-shop-btn { color: var(--white); text-decoration: none; padding: 0.5rem 1rem; border: 1px solid var(--white); border-radius: var(--radius); transition: var(--transition); }
+.back-to-shop-btn:hover { background-color: var(--white); color: var(--text); }
+.admin-container { max-width: 1200px; margin: 2rem auto; padding: 1rem; display: grid; grid-template-columns: 1fr; gap: 2rem; }
+@media (min-width: 992px) { .admin-container { grid-template-columns: 400px 1fr; } }
+.admin-card { background-color: var(--white); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); }
+.admin-card h2 { margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+.form-group input { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 1rem; }
+.admin-btn { width: 100%; padding: 0.8rem; background: var(--primary); color: white; border: none; border-radius: var(--radius); font-weight: 600; font-size: 1rem; cursor: pointer; transition: background-color 0.2s ease; }
+.admin-btn:hover { background: var(--primary-dark); }
+.admin-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+#productList { display: flex; flex-direction: column; gap: 1rem; }
+.product-list-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid var(--border); border-radius: var(--radius); }
+.product-list-img { width: 60px; height: 60px; object-fit: contain; border-radius: var(--radius); }
+.product-list-details { flex-grow: 1; }
+.product-list-name { font-weight: 600; }
+.product-list-price { color: var(--muted); }
+.admin-btn-delete { background-color: var(--error); color: white; border: none; padding: 0.5rem 1rem; border-radius: var(--radius); cursor: pointer; }
+/* --- Additional Admin Panel Styles for Edit --- */
+.product-list-category {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.admin-btn-edit {
+    background-color: var(--info);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    margin-right: 0.5rem; /* space between buttons */
+}
+
+.admin-btn-secondary {
+    background-color: var(--muted);
+    margin-top: 0.5rem;
+    width: 100%;
+    padding: 0.8rem;
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+}
+/* --- Styles for Admin Search and Input --- */
+.admin-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 1rem;
+}
+/* --- Header Action Buttons --- */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Buttons ke beech mein space */
+}
+
+.header-btn {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-weight: 500;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.header-btn:hover {
+    opacity: 0.85;
+}
+
+/* Specific button colors */
+.header-btn.admin {
+    background-color: #007bff;
+}
+
+.header-btn.logout {
+    background-color: #ff4444;
+}
+/* style.css (REPLACE THE ENTIRE @media BLOCK AT THE END) */
+
+@media (max-width: 600px) {
+  /* Body ki padding ko normal karo, kyunki header ab lamba nahi hai */
+  body {
+    padding-top: 210px;
+  }
+
+  body.category-view {
+    padding-top: 100px;
+  }
+
+  /* Right side ke items (switch aur buttons) ko group karne ke liye */
+  .header-right-group {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Switch aur buttons ke beech mein space */
+  }
+
+  /* Sirf Admin aur Logout buttons ko vertical stack karo */
+  .header-actions {
+    flex-direction: column;
+    align-items: flex-end; /* Buttons ko right side align karo */
+  }
+}

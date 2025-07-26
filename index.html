@@ -7,9 +7,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js"></script>
 </head>
 <body>
     
@@ -29,23 +30,25 @@
 
   <header class="main-header">
     <div class="header-container">
-      <div class="logo-box">
-        <span class="logo-text">Quick<span>Kart</span></span>
-      </div>
-      
-      <div class="shop-status-container">
-        <label class="switch">
-          <input type="checkbox" id="shopStatusToggle" checked>
-          <span class="slider round"></span>
-        </label>
-        <span id="shopStatusText">Open</span>
-      </div>
-      
-      <div class="header-actions">
-        
-        <button id="logoutBtn" style="display: none; margin-left: 15px; background: #ff4444; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer;">Logout</button>
-      </div>
+  <div class="logo-box">
+    <span class="logo-text">Quick<span>Kart</span></span>
+  </div>
+  
+  <div class="header-right-group">
+    <div class="shop-status-container">
+      <label class="switch">
+        <input type="checkbox" id="shopStatusToggle" checked>
+        <span class="slider round"></span>
+      </label>
+      <span id="shopStatusText">Open</span>
     </div>
+    
+    <div class="header-actions">
+      <button id="adminPanelBtn" class="header-btn admin" style="display: none;">Admin Panel</button>
+      <button id="logoutBtn" class="header-btn logout" style="display: none;">Logout</button>
+    </div>
+  </div>
+</div>
 
     <div class="search-section">
       <div class="search-bar">
@@ -56,62 +59,20 @@
 
     <div class="categories-scroll">
       <div class="categories">
-        <button class="category-btn" data-category="Atta Rice & Daal">
-          <img src="images/atta-rice-bg.png" alt="Atta Rice & Daal" class="category-image">
-          <span class="category-name">Atta Rice & Daal</span>
-        </button>
-        <button class="category-btn" data-category="Masala & Oil">
-          <img src="images/masala-oil-bg.png" alt="Masala & Oil" class="category-image">
-          <span class="category-name">Masala & Oil</span>
-        </button>
-        <button class="category-btn" data-category="Bakery & Biscuits">
-          <img src="images/bakery-bg.png" alt="Bakery & Biscuits" class="category-image">
-          <span class="category-name">Bakery & Biscuits</span>
-        </button>
-        <button class="category-btn" data-category="Cold Drinks & Juices">
-          <img src="images/drinks-bg.png" alt="Cold Drinks & Juices" class="category-image">
-          <span class="category-name">Cold Drinks & Juices</span>
-        </button>
-        <button class="category-btn" data-category="Pan Corner">
-          <img src="images/pan-corner-bg.png" alt="Pan Corner" class="category-image">
-          <span class="category-name">Pan Corner</span>
-        </button>
-        <button class="category-btn" data-category="Personal Care">
-          <img src="images/personal-care-bg.png" alt="Personal Care" class="category-image">
-          <span class="category-name">Personal Care</span>
-        </button>
-        <button class="category-btn" data-category="Cleaning Care">
-          <img src="images/cleaning-bg.png" alt="Cleaning Care" class="category-image">
-          <span class="category-name">Cleaning Care</span>
-        </button>
-        <button class="category-btn" data-category="Dry Fruits">
-          <img src="images/dry-fruits-bg.png" alt="Dry Fruits" class="category-image">
-          <span class="category-name">Dry Fruits</span>
-        </button>
-        <button class="category-btn" data-category="Baby Care">
-          <img src="images/baby-care-bg.png" alt="Baby Care" class="category-image">
-          <span class="category-name">Baby Care</span>
-        </button>
-        <button class="category-btn" data-category="Maxo Killer & candle">
-          <img src="images/agarbatti.png" alt="Maxo Killer & candle" class="category-image">
-          <span class="category-name">Maxo Killer & candle</span>
-        </button>
-        <button class="category-btn" data-category="Gass">
-          <img src="images/gass-bg.png" alt="Gass" class="category-image">
-          <span class="category-name">Gass</span>
-        </button>
-        <button class="category-btn" data-category="Electronics">
-          <img src="images/electronics-bg.png" alt="Electronics" class="category-image">
-          <span class="category-name">Electronics</span>
-        </button>
-        <button class="category-btn" data-category="Stationary">
-          <img src="images/stationary-bg.png" alt="Stationary" class="category-image">
-          <span class="category-name">Stationary</span>
-        </button>
-        <button class="category-btn" data-category="Colgate & Brush">
-          <img src="images/colgate-brush-bg.png" alt="Colgate & Brush" class="category-image">
-          <span class="category-name">Colgate & Brush</span>
-        </button>
+        <button class="category-btn" data-category="Atta Rice & Daal"><img src="images/atta-rice-bg.png" alt="Atta Rice & Daal" class="category-image"><span class="category-name">Atta Rice & Daal</span></button>
+        <button class="category-btn" data-category="Masala & Oil"><img src="images/masala-oil-bg.png" alt="Masala & Oil" class="category-image"><span class="category-name">Masala & Oil</span></button>
+        <button class="category-btn" data-category="Bakery & Biscuits"><img src="images/bakery-bg.png" alt="Bakery & Biscuits" class="category-image"><span class="category-name">Bakery & Biscuits</span></button>
+        <button class="category-btn" data-category="Cold Drinks & Juices"><img src="images/drinks-bg.png" alt="Cold Drinks & Juices" class="category-image"><span class="category-name">Cold Drinks & Juices</span></button>
+        <button class="category-btn" data-category="Pan Corner"><img src="images/pan-corner-bg.png" alt="Pan Corner" class="category-image"><span class="category-name">Pan Corner</span></button>
+        <button class="category-btn" data-category="Personal Care"><img src="images/personal-care-bg.png" alt="Personal Care" class="category-image"><span class="category-name">Personal Care</span></button>
+        <button class="category-btn" data-category="Cleaning Care"><img src="images/cleaning-bg.png" alt="Cleaning Care" class="category-image"><span class="category-name">Cleaning Care</span></button>
+        <button class="category-btn" data-category="Dry Fruits"><img src="images/dry-fruits-bg.png" alt="Dry Fruits" class="category-image"><span class="category-name">Dry Fruits</span></button>
+        <button class="category-btn" data-category="Baby Care"><img src="images/baby-care-bg.png" alt="Baby Care" class="category-image"><span class="category-name">Baby Care</span></button>
+        <button class="category-btn" data-category="Maxo Killer & candle"><img src="images/agarbatti.png" alt="Maxo Killer & candle" class="category-image"><span class="category-name">Maxo Killer & candle</span></button>
+        <button class="category-btn" data-category="Gass"><img src="images/gass-bg.png" alt="Gass" class="category-image"><span class="category-name">Gass</span></button>
+        <button class="category-btn" data-category="Electronics"><img src="images/electronics-bg.png" alt="Electronics" class="category-image"><span class="category-name">Electronics</span></button>
+        <button class="category-btn" data-category="Stationary"><img src="images/stationary-bg.png" alt="Stationary" class="category-image"><span class="category-name">Stationary</span></button>
+        <button class="category-btn" data-category="Colgate & Brush"><img src="images/colgate-brush-bg.png" alt="Colgate & Brush" class="category-image"><span class="category-name">Colgate & Brush</span></button>
       </div>
     </div>
   </header>
@@ -121,14 +82,7 @@
   <main class="container">
     <section class="product-section">
       <h2 class="section-title">Daily Essentials</h2>
-      <div class="store" id="storeItems">
-        </div>
-    </section>
-
-    <section class="product-section" style="display: none;">
-      <h2 class="section-title">Popular Items</h2>
-      <div class="store" id="popularItems">
-        </div>
+      <div class="store" id="storeItems"></div>
     </section>
   </main>
 
@@ -136,13 +90,10 @@
     <div class="cart-header">
       <div class="cart-title-group">
         <h2>Your Cart</h2>
-        <button id="clearCartBtn" class="clear-cart-btn" title="Clear All Items">
-          <i class="fas fa-trash"></i> Clear All
-        </button>
+        <button id="clearCartBtn" class="clear-cart-btn" title="Clear All Items"><i class="fas fa-trash"></i> Clear All</button>
       </div>
       <button class="close-cart" id="closeCart">&times;</button>
     </div>
-
     <div id="cartContent">
       <ul id="cartList"></ul>
       <div id="cartEmpty" class="empty-cart">
@@ -152,65 +103,34 @@
         <button id="continueShopping">Continue Shopping</button>
       </div>
     </div>
-
     <div id="cartFull" class="cart-summary">
       <div class="bill-details">
-        <div class="bill-row">
-          <span>Item Total</span>
-          <span id="itemTotal">₹0</span>
-        </div>
-        <div class="bill-row">
-          <span>Delivery Fee</span>
-          <span id="deliveryFee">FREE</span>
-        </div>
-        <div class="bill-row total">
-          <span>Total</span>
-          <span id="cartTotal">₹0</span>
-        </div>
+        <div class="bill-row"><span>Item Total</span><span id="itemTotal">₹0</span></div>
+        <div class="bill-row"><span>Delivery Fee</span><span id="deliveryFee">FREE</span></div>
+        <div class="bill-row total"><span>Total</span><span id="cartTotal">₹0</span></div>
       </div>
-
       <div class="cart-form">
           <input type="text" id="customerName" placeholder="আপোনাৰ নাম" required>
-          <input type="hidden" id="autoAddress">
-          <input type="hidden" id="userLat">
-          <input type="hidden" id="userLng">
-          
+          <input type="hidden" id="autoAddress"><input type="hidden" id="userLat"><input type="hidden" id="userLng">
           <input type="tel" id="customerPhone" pattern="[0-9]{10}" maxlength="10" placeholder="📞 মোবাইল নম্বৰ" required>
-
           <button id="placeOrderBtn" class="quickkart-btn">
-            <i class="fab fa-whatsapp"></i> 
-            <span id="btnText">Place Order</span>
-            <span id="locationSpinner" style="display:none;">
-              <i class="fas fa-spinner fa-spin"></i> Fetching Location...
-            </span>
+            <i class="fab fa-whatsapp"></i> <span id="btnText">Place Order</span>
+            <span id="locationSpinner" style="display:none;"><i class="fas fa-spinner fa-spin"></i> Fetching...</span>
           </button>
-          
           <div id="locationStatus" class="location-message"></div>
         </div>
     </div>
   </div>
 
   <div id="cartOverlay" class="cart-overlay"></div>
-
   <div id="notification" class="quickkart-notification"></div>
   
-  
   <nav class="bottom-nav-bar">
-    <button class="nav-btn" id="navHome">
-      <i class="fas fa-home"></i>
-      <span>Home</span>
-    </button>
-    <button class="nav-btn" id="navAllItems">
-        <i class="fas fa-box-open"></i>
-        <span>All Items</span>
-    </button>
-    <button class="nav-btn" id="navSearch">
-      <i class="fas fa-search"></i>
-      <span>Search</span>
-    </button>
+    <button class="nav-btn" id="navHome"><i class="fas fa-home"></i><span>Home</span></button>
+    <button class="nav-btn" id="navAllItems"><i class="fas fa-box-open"></i><span>All Items</span></button>
+    <button class="nav-btn" id="navSearch"><i class="fas fa-search"></i><span>Search</span></button>
     <button class="nav-btn" id="navCart">
-      <i class="fas fa-shopping-cart"></i>
-      <span>Cart</span>
+      <i class="fas fa-shopping-cart"></i><span>Cart</span>
       <span class="cart-count" id="navCartCount">0</span>
     </button>
   </nav>
