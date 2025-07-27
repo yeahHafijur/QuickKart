@@ -1,14 +1,13 @@
-// location.js (Updated with new store location)
+// location.js (Updated with correct maps link)
 
 import cart from './cart-data.js';
 import { isShopOpen, db } from './firebase-config.js';
 import { showNotification } from './utils.js';
 
-// === YAHAN BADLAV KIYA GAYA HAI (STORE LOCATION UPDATED) ===
-const storeLocation = { lat: 26.646883, lng: 92.075486 };
+const storeLocation = { lat: 24.757225, lng: 92.787279 };
 
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-    const R = 6371; // Radius of the earth in km
+    const R = 6371;
     const dLat = deg2rad(lat2 - lat1);
     const dLon = deg2rad(lon2 - lon1);
     const a =
@@ -16,7 +15,7 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
         Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
         Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; // Distance in km
+    return R * c;
 }
 
 function deg2rad(deg) {
@@ -71,7 +70,7 @@ async function sendWhatsAppOrder(customerName, customerPhone, address, lat, lng,
             deliveryFee,
             totalAmount: cartTotal,
             items: cartItems,
-            status: 'Pending', // Default status
+            status: 'Pending',
             timestamp: new Date().toISOString()
         };
         await db.ref('orders').push(orderData);
@@ -81,6 +80,7 @@ async function sendWhatsAppOrder(customerName, customerPhone, address, lat, lng,
             ` ➤ ${item.name} (${item.quantity} × ₹${item.price}) = ₹${item.price * item.quantity}`
         ).join('\n');
 
+        // === YAHAN BADLAV KIYA GAYA HAI (MAPS LINK CORRECTED) ===
         const mapsLink = `https://maps.google.com/?q=${lat},${lng}`;
 
         const message = `✨ *New QuickKart Order!* ✨
@@ -159,14 +159,13 @@ async function handleOrderWithLocation() {
         if (distance > 5) {
             statusEl.innerHTML = `Delivery not available (${distance.toFixed(1)} km away)<br>We deliver within 5km only`;
             document.getElementById('deliveryFee').textContent = 'Not Available';
-            btn.disabled = false; // Re-enable button
+            btn.disabled = false;
             spinner.style.display = 'none';
             btnText.style.display = 'inline-block';
             return;
         }
 
         statusEl.textContent = 'Getting your address...';
-        // YEH ASLI CODE HAI JO CUSTOMER KA ADDRESS NIKALEGA
         const address = await getAddressFromCoords(lat, lng);
         
         document.getElementById('autoAddress').value = address;
@@ -192,7 +191,6 @@ async function handleOrderWithLocation() {
         if (success) {
             cart.length = 0;
             localStorage.setItem('quickKartCart', JSON.stringify(cart));
-            // 'updateCartUI' ko dynamically import karke call karna, taaki circular dependency se bacha ja sake
             import('./cart.js').then(cartModule => {
                 if (typeof cartModule.updateCartUI === 'function') {
                     cartModule.updateCartUI();
