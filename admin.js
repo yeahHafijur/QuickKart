@@ -1,4 +1,4 @@
-// admin.js (Dashboard now only shows 'Completed' orders)
+// admin.js (Order History and Product Sorting Updated)
 
 import { db, auth, storage } from './firebase-config.js';
 
@@ -38,8 +38,8 @@ document.body.style.display = 'none';
 auth.onAuthStateChanged(user => {
     if (user) {
         document.body.style.display = 'block';
-        fetchAndRenderProducts();
-        fetchAndRenderOrders();
+        fetchAndRenderProducts(); 
+        fetchAndRenderOrders(); 
         setupNewOrderNotifications();
         showSection('dashboard');
     } else {
@@ -51,9 +51,9 @@ auth.onAuthStateChanged(user => {
 function showSection(sectionToShow) {
     Object.values(sections).forEach(section => section.classList.remove('active'));
     Object.values(navButtons).forEach(button => button.classList.remove('active'));
-    if (sectionToShow === 'addProduct') { sections.addProduct.classList.add('active'); navButtons.addProduct.classList.add('active'); }
-    else if (sectionToShow === 'orderHistory') { sections.orderHistory.classList.add('active'); navButtons.orderHistory.classList.add('active'); }
-    else if (sectionToShow === 'dashboard') { sections.dashboard.classList.add('active'); navButtons.dashboard.classList.add('active'); }
+    if (sectionToShow === 'addProduct') { sections.addProduct.classList.add('active'); navButtons.addProduct.classList.add('active'); } 
+    else if (sectionToShow === 'orderHistory') { sections.orderHistory.classList.add('active'); navButtons.orderHistory.classList.add('active'); } 
+    else if (sectionToShow === 'dashboard') { sections.dashboard.classList.add('active'); navButtons.dashboard.classList.add('active'); } 
     else { sections.productList.classList.add('active'); navButtons.viewProducts.classList.add('active'); }
 }
 navButtons.viewProducts.addEventListener('click', () => showSection('productList'));
@@ -69,7 +69,16 @@ function renderOrders(orders) {
         orderListDiv.innerHTML = '<p>No orders found.</p>';
         return;
     }
-    orders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    // === YAHAN BADLAV KIYA GAYA HAI: PENDING ORDERS UPAR AAYENGE ===
+    orders.sort((a, b) => {
+        // Rule 1: Pending orders hamesha upar
+        if (a.status === 'Pending' && b.status !== 'Pending') return -1;
+        if (a.status !== 'Pending' && b.status === 'Pending') return 1;
+        // Rule 2: Agar status same hai, to naye order upar
+        return new Date(b.timestamp) - new Date(a.timestamp);
+    });
+
     orders.forEach(order => {
         const orderCard = document.createElement('div');
         orderCard.className = 'order-list-item';
@@ -273,10 +282,7 @@ function generateDashboardData(startDate = null, endDate = null) {
     const totalSalesEl = document.getElementById('totalSales');
     const totalOrdersEl = document.getElementById('totalOrders');
     const topItemsList = document.getElementById('topSellingItems');
-
-    // Filter for 'Completed' orders first
     const completedOrders = allOrders.filter(order => order.status === 'Completed');
-
     if (completedOrders.length === 0) {
         itemTotalEl.textContent = '₹0.00';
         deliveryFeeEl.textContent = '₹0.00';
@@ -285,24 +291,19 @@ function generateDashboardData(startDate = null, endDate = null) {
         topItemsList.innerHTML = '<p>No completed sales data yet.</p>';
         return;
     }
-
-    // Then filter by date
     const filteredOrders = completedOrders.filter(order => {
         if (!startDate || !endDate) return true;
         const orderDate = new Date(order.timestamp);
         return orderDate >= startDate && orderDate <= endDate;
     });
-
     const totalSales = filteredOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
     const totalDeliveryFees = filteredOrders.reduce((sum, order) => sum + (order.deliveryFee || 0), 0);
     const itemTotalSales = totalSales - totalDeliveryFees;
     const totalOrders = filteredOrders.length;
-
     itemTotalEl.textContent = `₹${itemTotalSales.toFixed(2)}`;
     deliveryFeeEl.textContent = `₹${totalDeliveryFees.toFixed(2)}`;
     totalSalesEl.textContent = `₹${totalSales.toFixed(2)}`;
     totalOrdersEl.textContent = totalOrders;
-
     const itemCounts = {};
     filteredOrders.forEach(order => {
         if (order.items && Array.isArray(order.items)) {
@@ -313,7 +314,6 @@ function generateDashboardData(startDate = null, endDate = null) {
         }
     });
     const sortedItems = Object.entries(itemCounts).sort(([, qtyA], [, qtyB]) => qtyB - qtyA).slice(0, 10);
-
     topItemsList.innerHTML = '';
     if (sortedItems.length === 0) {
         topItemsList.innerHTML = '<p>No items sold in this period.</p>';
@@ -332,12 +332,10 @@ filterButtons.forEach(button => {
     button.addEventListener('click', () => {
         filterButtons.forEach(btn => btn.classList.remove('active'));
         button.classList.add('active');
-        
         const range = button.dataset.range;
         const now = new Date();
         let startDate, endDate = new Date(now);
         endDate.setHours(23, 59, 59, 999);
-
         if (range === 'today') {
             startDate = new Date(now);
             startDate.setHours(0, 0, 0, 0);
@@ -352,13 +350,11 @@ filterButtons.forEach(button => {
             startDate = null;
             endDate = null;
         }
-        
         startDateInput.value = '';
         endDateInput.value = '';
         generateDashboardData(startDate, endDate);
     });
 });
-
 applyDateRangeBtn.addEventListener('click', () => {
     const start = startDateInput.value;
     const end = endDateInput.value;
@@ -366,13 +362,10 @@ applyDateRangeBtn.addEventListener('click', () => {
         alert('Please select both a start and end date.');
         return;
     }
-    
     filterButtons.forEach(btn => btn.classList.remove('active'));
-    
     const startDate = new Date(start);
     startDate.setHours(0, 0, 0, 0);
     const endDate = new Date(end);
     endDate.setHours(23, 59, 59, 999);
-
     generateDashboardData(startDate, endDate);
 });

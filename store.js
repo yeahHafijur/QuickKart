@@ -1,4 +1,4 @@
-// store.js (UPDATED FOR CUSTOMER APP)
+// store.js (Out of Stock items will now show at the bottom)
 
 import { getShopStatus, db } from './firebase-config.js'; 
 import cart from './cart-data.js';
@@ -92,6 +92,14 @@ async function initStore(filterCategory = 'all', searchTerm = '', storeDiv) {
                 const matchesSearch = searchTerm === '' || (item.name && item.name.toLowerCase().includes(searchStr)) || (item.category && item.category.toLowerCase().includes(searchStr));
                 return matchesCategory && matchesSearch;
             });
+
+            // === YAHAN BADLAV KIYA GAYA HAI: IN-STOCK ITEMS UPAR AAYENGE ===
+            filteredItems.sort((a, b) => {
+                const aInStock = a.inStock !== false; // true if in stock
+                const bInStock = b.inStock !== false; // true if in stock
+                return bInStock - aInStock; // This sorts true values (1) before false values (0)
+            });
+
             if (filteredItems.length === 0) {
                 storeDiv.innerHTML = `<div class="empty-cart" style="grid-column: 1 / -1;"><img src="images/empty-search.png" alt="No items found" style="width: 150px;"><h3>No items found</h3><p>Try a different search term or category.</p></div>`;
                 return;
