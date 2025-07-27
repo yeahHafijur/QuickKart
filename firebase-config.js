@@ -1,5 +1,9 @@
-// firebase-config.js
+// firebase-config.js (FINAL CORRECTED URL)
 
+import "https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js";
+import "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js";
+import "https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js";
+import "https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js";
 import { showNotification } from './utils.js';
 
 const firebaseConfig = {
@@ -17,12 +21,10 @@ const db = firebase.database();
 const auth = firebase.auth();
 const storage = firebase.storage();
 const shopStatusRef = db.ref('shopStatus');
-
 let isShopOpen = true;
 
 function setupShopStatus(elements, closeCartCallback) {
     const { shopStatusToggle, loginModal, loginForm, closeLoginBtn, loginError, logoutBtn, adminPanelBtn } = elements;
-
     shopStatusRef.on('value', (snapshot) => {
         const statusData = snapshot.val();
         if (statusData) {
@@ -31,7 +33,6 @@ function setupShopStatus(elements, closeCartCallback) {
             updateShopStatus(isShopOpen, elements, closeCartCallback);
         }
     });
-
     shopStatusToggle.addEventListener('change', async function(e) {
         e.preventDefault();
         if (auth.currentUser) {
@@ -43,15 +44,13 @@ function setupShopStatus(elements, closeCartCallback) {
             }
         } else {
             loginModal.style.display = 'flex';
-            this.checked = isShopOpen; 
+            this.checked = isShopOpen;
         }
     });
-
     loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const email = document.getElementById('ownerEmail').value;
         const password = document.getElementById('ownerPassword').value;
-        
         auth.signInWithEmailAndPassword(email, password)
             .then(() => {
                 loginModal.style.display = 'none';
@@ -63,11 +62,9 @@ function setupShopStatus(elements, closeCartCallback) {
                 loginError.textContent = "Wrong email or password.";
             });
     });
-
     closeLoginBtn.addEventListener('click', () => {
         loginModal.style.display = 'none';
     });
-    
     auth.onAuthStateChanged((user) => {
         if (user) {
             logoutBtn.style.display = 'block';
