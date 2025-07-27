@@ -81,6 +81,7 @@ body.cart-open {
   font-size: 1.4rem;
   font-weight: 700;
   color: var(--primary);
+  display: flex; /* Added for animation */
 }
 
 .logo-text span {
@@ -378,7 +379,7 @@ main.container {
   right: -100%;
   width: 80%;
   max-width: 380px;
-  height: 80vh; /* Changed to 100vh */
+  height: 80vh;
   background: var(--white);
   z-index: 1001;
   box-shadow: -6px 0 12px rgba(0, 0, 0, 0.1);
@@ -400,7 +401,6 @@ main.container {
   flex-shrink: 0;
 }
 
-/* NEW: Styles for cart title and clear button */
 .cart-title-group {
     display: flex;
     align-items: center;
@@ -829,7 +829,6 @@ main.container {
   pointer-events: auto;
 }
 
-/* NEW: Notification types */
 .quickkart-notification.success { background-color: var(--primary); }
 .quickkart-notification.error { background-color: var(--error); }
 .quickkart-notification.info { background-color: var(--info); }
@@ -1034,3 +1033,219 @@ input:checked + .slider-small:before { transform: translateX(18px); }
   .product-list-img { width: 80px; height: 80px; align-self: center; }
   .product-list-actions { width: 100%; flex-direction: column; align-items: flex-start; gap: 15px; }
 }
+/* ==================================== */
+/* --- LETTER-BY-LETTER SPLASH ANIMATION --- */
+/* ==================================== */
+
+#splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #e5f7ed; /* Logo jaisa halka green background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Sabse upar dikhega */
+    transition: opacity 0.8s ease-out; /* Gayab hone ka effect */
+}
+
+#splash-screen.hidden {
+    opacity: 0;
+    pointer-events: none; /* Gayab hone ke baad click na ho */
+}
+
+.logo-text-animated {
+  display: flex; 
+}
+
+.logo-char-animated {
+  font-size: 2.5rem; /* Thoda bada size splash screen ke liye */
+  font-weight: 700;
+  color: var(--primary); /* "Quick" ka green color */
+  opacity: 0; /* Shuru mein letters ko chhipa do */
+  transform: translateY(25px); /* Letters neeche se aayenge */
+  animation: fadeInUp 0.5s forwards; /* Animation apply karo */
+  animation-delay: calc(0.08s * var(--i)); /* Har letter ko thodi der se start karo */
+}
+
+.logo-char-animated.kart {
+  color: var(--secondary); /* "Kart" ka orange color */
+}
+
+/* Animation ka definition */
+@keyframes fadeInUp {
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+/* ==================================== */
+/* --- ORDER HISTORY STYLES --- */
+/* ==================================== */
+
+#orderHistoryCard h2 i {
+    margin-right: 10px;
+    color: var(--secondary);
+}
+
+#orderList {
+    max-height: 800px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding-right: 10px; /* For scrollbar */
+}
+
+.order-list-item {
+    background-color: #f9fafb;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    transition: var(--transition);
+}
+
+.order-list-item:hover {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed var(--border);
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.order-customer {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--primary-dark);
+}
+
+.order-date {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.order-details p, .order-details strong {
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.order-details ul {
+    list-style-type: none;
+    padding-left: 15px;
+    margin-top: 5px;
+}
+
+.order-details li {
+    font-size: 0.85rem;
+    color: #555;
+}
+
+.order-footer {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-btn-delete-order {
+    background-color: var(--error);
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+
+/* Admin grid layout adjustment */
+@media (min-width: 992px) { 
+  .admin-container { 
+    grid-template-columns: 400px 1fr; 
+    grid-template-rows: auto auto; /* Allow rows to size automatically */
+    grid-template-areas: 
+      "form products"
+      "orders products";
+  }
+  #addProductForm { grid-area: form; }
+  #productList { grid-area: products; }
+  #orderHistoryCard { grid-area: orders; }
+}
+
+@media (min-width: 1400px) {
+  .admin-container { 
+    grid-template-columns: 400px 1fr 1fr;
+    grid-template-areas: 
+      "form products orders";
+  }
+}
+/* ==================================== */
+/* --- ADMIN PANEL NAVIGATION STYLES --- */
+/* ==================================== */
+
+.admin-nav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+    background-color: var(--white);
+    padding: 10px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    flex-wrap: wrap; /* Buttons wrap on smaller screens */
+}
+
+.admin-nav-btn {
+    flex-grow: 1; /* Buttons share space equally */
+    padding: 12px 15px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--muted);
+    background-color: #f1f3f6;
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.admin-nav-btn:hover {
+    background-color: #e5e8ec;
+    color: var(--text);
+}
+
+.admin-nav-btn.active {
+    background-color: var(--primary-light);
+    color: var(--primary-dark);
+    border-color: var(--primary);
+}
+
+/* Logic to show/hide sections */
+.admin-section {
+    display: none;
+}
+
+.admin-section.active {
+    display: block;
+}
+
+/* Remove complex grid layout from admin container */
+.admin-container {
+    display: block; /* Change from grid to block */
+}
+
+.admin-section .admin-card {
+    margin-bottom: 1rem;
+}
+

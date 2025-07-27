@@ -6,6 +6,7 @@
   <title>🚀 QuickKart - Grocery in Minutes</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
@@ -13,7 +14,10 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js"></script>
 </head>
 <body>
-    
+  <div id="splash-screen">
+      <div class="logo-text-animated"></div>
+  </div>
+
   <div id="loginModal" class="login-modal">
     <div class="login-modal-content">
       <span id="closeLogin" class="close-login-btn">&times;</span>
@@ -30,25 +34,25 @@
 
   <header class="main-header">
     <div class="header-container">
-  <div class="logo-box">
-    <span class="logo-text">Quick<span>Kart</span></span>
-  </div>
-  
-  <div class="header-right-group">
-    <div class="shop-status-container">
-      <label class="switch">
-        <input type="checkbox" id="shopStatusToggle" checked>
-        <span class="slider round"></span>
-      </label>
-      <span id="shopStatusText">Open</span>
+      <div class="logo-box">
+        <div class="logo-text"></div>
+      </div>
+      
+      <div class="header-right-group">
+        <div class="shop-status-container">
+          <label class="switch">
+            <input type="checkbox" id="shopStatusToggle" checked>
+            <span class="slider round"></span>
+          </label>
+          <span id="shopStatusText">Open</span>
+        </div>
+        
+        <div class="header-actions">
+          <button id="adminPanelBtn" class="header-btn admin" style="display: none;">Admin Panel</button>
+          <button id="logoutBtn" class="header-btn logout" style="display: none;">Logout</button>
+        </div>
+      </div>
     </div>
-    
-    <div class="header-actions">
-      <button id="adminPanelBtn" class="header-btn admin" style="display: none;">Admin Panel</button>
-      <button id="logoutBtn" class="header-btn logout" style="display: none;">Logout</button>
-    </div>
-  </div>
-</div>
 
     <div class="search-section">
       <div class="search-bar">

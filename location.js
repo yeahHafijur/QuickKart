@@ -1,22 +1,22 @@
-// location.js (REPLACE THIS ENTIRE FILE)
+// location.js (Updated with new store location)
 
 import cart from './cart-data.js';
-import { isShopOpen } from './firebase-config.js';
-// showNotification ko import karna zaroori hai
+import { isShopOpen, db } from './firebase-config.js';
 import { showNotification } from './utils.js';
 
-const storeLocation = { lat: 26.6468571, lng: 92.0754806 };
+// === YAHAN BADLAV KIYA GAYA HAI (STORE LOCATION UPDATED) ===
+const storeLocation = { lat: 26.646883, lng: 92.075486 };
 
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-    const R = 6371;
+    const R = 6371; // Radius of the earth in km
     const dLat = deg2rad(lat2 - lat1);
     const dLon = deg2rad(lon2 - lon1);
-    const a = 
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-        Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in km
 }
 
 function deg2rad(deg) {
@@ -60,14 +60,29 @@ async function getAddressFromCoords(lat, lng) {
     }
 }
 
-function sendWhatsAppOrder(customerName, customerPhone, address, lat, lng, deliveryFee, cartTotal) {
+async function sendWhatsAppOrder(customerName, customerPhone, address, lat, lng, deliveryFee, cartTotal, cartItems) {
     try {
-        const cartItems = cart.map(item => 
+        // 1. Save order to Firebase
+        const orderData = {
+            customerName,
+            customerPhone,
+            address,
+            location: { lat, lng },
+            deliveryFee,
+            totalAmount: cartTotal,
+            items: cartItems,
+            status: 'Pending', // Default status
+            timestamp: new Date().toISOString()
+        };
+        await db.ref('orders').push(orderData);
+
+        // 2. Prepare and send WhatsApp message
+        const cartItemsText = cartItems.map(item =>
             ` ➤ ${item.name} (${item.quantity} × ₹${item.price}) = ₹${item.price * item.quantity}`
         ).join('\n');
-        
-        const mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
-        
+
+        const mapsLink = `https://maps.google.com/?q=${lat},${lng}`;
+
         const message = `✨ *New QuickKart Order!* ✨
 ====================
 
@@ -84,7 +99,7 @@ ${mapsLink}
 
 *ORDER SUMMARY*
 🛒 *Items:*
-${cartItems}
+${cartItemsText}
 
 ----------------------------------------
 
@@ -97,12 +112,13 @@ ${cartItems}
 
 📝 *Special Instructions (if any):*
 `;
-        
+
         const encodedMessage = encodeURIComponent(message);
         window.open(`https://wa.me/919716940448?text=${encodedMessage}`, '_blank');
         return true;
     } catch (error) {
-        console.error('WhatsApp error:', error);
+        console.error('Order processing error:', error);
+        showNotification('Could not save or send the order.', 'error');
         return false;
     }
 }
@@ -115,18 +131,16 @@ async function handleOrderWithLocation() {
     const customerName = document.getElementById('customerName').value.trim();
     const customerPhone = document.getElementById('customerPhone').value.trim();
 
-    // --- NEW CHECK ADDED HERE ---
     if (cart.length === 0) {
         showNotification('Your cart is empty! Please add items to order.', 'error');
-        return; // Order ko yahin rok do
+        return;
     }
-    // --- END OF NEW CHECK ---
 
     if (!isShopOpen) {
         statusEl.textContent = 'Shop is closed. Cannot place order.';
         return;
     }
-    
+
     if (!customerName || !customerPhone || customerPhone.length !== 10) {
         statusEl.textContent = 'Please enter valid name and 10-digit mobile number';
         return;
@@ -141,19 +155,24 @@ async function handleOrderWithLocation() {
         const position = await getCurrentPosition();
         const { latitude: lat, longitude: lng } = position.coords;
         const distance = getDistanceFromLatLonInKm(storeLocation.lat, storeLocation.lng, lat, lng);
-        
+
         if (distance > 5) {
             statusEl.innerHTML = `Delivery not available (${distance.toFixed(1)} km away)<br>We deliver within 5km only`;
             document.getElementById('deliveryFee').textContent = 'Not Available';
+            btn.disabled = false; // Re-enable button
+            spinner.style.display = 'none';
+            btnText.style.display = 'inline-block';
             return;
         }
-        
+
         statusEl.textContent = 'Getting your address...';
+        // YEH ASLI CODE HAI JO CUSTOMER KA ADDRESS NIKALEGA
         const address = await getAddressFromCoords(lat, lng);
+        
         document.getElementById('autoAddress').value = address;
         document.getElementById('userLat').value = lat;
         document.getElementById('userLng').value = lng;
-        
+
         let deliveryFee = 0;
         if (distance > 0 && distance <= 1) {
             deliveryFee = 10;
@@ -162,21 +181,26 @@ async function handleOrderWithLocation() {
             deliveryFee = Math.round(10 + (extraDistance * 5));
         }
         document.getElementById('deliveryFee').textContent = `₹${deliveryFee}`;
-        
+
         const itemTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
         const total = itemTotal + deliveryFee;
         document.getElementById('cartTotal').textContent = `₹${total}`;
-        
-        const success = sendWhatsAppOrder(customerName, customerPhone, address, lat, lng, deliveryFee, total);
-        
+
+        const cartItemsCopy = JSON.parse(JSON.stringify(cart));
+        const success = await sendWhatsAppOrder(customerName, customerPhone, address, lat, lng, deliveryFee, total, cartItemsCopy);
+
         if (success) {
             cart.length = 0;
             localStorage.setItem('quickKartCart', JSON.stringify(cart));
-            // updateCartUI ko typeof se check karna zaroori hai
-            if (typeof updateCartUI === 'function') updateCartUI();
-            statusEl.textContent = 'Order sent to WhatsApp!';
+            // 'updateCartUI' ko dynamically import karke call karna, taaki circular dependency se bacha ja sake
+            import('./cart.js').then(cartModule => {
+                if (typeof cartModule.updateCartUI === 'function') {
+                    cartModule.updateCartUI();
+                }
+            });
+            statusEl.textContent = 'Order sent successfully!';
         } else {
-            throw new Error('Failed to open WhatsApp');
+            throw new Error('Failed to send or save the order.');
         }
     } catch (error) {
         console.error('Order error:', error);

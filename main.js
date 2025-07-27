@@ -6,10 +6,42 @@ import { initLocation } from './location.js';
 import { updateCartUI, openCart, closeCart, setupCartElements } from './cart.js';
 import { showNotification } from './utils.js';
 
-// --- MAIN APP INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
     
-    // Step 1: Saare zaroori HTML elements ko ek hi baar mein pakad lo
+    // --- SPLASH SCREEN LOGIC START (UPDATED) ---
+    const splashScreen = document.getElementById('splash-screen');
+    const logoAnimated = document.querySelector('.logo-text-animated');
+
+    if (splashScreen && logoAnimated) {
+        const textQuick = 'Quick';
+        const textKart = 'Kart';
+        let html = '';
+        let i = 0;
+
+        for (const char of textQuick) {
+            i++;
+            html += `<span class="logo-char-animated" style="--i:${i};">${char}</span>`;
+        }
+        for (const char of textKart) {
+            i++;
+            html += `<span class="logo-char-animated kart" style="--i:${i};">${char}</span>`;
+        }
+        
+        logoAnimated.innerHTML = html;
+
+        // Step 1: Animation shuru hone ke 2 second baad fade-out start karo
+        setTimeout(() => {
+            splashScreen.classList.add('hidden');
+            
+            // Step 2: Fade-out transition (jo 0.8s ka hai) poora hone ke baad, element ko poori tarah hata do
+            setTimeout(() => {
+                splashScreen.style.display = 'none';
+            }, 800); // Yeh time CSS ke transition time se match hona chahiye
+
+        }, 2000); // 2 seconds
+    }
+    // --- SPLASH SCREEN LOGIC END ---
+
     const elements = {
         body: document.body,
         storeDiv: document.getElementById('storeItems'),
@@ -44,7 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
         navCartCount: document.getElementById('navCartCount'),
     };
     
-    // Function: Product view dikhane ke liye
     const showProductView = (category, focusSearch = false) => {
         elements.body.classList.remove('category-view');
         elements.searchSection.classList.remove('hidden');
@@ -52,24 +83,18 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.logoBox.innerHTML = `<i class="fas fa-arrow-left"></i> Back`;
         elements.logoBox.style.cursor = 'pointer';
         elements.sectionTitle.textContent = category === 'all' ? 'All Products' : category;
-        
         initStore(category, '', elements.storeDiv);
-
         elements.categoryBtns.forEach(b => b.classList.toggle('active', b.dataset.category === category));
         if (category !== 'all') {
             const activeBtn = document.querySelector(`.category-btn.active`);
             activeBtn?.scrollIntoView({ behavior: 'smooth', inline: 'center' });
         }
-        
         if (focusSearch) elements.searchInput.focus();
-        
         const activeNav = focusSearch ? elements.navSearch : (category === 'all' ? elements.navAllItems : elements.navHome);
         updateActiveNav(activeNav);
-        
         window.scrollTo(0, 0);
     };
 
-    // Function: Category view dikhane ke liye
     const showCategoryView = () => {
         elements.body.classList.add('category-view');
         elements.searchSection.classList.add('hidden');
@@ -77,32 +102,25 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.logoBox.innerHTML = `<span class="logo-text">Quick<span>Kart</span></span>`;
         elements.logoBox.style.cursor = 'default';
         elements.sectionTitle.textContent = 'Shop by Category';
-        // Pass showProductView function as a callback
         renderCategoryGrid(elements.storeDiv, showProductView);
         updateActiveNav(elements.navHome);
         window.scrollTo(0, 0);
     };
     
-    // Function: Active navigation button ko update karna
     const updateActiveNav = (activeButton) => {
-        [elements.navHome, elements.navAllItems, elements.navSearch, elements.navCart].forEach(btn => {
-            btn.classList.remove('active');
-        });
+        [elements.navHome, elements.navAllItems, elements.navSearch, elements.navCart].forEach(btn => btn.classList.remove('active'));
         if (activeButton) activeButton.classList.add('active');
     };
     
-    // Step 2: Saare event listeners ko ek jagah set karo
     function setupAllEventListeners() {
         const handleCloseCart = () => {
             closeCart();
             const lastActive = document.querySelector('.bottom-nav-bar .nav-btn.active');
             updateActiveNav(lastActive);
         };
-
         elements.closeCartBtn.addEventListener('click', handleCloseCart);
         elements.continueShoppingBtn.addEventListener('click', handleCloseCart);
         elements.cartOverlay.addEventListener('click', handleCloseCart);
-        
         elements.logoBox.addEventListener('click', () => {
             if (!elements.body.classList.contains('category-view')) showCategoryView();
         });
@@ -138,11 +156,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Step 3: App ko initialize karo
-    setupShopStatus(elements); 
+    // Initialize the App
+    setupShopStatus(elements, closeCart); 
     setupAllEventListeners();
     setupCartElements(elements, { navCartCount: elements.navCartCount });
     initLocation();
     showCategoryView(); 
     updateCartUI(); 
+    
+    // ... aapka saara purana code yahan hai ...
+    setupShopStatus(elements, closeCart); 
+    setupAllEventListeners();
+    setupCartElements(elements, { navCartCount: elements.navCartCount });
+    initLocation();
+    showCategoryView(); 
+    updateCartUI(); 
+
+    // === YEH CODE ADD KAREIN START ===
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('ServiceWorker Registered with scope:', registration.scope);
+                })
+                .catch(err => {
+                    console.log('ServiceWorker Registration Failed:', err);
+                });
+        });
+    }
 });

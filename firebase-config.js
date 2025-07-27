@@ -1,8 +1,7 @@
-// firebase-config.js (REPLACE THIS ENTIRE FILE)
+// firebase-config.js
 
 import { showNotification } from './utils.js';
 
-// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBieX9ymlSZH_nGc17YukhmrIvNOpBzF_M",
   authDomain: "quickkart-shop-status.firebaseapp.com",
@@ -13,7 +12,6 @@ const firebaseConfig = {
   appId: "1:603872368115:web:3ed732f3c7afe934ee2e86"
 };
 
-// Firebase services ko initialize karna
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
@@ -22,8 +20,7 @@ const shopStatusRef = db.ref('shopStatus');
 
 let isShopOpen = true;
 
-// Shop status ka logic
-function setupShopStatus(elements) {
+function setupShopStatus(elements, closeCartCallback) {
     const { shopStatusToggle, loginModal, loginForm, closeLoginBtn, loginError, logoutBtn, adminPanelBtn } = elements;
 
     shopStatusRef.on('value', (snapshot) => {
@@ -31,7 +28,7 @@ function setupShopStatus(elements) {
         if (statusData) {
             isShopOpen = statusData.isOpen;
             shopStatusToggle.checked = isShopOpen;
-            updateShopStatus(isShopOpen, elements);
+            updateShopStatus(isShopOpen, elements, closeCartCallback);
         }
     });
 
@@ -71,7 +68,6 @@ function setupShopStatus(elements) {
         loginModal.style.display = 'none';
     });
     
-    // Login status ke hisaab se buttons dikhana/chhipana
     auth.onAuthStateChanged((user) => {
         if (user) {
             logoutBtn.style.display = 'block';
@@ -81,17 +77,15 @@ function setupShopStatus(elements) {
             adminPanelBtn.style.display = 'none';
         }
     });
-
-    // Logout aur Admin Panel ke click events ab main.js mein hain
 }
 
-// Shop status ke hisaab se UI update karna
-function updateShopStatus(isOpen, elements) {
+function updateShopStatus(isOpen, elements, closeCartCallback) {
     document.body.classList.toggle('shop-closed', !isOpen);
     elements.shopStatusText.textContent = isOpen ? "Open" : "Closed";
     elements.shopStatusText.style.color = isOpen ? "var(--primary)" : "var(--error)";
-    if (!isOpen && window.closeCart) window.closeCart();
+    if (!isOpen && typeof closeCartCallback === 'function') {
+        closeCartCallback();
+    }
 }
 
-// Zaroori cheezein export karna taaki doosri files use kar sakein
 export { db, auth, storage, shopStatusRef, isShopOpen, setupShopStatus, updateShopStatus };
