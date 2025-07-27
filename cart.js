@@ -15,9 +15,9 @@ function setupClearCart() {
             
             const confirmed = confirm('Are you sure you want to remove all items from the cart?');
             if (confirmed) {
-                cart.length = 0;
+                cart.length = 0; // Clear the cart array
                 showNotification('Cart has been cleared', 'info');
-                updateCartUI();
+                updateCartUI(); // Update the UI
             }
         });
     }
@@ -26,31 +26,45 @@ function setupClearCart() {
 export function setupCartElements(el, navEl = {}) {
     elements = el;
     navElements = navEl;
-    setupClearCart();
+    setupClearCart(); // Initialize the clear cart button
 }
 
+// Function to update an item's quantity from within the cart
 function updateCartItemQuantity(index, change) {
     if (!cart[index]) return;
+
     cart[index].quantity += change;
+
     if (cart[index].quantity <= 0) {
+        // If quantity is 0 or less, remove the item
         cart.splice(index, 1);
     }
+    
     updateCartUI();
 }
 
 export function updateCartUI() {
     if (!elements) {
+        console.error('Cart elements not initialized');
         return;
     }
+
     try {
         const validCart = cart.filter(item => 
-            item && typeof item.quantity === 'number' && item.quantity > 0 && typeof item.price === 'number'
+            item && 
+            typeof item.quantity === 'number' && 
+            item.quantity > 0 &&
+            typeof item.price === 'number'
         );
+
         cart.length = 0;
         cart.push(...validCart);
+
         elements.cartList.innerHTML = '';
         let total = 0;
         let totalItems = 0;
+        
+        // Toggle clear cart button visibility
         const clearCartBtn = document.getElementById('clearCartBtn');
 
         if (cart.length === 0) {
@@ -61,17 +75,40 @@ export function updateCartUI() {
             elements.cartEmpty.style.display = 'none';
             elements.cartFull.style.display = 'block';
             if(clearCartBtn) clearCartBtn.style.display = 'flex';
+
             cart.forEach((item, index) => {
                 const itemTotal = item.price * item.quantity;
                 total += itemTotal;
                 totalItems += item.quantity;
+
                 const li = document.createElement('li');
                 li.className = 'cart-item';
+                
                 const imageSrc = item.image || 'images/placeholder.png';
-                li.innerHTML = `<img src="${imageSrc}" alt="${item.name}" class="cart-item-image" onerror="this.onerror=null;this.src='images/placeholder.png'"><div class="cart-item-details"><div class="cart-item-name">${item.name}</div><div class="cart-item-price">₹${item.price}</div><div class="cart-item-actions"><div class="quantity-control"><button class="qty-minus">-</button><span>${item.quantity}</span><button class="qty-plus">+</button></div><div class="cart-item-total">₹${itemTotal}</div></div></div><button class="remove-btn"><i class="fas fa-trash-alt"></i></button>`;
+
+                li.innerHTML = `
+                    <img src="${imageSrc}" alt="${item.name}" class="cart-item-image" onerror="this.onerror=null;this.src='images/placeholder.png'">
+                    <div class="cart-item-details">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-price">₹${item.price}</div>
+                        <div class="cart-item-actions">
+                            <div class="quantity-control">
+                                <button class="qty-minus">-</button>
+                                <span>${item.quantity}</span>
+                                <button class="qty-plus">+</button>
+                            </div>
+                            <div class="cart-item-total">₹${itemTotal}</div>
+                        </div>
+                    </div>
+                    <button class="remove-btn">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                `;
+                
                 li.querySelector('.qty-minus').addEventListener('click', () => updateCartItemQuantity(index, -1));
                 li.querySelector('.qty-plus').addEventListener('click', () => updateCartItemQuantity(index, 1));
                 li.querySelector('.remove-btn').addEventListener('click', () => removeFromCart(index));
+
                 elements.cartList.appendChild(li);
             });
         }
@@ -85,9 +122,7 @@ export function updateCartUI() {
         }
 
         localStorage.setItem('quickKartCart', JSON.stringify(cart));
-        // CORRECTED: Pass cart to debugCart
-        debugCart(cart);
-
+        debugCart();
     } catch (error) {
         console.error('Cart update failed:', error);
     }
@@ -96,6 +131,7 @@ export function updateCartUI() {
 export function removeFromCart(index) {
     try {
         const removedItem = cart.splice(index, 1)[0];
+        // --- CHANGE: Using 'info' type for notification ---
         showNotification(`${removedItem.name} removed from cart`, 'info');
         updateCartUI();
     } catch (error) {
@@ -115,3 +151,5 @@ export function closeCart() {
     elements.cartElement.classList.remove('open');
     elements.cartOverlay.classList.remove('show');
 }
+
+window.cart = cart;

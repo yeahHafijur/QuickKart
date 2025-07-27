@@ -1,8 +1,8 @@
 // location.js (REPLACE THIS ENTIRE FILE)
 
 import cart from './cart-data.js';
-// db ko firebase-config se import karein
-import { isShopOpen, db } from './firebase-config.js';
+import { isShopOpen } from './firebase-config.js';
+// showNotification ko import karna zaroori hai
 import { showNotification } from './utils.js';
 
 const storeLocation = { lat: 26.6468571, lng: 92.0754806 };
@@ -60,29 +60,13 @@ async function getAddressFromCoords(lat, lng) {
     }
 }
 
-// === START: UPDATED sendWhatsAppOrder FUNCTION ===
-async function sendWhatsAppOrder(customerName, customerPhone, address, lat, lng, deliveryFee, cartTotal, cartItems) {
+function sendWhatsAppOrder(customerName, customerPhone, address, lat, lng, deliveryFee, cartTotal) {
     try {
-        // 1. Save order to Firebase
-        const orderData = {
-            customerName,
-            customerPhone,
-            address,
-            location: { lat, lng },
-            deliveryFee,
-            totalAmount: cartTotal,
-            items: cartItems,
-            status: 'Pending', // Default status
-            timestamp: new Date().toISOString()
-        };
-        await db.ref('orders').push(orderData);
-
-        // 2. Prepare and send WhatsApp message
-        const cartItemsText = cartItems.map(item => 
+        const cartItems = cart.map(item => 
             ` ➤ ${item.name} (${item.quantity} × ₹${item.price}) = ₹${item.price * item.quantity}`
         ).join('\n');
         
-        const mapsLink = `http://maps.google.com/?q=${lat},${lng}`;
+        const mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
         
         const message = `✨ *New QuickKart Order!* ✨
 ====================
@@ -100,7 +84,7 @@ ${mapsLink}
 
 *ORDER SUMMARY*
 🛒 *Items:*
-${cartItemsText}
+${cartItems}
 
 ----------------------------------------
 
@@ -118,12 +102,10 @@ ${cartItemsText}
         window.open(`https://wa.me/919716940448?text=${encodedMessage}`, '_blank');
         return true;
     } catch (error) {
-        console.error('Order processing error:', error);
-        showNotification('Could not save or send the order.', 'error');
+        console.error('WhatsApp error:', error);
         return false;
     }
 }
-// === END: UPDATED sendWhatsAppOrder FUNCTION ===
 
 async function handleOrderWithLocation() {
     const btn = document.getElementById('placeOrderBtn');
@@ -133,10 +115,12 @@ async function handleOrderWithLocation() {
     const customerName = document.getElementById('customerName').value.trim();
     const customerPhone = document.getElementById('customerPhone').value.trim();
 
+    // --- NEW CHECK ADDED HERE ---
     if (cart.length === 0) {
         showNotification('Your cart is empty! Please add items to order.', 'error');
-        return;
+        return; // Order ko yahin rok do
     }
+    // --- END OF NEW CHECK ---
 
     if (!isShopOpen) {
         statusEl.textContent = 'Shop is closed. Cannot place order.';
@@ -183,18 +167,16 @@ async function handleOrderWithLocation() {
         const total = itemTotal + deliveryFee;
         document.getElementById('cartTotal').textContent = `₹${total}`;
         
-        // Pass a copy of the cart to the function
-        const cartItemsCopy = JSON.parse(JSON.stringify(cart));
-        const success = await sendWhatsAppOrder(customerName, customerPhone, address, lat, lng, deliveryFee, total, cartItemsCopy);
+        const success = sendWhatsAppOrder(customerName, customerPhone, address, lat, lng, deliveryFee, total);
         
         if (success) {
-            cart.length = 0; 
+            cart.length = 0;
             localStorage.setItem('quickKartCart', JSON.stringify(cart));
-            // External function, check if it exists before calling
-            if (typeof updateCartUI === 'function') updateCartUI(); 
-            statusEl.textContent = 'Order sent successfully!';
+            // updateCartUI ko typeof se check karna zaroori hai
+            if (typeof updateCartUI === 'function') updateCartUI();
+            statusEl.textContent = 'Order sent to WhatsApp!';
         } else {
-            throw new Error('Failed to send or save the order.');
+            throw new Error('Failed to open WhatsApp');
         }
     } catch (error) {
         console.error('Order error:', error);
