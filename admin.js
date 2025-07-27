@@ -357,4 +357,58 @@ productListDiv.addEventListener('change', async (e) => {
     }
 });
 
+
 adminSearchInput.addEventListener('input', (e) => renderProducts(e.target.value));
+
+// === PUSH NOTIFICATION PERMISSION LOGIC ===
+
+const enableNotificationsBtn = document.getElementById('enableNotificationsBtn');
+
+enableNotificationsBtn.addEventListener('click', () => {
+    askForNotificationPermission();
+});
+
+async function askForNotificationPermission() {
+    try {
+        // 1. User se permission maangna
+        const permissionResult = await Notification.requestPermission();
+        if (permissionResult !== 'granted') {
+            throw new Error('Notification permission not granted.');
+        }
+
+        // 2. Service worker ko register karna
+        const swRegistration = await navigator.serviceWorker.ready;
+
+        // 3. Push subscription token lena
+        const subscription = await swRegistration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array('BFHMLoX5Cda3QW4O1-J6zZc4n4x8S-63i-m2A3R-l_C6A4S-d5v3v6Z8A6B8D-g2E-h5j7k9L1m3N5') // Public VAPID Key
+        });
+        
+        // 4. Token ko Firebase me save karna
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+            const token = JSON.stringify(subscription);
+            db.ref(`admin_tokens/${currentUser.uid}`).set(token);
+            alert('Notifications have been enabled successfully!');
+        } else {
+            alert('Please login to enable notifications.');
+        }
+
+    } catch (error) {
+        console.error('Failed to enable notifications:', error);
+        alert('Could not enable notifications. Check console for errors.');
+    }
+}
+
+// Yeh ek helper function hai, ise bhi add karein
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
