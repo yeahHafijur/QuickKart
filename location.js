@@ -4,7 +4,7 @@ import cart from './cart-data.js';
 import { isShopOpen, db } from './firebase-config.js';
 import { showNotification } from './utils.js';
 
-const storeLocation = { lat: 24.757225, lng: 92.787279 };
+const storeLocation = { lat: 26.646883, lng: 92.075486 };
 
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
     const R = 6371;
