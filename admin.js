@@ -1,8 +1,10 @@
+// admin.js (Complete Updated Code)
+
 import { db, auth, storage } from './firebase-config.js';
 
 let allProducts = [];
 
-// === START: NEW DOM ELEMENTS FOR NAVIGATION ===
+// === DOM ELEMENTS FOR NAVIGATION ===
 const navButtons = {
     viewProducts: document.getElementById('navViewProducts'),
     addProduct: document.getElementById('navAddProduct'),
@@ -14,8 +16,8 @@ const sections = {
     addProduct: document.getElementById('addProductSection'),
     orderHistory: document.getElementById('orderHistorySection'),
 };
-// === END: NEW DOM ELEMENTS FOR NAVIGATION ===
 
+// === OTHER DOM ELEMENTS ===
 const addProductForm = document.getElementById('addProductForm');
 const productListDiv = document.getElementById('productList');
 const submitProductBtn = document.getElementById('submitProductBtn');
@@ -28,45 +30,47 @@ const categoryList = document.getElementById('categoryList');
 const adminSearchInput = document.getElementById('adminSearchInput');
 const orderListDiv = document.getElementById('orderList');
 
-// === START: NAVIGATION LOGIC ===
-function showSection(sectionToShow) {
-    // Hide all sections and deactivate all buttons
-    Object.values(sections).forEach(section => section.classList.remove('active'));
-    Object.values(navButtons).forEach(button => button.classList.remove('active'));
 
-    // Show the target section and activate the corresponding button
-    if (sectionToShow === 'addProduct') {
-        sections.addProduct.classList.add('active');
-        navButtons.addProduct.classList.add('active');
-        resetForm(); // Reset form when switching to it
-    } else if (sectionToShow === 'orderHistory') {
-        sections.orderHistory.classList.add('active');
-        navButtons.orderHistory.classList.add('active');
-    } else { // Default to product list
-        sections.productList.classList.add('active');
-        navButtons.viewProducts.classList.add('active');
-    }
-}
-
-navButtons.viewProducts.addEventListener('click', () => showSection('productList'));
-navButtons.addProduct.addEventListener('click', () => showSection('addProduct'));
-navButtons.orderHistory.addEventListener('click', () => showSection('orderHistory'));
-// === END: NAVIGATION LOGIC ===
-
-// Authenticate and initialize
+// === AUTHENTICATION CHECK ===
 document.body.style.display = 'none';
 auth.onAuthStateChanged(user => {
     if (user) {
         document.body.style.display = 'block';
         fetchAndRenderProducts(); 
         fetchAndRenderOrders(); 
-        showSection('productList'); // Show product list by default
+        setupNewOrderNotifications(); // Notification listener ko setup karein
+        showSection('productList'); // Default section
     } else {
         window.location.href = 'index.html';
     }
 });
 
-// === START: ORDER HISTORY FUNCTIONS ===
+
+// === NAVIGATION LOGIC ===
+function showSection(sectionToShow) {
+    Object.values(sections).forEach(section => section.classList.remove('active'));
+    Object.values(navButtons).forEach(button => button.classList.remove('active'));
+
+    if (sectionToShow === 'addProduct') {
+        sections.addProduct.classList.add('active');
+        navButtons.addProduct.classList.add('active');
+        resetForm();
+    } else if (sectionToShow === 'orderHistory') {
+        sections.orderHistory.classList.add('active');
+        navButtons.orderHistory.classList.add('active');
+    } else {
+        sections.productList.classList.add('active');
+        navButtons.viewProducts.classList.add('active');
+    }
+}
+navButtons.viewProducts.addEventListener('click', () => showSection('productList'));
+navButtons.addProduct.addEventListener('click', () => showSection('addProduct'));
+navButtons.orderHistory.addEventListener('click', () => showSection('orderHistory'));
+
+
+// === ORDER HISTORY FUNCTIONS ===
+// admin.js
+
 function renderOrders(orders) {
     if (!orderListDiv) return;
     orderListDiv.innerHTML = '';
@@ -91,6 +95,17 @@ function renderOrders(orders) {
             timeStyle: 'short'
         });
 
+        // === YAHAN BADLAV KIYA GAYA HAI START ===
+
+        // Button sirf tab banayein jab order 'Completed' na ho
+        let completeButtonHtml = '';
+        if (order.status !== 'Completed') {
+            completeButtonHtml = `<button class="admin-btn-complete" data-id="${order.key}">Mark Completed</button>`;
+        }
+
+        // Status ke hisaab se color ke liye class add karein
+        const statusClass = order.status ? order.status.toLowerCase() : 'pending';
+
         orderCard.innerHTML = `
             <div class="order-header">
                 <span class="order-customer">${order.customerName}</span>
@@ -104,10 +119,15 @@ function renderOrders(orders) {
                 <ul>${itemsHtml}</ul>
             </div>
             <div class="order-footer">
-                <span>Status: <strong>${order.status}</strong></span>
-                <button class="admin-btn-delete-order" data-id="${order.key}">Delete</button>
+                <span>Status: <strong id="status-${order.key}" class="status-badge ${statusClass}">${order.status}</strong></span>
+                <div class="order-buttons">
+                    ${completeButtonHtml} 
+                    <button class="admin-btn-delete-order" data-id="${order.key}">Delete</button>
+                </div>
             </div>
         `;
+        // === YAHAN BADLAV KIYA GAYA HAI END ===
+        
         orderListDiv.appendChild(orderCard);
     });
 }
@@ -120,6 +140,8 @@ async function fetchAndRenderOrders() {
             const ordersObject = snapshot.val();
             const allOrders = ordersObject ? Object.entries(ordersObject).map(([key, value]) => ({...value, key})) : [];
             renderOrders(allOrders);
+            // Flag set to true after initial load
+            isInitialOrdersLoaded = true;
         });
     } catch (error) {
         console.error("Error loading orders:", error);
@@ -128,6 +150,7 @@ async function fetchAndRenderOrders() {
 }
 
 orderListDiv.addEventListener('click', (e) => {
+    // Delete order logic
     if (e.target.classList.contains('admin-btn-delete-order')) {
         const orderId = e.target.getAttribute('data-id');
         if (confirm('Are you sure you want to delete this order history?')) {
@@ -136,10 +159,39 @@ orderListDiv.addEventListener('click', (e) => {
                 .catch(error => alert(`Failed to delete order: ${error.message}`));
         }
     }
-});
-// === END: ORDER HISTORY FUNCTIONS ===
 
-// === PRODUCT MANAGEMENT FUNCTIONS ===
+    // Mark as Complete logic
+    if (e.target.classList.contains('admin-btn-complete')) {
+        const orderId = e.target.getAttribute('data-id');
+        db.ref(`orders/${orderId}`).update({ status: 'Completed' })
+            .then(() => {
+                alert('Order marked as Completed!');
+                const statusElement = document.getElementById(`status-${orderId}`);
+                if (statusElement) statusElement.textContent = 'Completed';
+            })
+            .catch(error => alert(`Failed to update status: ${error.message}`));
+    }
+});
+
+
+// === NEW FEATURE: NEW ORDER NOTIFICATION ===
+let isInitialOrdersLoaded = false;
+const notificationSound = new Audio('notification.mp3'); // Make sure this file exists in your folder
+
+function setupNewOrderNotifications() {
+    db.ref('orders').on('child_added', (snapshot) => {
+        if (isInitialOrdersLoaded) {
+            console.log('New order received!', snapshot.val());
+            notificationSound.play().catch(error => {
+                console.warn('Could not play notification sound:', error.message);
+                alert('🔔 New Order Received!');
+            });
+        }
+    });
+}
+
+
+// === PRODUCT MANAGEMENT FUNCTIONS (No changes here) ===
 function resetForm() {
     addProductForm.reset();
     editingIdInput.value = '';
@@ -239,8 +291,8 @@ addProductForm.addEventListener('submit', async (e) => {
             await db.ref('products').push({ name, price, category, image: imageUrl, inStock: true });
             alert('Product added successfully!');
         }
-        await fetchAndRenderProducts(); // Refresh products
-        showSection('productList'); // Switch back to product list after saving
+        await fetchAndRenderProducts();
+        showSection('productList');
     } catch (error) {
         console.error("Error saving product:", error); alert('Failed to save product.');
     } finally {
@@ -251,18 +303,13 @@ addProductForm.addEventListener('submit', async (e) => {
 
 cancelEditBtn.addEventListener('click', () => {
     resetForm();
-    showSection('productList'); // Go back to product list on cancel
+    showSection('productList');
 });
 
 productListDiv.addEventListener('click', (e) => {
     const target = e.target;
-    const button = target.closest('button');
-    if (!button) return;
-    
-    const productId = button.getAttribute('data-id');
-    if (!productId) return;
-
-    if (button.classList.contains('admin-btn-delete')) {
+    if (target.classList.contains('admin-btn-delete')) {
+        const productId = target.closest('button').getAttribute('data-id');
         if (confirm('Are you sure you want to delete this product?')) {
             db.ref(`products/${productId}`).remove().then(() => {
                 alert('Product deleted successfully.');
@@ -273,7 +320,8 @@ productListDiv.addEventListener('click', (e) => {
         }
     }
 
-    if (button.classList.contains('admin-btn-edit')) {
+    if (target.classList.contains('admin-btn-edit')) {
+        const productId = target.closest('button').getAttribute('data-id');
         const productToEdit = allProducts.find(p => p.key === productId);
         if (productToEdit) {
             document.getElementById('productName').value = productToEdit.name;
@@ -285,7 +333,7 @@ productListDiv.addEventListener('click', (e) => {
             cancelEditBtn.style.display = 'block';
             imageInputGroup.style.display = 'none';
             productImageInput.required = false;
-            showSection('addProduct'); // Switch to the add/edit form
+            showSection('addProduct');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }
@@ -304,7 +352,7 @@ productListDiv.addEventListener('change', async (e) => {
             if(productInArray) productInArray.inStock = newStatus;
         } catch (error) {
             console.error('Error updating stock status:', error);
-            target.checked = !newStatus; // Revert checkbox on error
+            target.checked = !newStatus;
         }
     }
 });

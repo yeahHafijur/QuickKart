@@ -1248,4 +1248,52 @@ input:checked + .slider-small:before { transform: translateX(18px); }
 .admin-section .admin-card {
     margin-bottom: 1rem;
 }
+/* admin.js me bane naye buttons aur status ke liye CSS */
 
+.order-buttons {
+    display: flex;
+    gap: 10px; /* Buttons ke beech me space */
+    align-items: center;
+}
+
+.order-buttons button {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    border: none;
+    border-radius: var(--radius);
+    color: white;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.order-buttons button:hover {
+    opacity: 0.85;
+}
+
+/* 'Mark as Complete' button ka style */
+.admin-btn-complete {
+    background-color: var(--primary); /* Green color */
+}
+
+/* 'Delete' button ka style */
+.admin-btn-delete-order {
+    background-color: var(--error); /* Red color */
+}
+
+
+/* Status ('Pending', 'Completed') ke liye style */
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 15px;
+    color: white;
+    font-size: 0.8rem;
+    text-transform: capitalize;
+}
+
+.status-badge.pending {
+    background-color: var(--secondary); /* Orange color */
+}
+
+.status-badge.completed {
+    background-color: var(--primary-dark); /* Dark Green color */
+}
