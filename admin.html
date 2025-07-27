@@ -15,12 +15,57 @@
     </header>
 
     <main class="admin-container">
-       <div class="admin-nav">
-    <button id="navViewProducts" class="admin-nav-btn"><i class="fas fa-list"></i> View Products</button>
-    <button id="navAddProduct" class="admin-nav-btn"><i class="fas fa-plus-circle"></i> Add Product</button>
-    <button id="navOrderHistory" class="admin-nav-btn"><i class="fas fa-history"></i> Order History</button>
-    <button id="enableNotificationsBtn" class="admin-nav-btn"><i class="fas fa-bell"></i> Enable Notifications</button>
+        <div class="admin-nav">
+            <button id="navDashboard" class="admin-nav-btn"><i class="fas fa-chart-line"></i> Dashboard</button>
+            <button id="navViewProducts" class="admin-nav-btn"><i class="fas fa-list"></i> View Products</button>
+            <button id="navAddProduct" class="admin-nav-btn"><i class="fas fa-plus-circle"></i> Add Product</button>
+            <button id="navOrderHistory" class="admin-nav-btn"><i class="fas fa-history"></i> Order History</button>
+            <button id="enableNotificationsBtn" class="admin-nav-btn"><i class="fas fa-bell"></i> Enable Notifications</button>
+        </div>
+
+        <div id="dashboardSection" class="admin-section">
+    <div class="admin-card">
+        <h2><i class="fas fa-chart-line"></i> Sales Dashboard</h2>
+
+        <div class="date-filters">
+            <button class="filter-btn active" data-range="all">All Time</button>
+            <button class="filter-btn" data-range="today">Today</button>
+            <button class="filter-btn" data-range="week">This Week</button>
+            <button class="filter-btn" data-range="month">This Month</button>
+        </div>
+        <div class="date-inputs">
+            <input type="date" id="startDate">
+            <span>to</span>
+            <input type="date" id="endDate">
+            <button id="applyDateRange" class="admin-btn-small">Apply</button>
+        </div>
+        <div class="dashboard-grid">
+            <div class="summary-card">
+                <h3>Item Total (Subtotal)</h3>
+                <p id="itemTotalSales">₹0</p>
+            </div>
+            <div class="summary-card">
+                <h3>Total Delivery Fees</h3>
+                <p id="totalDeliveryFees">₹0</p>
+            </div>
+            <div class="summary-card total-sales-card">
+                <h3>Grand Total Sales</h3>
+                <p id="totalSales">₹0</p>
+            </div>
+            <div class="summary-card">
+                <h3>Total Orders</h3>
+                <p id="totalOrders">0</p>
+            </div>
+        </div>
+    </div>
+    <div class="admin-card">
+        <h2>Top Selling Items (Filtered)</h2>
+        <div id="topSellingItems" class="top-items-list">
+            <p>Loading data...</p>
+        </div>
+    </div>
 </div>
+
         <div id="addProductSection" class="admin-section">
             <div class="admin-card">
                 <h2 id="formTitle">Add New Product</h2>
@@ -33,9 +78,9 @@
                         <input list="categoryList" id="productCategory" class="admin-input" required>
                         <datalist id="categoryList"></datalist>
                     </div>
-                    <div class="form-group" id="imageInputGroup">
-                        <label for="productImage">Product Image</label>
-                        <input type="file" id="productImage" accept="image/*">
+                    <div class="form-group">
+                        <label for="productImageUrl">Product Image URL</label>
+                        <input type="text" id="productImageUrl" class="admin-input" placeholder="Yahan image ka URL paste karein" required>
                     </div>
                     <button type="submit" id="submitProductBtn" class="admin-btn">Add Product</button>
                     <button type="button" id="cancelEditBtn" class="admin-btn-secondary" style="display: none;">Cancel Edit</button>
@@ -50,7 +95,7 @@
             </div>
         </div>
 
-        <div id="productListSection" class="admin-section active">
+        <div id="productListSection" class="admin-section">
             <div class="admin-card">
                 <h2>Existing Products</h2>
                 <div class="form-group">

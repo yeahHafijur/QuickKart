@@ -1,6 +1,6 @@
-// store.js (REPLACE THIS ENTIRE FILE)
+// store.js (UPDATED FOR CUSTOMER APP)
 
-import { isShopOpen, db } from './firebase-config.js'; 
+import { getShopStatus, db } from './firebase-config.js'; 
 import cart from './cart-data.js';
 import { showNotification } from './utils.js';
 import { updateCartUI } from './cart.js';
@@ -26,9 +26,8 @@ function animateToCart(itemElement) {
     flyingAnim.style.opacity = '0';
     setTimeout(() => flyingAnim.remove(), 800);
 }
-
 function addToCart(itemElement) {
-    if (!isShopOpen) {
+    if (!getShopStatus()) { 
         showNotification('Shop is currently closed', 'error');
         return;
     }
@@ -60,28 +59,24 @@ function addToCart(itemElement) {
         showNotification('Failed to add item. Please try again.', 'error');
     }
 }
-
 function updateQuantity(itemElement, change) {
     const quantitySpan = itemElement.querySelector('.quantity-control span');
     let quantity = parseInt(quantitySpan.textContent);
     quantity = Math.max(1, Math.min(quantity + change, 10));
     quantitySpan.textContent = quantity;
 }
-
 function createSkeletonItem() {
     const div = document.createElement('div');
     div.className = 'skeleton-item';
     div.innerHTML = `<div class="skeleton sk-img"></div><div class="skeleton-details"><div class="skeleton sk-text"></div><div class="skeleton sk-text" style="width: 70%;"></div><div class="skeleton sk-price"></div><div class="skeleton sk-button"></div></div>`;
     return div;
 }
-
 function showSkeletons(storeDiv, count = 8) {
     storeDiv.innerHTML = '';
     for (let i = 0; i < count; i++) {
         storeDiv.appendChild(createSkeletonItem());
     }
 }
-
 async function initStore(filterCategory = 'all', searchTerm = '', storeDiv) {
     if (!storeDiv) return;
     showSkeletons(storeDiv);
@@ -97,44 +92,25 @@ async function initStore(filterCategory = 'all', searchTerm = '', storeDiv) {
                 const matchesSearch = searchTerm === '' || (item.name && item.name.toLowerCase().includes(searchStr)) || (item.category && item.category.toLowerCase().includes(searchStr));
                 return matchesCategory && matchesSearch;
             });
-
             if (filteredItems.length === 0) {
                 storeDiv.innerHTML = `<div class="empty-cart" style="grid-column: 1 / -1;"><img src="images/empty-search.png" alt="No items found" style="width: 150px;"><h3>No items found</h3><p>Try a different search term or category.</p></div>`;
                 return;
             }
-
             filteredItems.forEach(item => {
                 const div = document.createElement('div');
                 const isInStock = item.inStock !== false;
                 div.className = `item ${isInStock ? '' : 'item-out-of-stock'}`;
                 div.dataset.item = JSON.stringify(item);
-
                 const actionHtml = isInStock ? `
-                    <div class="quantity-control">
-                        <button class="qty-minus">-</button>
-                        <span>1</span>
-                        <button class="qty-plus">+</button>
-                    </div>
+                    <div class="quantity-control"><button class="qty-minus">-</button><span>1</span><button class="qty-plus">+</button></div>
                     <button class="add-to-cart-btn">Add</button>
-                ` : `
-                    <div class="out-of-stock-label">Out of Stock</div>
-                `;
-
+                ` : `<div class="out-of-stock-label">Out of Stock</div>`;
                 div.innerHTML = `
-                    <div class="item-image-container">
-                        <img src="${item.image}" alt="${item.name}" class="item-img" onerror="this.onerror=null;this.src='images/placeholder.png'">
-                    </div>
+                    <div class="item-image-container"><img src="${item.image}" alt="${item.name}" class="item-img" onerror="this.onerror=null;this.src='images/placeholder.png'"></div>
                     <div class="item-details">
-                        <div>
-                          <h3 class="item-name">${item.name}</h3>
-                          <div class="item-price">₹${item.price}</div>
-                        </div>
-                        <div class="item-actions">
-                            ${actionHtml}
-                        </div>
-                    </div>
-                `;
-
+                        <div><h3 class="item-name">${item.name}</h3><div class="item-price">₹${item.price}</div></div>
+                        <div class="item-actions">${actionHtml}</div>
+                    </div>`;
                 if (isInStock) {
                     div.querySelector('.qty-minus').addEventListener('click', (e) => { e.stopPropagation(); updateQuantity(div, -1); });
                     div.querySelector('.qty-plus').addEventListener('click', (e) => { e.stopPropagation(); updateQuantity(div, 1); });
@@ -148,7 +124,6 @@ async function initStore(filterCategory = 'all', searchTerm = '', storeDiv) {
         storeDiv.innerHTML = `<p style="text-align: center; grid-column: 1 / -1;">Could not load products. Please try again later.</p>`;
     }
 }
-
 async function renderCategoryGrid(storeDiv, onCategoryClick) {
     if (!storeDiv) return;
     showSkeletons(storeDiv);
@@ -171,5 +146,4 @@ async function renderCategoryGrid(storeDiv, onCategoryClick) {
         });
     }, 150);
 }
-
 export { initStore, renderCategoryGrid };

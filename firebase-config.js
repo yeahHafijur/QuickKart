@@ -1,9 +1,9 @@
-// firebase-config.js (FINAL CORRECTED URL)
+// firebase-config.js (FINAL AND 100% CORRECTED CODE)
 
-import "https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js";
-import "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js";
-import "https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js";
-import "https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js";
+import "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js";
+import "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js";
+import "https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js";
+import "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js";
 import { showNotification } from './utils.js';
 
 const firebaseConfig = {
@@ -22,6 +22,8 @@ const auth = firebase.auth();
 const storage = firebase.storage();
 const shopStatusRef = db.ref('shopStatus');
 let isShopOpen = true;
+
+const getShopStatus = () => isShopOpen;
 
 function setupShopStatus(elements, closeCartCallback) {
     const { shopStatusToggle, loginModal, loginForm, closeLoginBtn, loginError, logoutBtn, adminPanelBtn } = elements;
@@ -75,7 +77,6 @@ function setupShopStatus(elements, closeCartCallback) {
         }
     });
 }
-
 function updateShopStatus(isOpen, elements, closeCartCallback) {
     document.body.classList.toggle('shop-closed', !isOpen);
     elements.shopStatusText.textContent = isOpen ? "Open" : "Closed";
@@ -84,5 +85,4 @@ function updateShopStatus(isOpen, elements, closeCartCallback) {
         closeCartCallback();
     }
 }
-
-export { db, auth, storage, shopStatusRef, isShopOpen, setupShopStatus, updateShopStatus };
+export { db, auth, storage, shopStatusRef, isShopOpen, getShopStatus, setupShopStatus, updateShopStatus };
