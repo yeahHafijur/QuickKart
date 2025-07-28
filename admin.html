@@ -79,8 +79,9 @@
                         <datalist id="categoryList"></datalist>
                     </div>
                     <div class="form-group">
-                        <label for="productImageUrl">Product Image URL</label>
-                        <input type="text" id="productImageUrl" class="admin-input" placeholder="Yahan image ka URL paste karein" required>
+                        <label for="productImageFile">Product Image</label>
+                        <input type="file" id="productImageFile" class="admin-input" accept="image/*">
+                        <div id="uploadProgress" style="margin-top: 10px; display: none;">Uploading: <span>0</span>%</div>
                     </div>
                     <button type="submit" id="submitProductBtn" class="admin-btn">Add Product</button>
                     <button type="button" id="cancelEditBtn" class="admin-btn-secondary" style="display: none;">Cancel Edit</button>

@@ -167,43 +167,114 @@ async function fetchAndRenderProducts() {
     } catch (error) { console.error("Error loading products:", error); productListDiv.innerHTML = '<p>Could not load products.</p>'; }
 }
 
+// REPLACE the existing addProductForm event listener with this entire block
 addProductForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    submitProductBtn.textContent = 'Saving...';
+    submitProductBtn.disabled = true;
+
     const name = document.getElementById('productName').value.trim();
     const price = Number(document.getElementById('productPrice').value);
     const category = document.getElementById('productCategory').value.trim();
-    const imageUrl = document.getElementById('productImageUrl').value.trim();
+    const file = document.getElementById('productImageFile').files[0];
     const editingId = editingIdInput.value;
-    if (!name || !price || !category) { alert('Please fill all text fields.'); return; }
-    submitProductBtn.textContent = 'Saving...'; submitProductBtn.disabled = true;
+    
+    // Yahan hum image URL ko store karenge, chahe woh purana ho ya naya upload hua ho
+    let imageUrl = ''; 
+
+    if (!name || !price || !category) {
+        alert('Please fill all text fields.');
+        submitProductBtn.disabled = false;
+        submitProductBtn.textContent = editingId ? 'Update Product' : 'Add Product';
+        return;
+    }
+
     try {
+        // CASE 1: Editing an existing product
         if (editingId) {
+            const productToEdit = allProducts.find(p => p.key === editingId);
+            imageUrl = productToEdit.image; // Default to the old image URL
+
+            // Agar user ne nayi file select ki hai, to use upload karo
+            if (file) {
+                // Upload the new file and get its URL
+                imageUrl = await uploadImageAndGetURL(file);
+            }
+            
+            // Database mein product update karo
             await db.ref(`products/${editingId}`).update({ name, price, category, image: imageUrl });
             alert('Product updated successfully!');
+
+        // CASE 2: Adding a new product
         } else {
-            if (!imageUrl) { alert('Please paste an image URL.'); submitProductBtn.disabled = false; submitProductBtn.textContent = 'Add Product'; return; }
-            const productsSnapshot = await db.ref('products').orderByKey().limitToLast(1).once('value');
-            let lastProductNumber = 100;
-            if (productsSnapshot.exists()) {
-                const lastProductKey = Object.keys(productsSnapshot.val())[0];
-                const numberPart = lastProductKey.replace('product', '');
-                if (!isNaN(parseInt(numberPart))) { lastProductNumber = parseInt(numberPart); }
+            // Naye product ke liye image zaroori hai
+            if (!file) {
+                alert('Please select an image file to upload.');
+                submitProductBtn.disabled = false;
+                submitProductBtn.textContent = 'Add Product';
+                return;
             }
-            const newProductNumber = lastProductNumber + 1;
-            const newProductKey = `product${newProductNumber}`;
-            await db.ref(`products/${newProductKey}`).set({ name: name, price, category, image: imageUrl, inStock: true });
+
+            // Image upload karo aur uska URL pao
+            imageUrl = await uploadImageAndGetURL(file);
+            
+            // Database mein naya product add karo
+            await db.ref('products').push({ name: name, price, category, image: imageUrl, inStock: true });
             alert('Product added successfully!');
         }
+
         await fetchAndRenderProducts();
         showSection('productList');
+
     } catch (error) {
         console.error("Error saving product:", error);
-        alert('Failed to save product. Check console for details.');
+        alert(`Failed to save product: ${error.message}`);
     } finally {
+        // Form ko reset karo aur button ko re-enable karo
         submitProductBtn.disabled = false;
         resetForm();
     }
 });
+
+// YEH NAYA HELPER FUNCTION ADD KAREIN
+// Yeh function file upload karega aur download URL return karega
+async function uploadImageAndGetURL(file) {
+    const progressDiv = document.getElementById('uploadProgress');
+    const progressSpan = progressDiv.querySelector('span');
+    progressDiv.style.display = 'block';
+    
+    return new Promise((resolve, reject) => {
+        // Ek unique file name banayein
+        const fileName = `product_${Date.now()}_${file.name}`;
+        const storageRef = storage.ref(`product_images/${fileName}`);
+        const uploadTask = storageRef.put(file);
+
+        // Upload progress ko sunein
+        uploadTask.on('state_changed', 
+            (snapshot) => {
+                // Progress update karein
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                progressSpan.textContent = Math.round(progress);
+            }, 
+            (error) => {
+                // Error handle karein
+                console.error("Upload failed:", error);
+                progressDiv.style.display = 'none';
+                reject(error);
+            }, 
+            async () => {
+                // Upload complete hone par
+                try {
+                    const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                    progressDiv.style.display = 'none';
+                    resolve(downloadURL);
+                } catch (error) {
+                    reject(error);
+                }
+            }
+        );
+    });
+}
 
 cancelEditBtn.addEventListener('click', () => { resetForm(); showSection('productList'); });
 
