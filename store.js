@@ -77,48 +77,80 @@ function showSkeletons(storeDiv, count = 8) {
         storeDiv.appendChild(createSkeletonItem());
     }
 }
+// store.js (poore initStore function ko isse replace karein)
+
 async function initStore(filterCategory = 'all', searchTerm = '', storeDiv) {
     if (!storeDiv) return;
     showSkeletons(storeDiv);
+
     try {
+        // Top sellers ki list Firebase se get karein
+        const topSellersSnapshot = await db.ref('topSellers').once('value');
+        const topSellers = topSellersSnapshot.val() || [];
+
         const snapshot = await db.ref('products').once('value');
         const allItemsObject = snapshot.val();
         const items = allItemsObject ? Object.entries(allItemsObject).map(([key, value]) => ({...value, key})) : [];
+
         setTimeout(() => {
             storeDiv.innerHTML = '';
-            const filteredItems = items.filter(item => {
+            let filteredItems = items.filter(item => {
                 const searchStr = searchTerm.toLowerCase();
                 const matchesCategory = filterCategory === 'all' || (item.category && item.category.toLowerCase() === filterCategory.toLowerCase());
                 const matchesSearch = searchTerm === '' || (item.name && item.name.toLowerCase().includes(searchStr)) || (item.category && item.category.toLowerCase().includes(searchStr));
                 return matchesCategory && matchesSearch;
             });
 
-            // === YAHAN BADLAV KIYA GAYA HAI: IN-STOCK ITEMS UPAR AAYENGE ===
+            // --- YAHAN SORTING LOGIC UPDATE KI GAYI HAI ---
             filteredItems.sort((a, b) => {
-                const aInStock = a.inStock !== false; // true if in stock
-                const bInStock = b.inStock !== false; // true if in stock
-                return bInStock - aInStock; // This sorts true values (1) before false values (0)
+                const aIsTopSeller = topSellers.includes(a.name);
+                const bIsTopSeller = topSellers.includes(b.name);
+                const aInStock = a.inStock !== false;
+                const bInStock = b.inStock !== false;
+
+                // Rule 1: Top Seller sabse upar
+                if (aIsTopSeller !== bIsTopSeller) {
+                    return bIsTopSeller - aIsTopSeller; // true (1) waale pehle aayenge
+                }
+                // Rule 2: Phir In-Stock waale upar
+                if (aInStock !== bInStock) {
+                    return bInStock - aInStock; // true (1) waale pehle aayenge
+                }
+                // Rule 3: Baaki sab jaise hain waise rahenge
+                return 0;
             });
+            // --- SORTING LOGIC END ---
 
             if (filteredItems.length === 0) {
                 storeDiv.innerHTML = `<div class="empty-cart" style="grid-column: 1 / -1;"><img src="images/empty-search.png" alt="No items found" style="width: 150px;"><h3>No items found</h3><p>Try a different search term or category.</p></div>`;
                 return;
             }
+
             filteredItems.forEach(item => {
                 const div = document.createElement('div');
                 const isInStock = item.inStock !== false;
                 div.className = `item ${isInStock ? '' : 'item-out-of-stock'}`;
                 div.dataset.item = JSON.stringify(item);
+
+                // Top Seller badge ka logic
+                const isTopSeller = topSellers.includes(item.name);
+                const topSellerBadge = isTopSeller ? `<div class="top-seller-badge">⭐ Top Seller</div>` : '';
+
                 const actionHtml = isInStock ? `
                     <div class="quantity-control"><button class="qty-minus">-</button><span>1</span><button class="qty-plus">+</button></div>
                     <button class="add-to-cart-btn">Add</button>
                 ` : `<div class="out-of-stock-label">Out of Stock</div>`;
+
                 div.innerHTML = `
-                    <div class="item-image-container"><img src="${item.image}" alt="${item.name}" class="item-img" onerror="this.onerror=null;this.src='images/placeholder.png'"></div>
+                    <div class="item-image-container">
+                        ${topSellerBadge}
+                        <img src="${item.image}" alt="${item.name}" class="item-img" onerror="this.onerror=null;this.src='images/placeholder.png'">
+                    </div>
                     <div class="item-details">
                         <div><h3 class="item-name">${item.name}</h3><div class="item-price">₹${item.price}</div></div>
                         <div class="item-actions">${actionHtml}</div>
                     </div>`;
+
                 if (isInStock) {
                     div.querySelector('.qty-minus').addEventListener('click', (e) => { e.stopPropagation(); updateQuantity(div, -1); });
                     div.querySelector('.qty-plus').addEventListener('click', (e) => { e.stopPropagation(); updateQuantity(div, 1); });

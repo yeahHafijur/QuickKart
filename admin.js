@@ -38,8 +38,8 @@ document.body.style.display = 'none';
 auth.onAuthStateChanged(user => {
     if (user) {
         document.body.style.display = 'block';
-        fetchAndRenderProducts(); 
-        fetchAndRenderOrders(); 
+        fetchAndRenderProducts();
+        fetchAndRenderOrders();
         setupNewOrderNotifications();
         showSection('dashboard');
     } else {
@@ -51,9 +51,9 @@ auth.onAuthStateChanged(user => {
 function showSection(sectionToShow) {
     Object.values(sections).forEach(section => section.classList.remove('active'));
     Object.values(navButtons).forEach(button => button.classList.remove('active'));
-    if (sectionToShow === 'addProduct') { sections.addProduct.classList.add('active'); navButtons.addProduct.classList.add('active'); } 
-    else if (sectionToShow === 'orderHistory') { sections.orderHistory.classList.add('active'); navButtons.orderHistory.classList.add('active'); } 
-    else if (sectionToShow === 'dashboard') { sections.dashboard.classList.add('active'); navButtons.dashboard.classList.add('active'); } 
+    if (sectionToShow === 'addProduct') { sections.addProduct.classList.add('active'); navButtons.addProduct.classList.add('active'); }
+    else if (sectionToShow === 'orderHistory') { sections.orderHistory.classList.add('active'); navButtons.orderHistory.classList.add('active'); }
+    else if (sectionToShow === 'dashboard') { sections.dashboard.classList.add('active'); navButtons.dashboard.classList.add('active'); }
     else { sections.productList.classList.add('active'); navButtons.viewProducts.classList.add('active'); }
 }
 navButtons.viewProducts.addEventListener('click', () => showSection('productList'));
@@ -174,8 +174,8 @@ addProductForm.addEventListener('submit', async (e) => {
     const category = document.getElementById('productCategory').value.trim();
     const file = document.getElementById('productImageFile').files[0];
     const editingId = editingIdInput.value;
-    
-    let imageUrl = ''; 
+
+    let imageUrl = '';
 
     if (!name || !price || !category) {
         alert('Please fill all text fields.');
@@ -193,7 +193,7 @@ addProductForm.addEventListener('submit', async (e) => {
             if (file) {
                 imageUrl = await uploadImageAndGetURL(file);
             }
-            
+
             await db.ref(`products/${editingId}`).update({ name, price, category, image: imageUrl });
             alert('Product updated successfully!');
 
@@ -207,7 +207,7 @@ addProductForm.addEventListener('submit', async (e) => {
             }
 
             imageUrl = await uploadImageAndGetURL(file);
-            
+
             await db.ref('products').push({ name: name, price, category, image: imageUrl, inStock: true });
             alert('Product added successfully!');
         }
@@ -229,22 +229,22 @@ async function uploadImageAndGetURL(file) {
     const progressDiv = document.getElementById('uploadProgress');
     const progressSpan = progressDiv.querySelector('span');
     progressDiv.style.display = 'block';
-    
+
     return new Promise((resolve, reject) => {
         const fileName = `product_images/product_${Date.now()}_${file.name}`;
         const storageRef = storage.ref(fileName);
         const uploadTask = storageRef.put(file);
 
-        uploadTask.on('state_changed', 
+        uploadTask.on('state_changed',
             (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 progressSpan.textContent = Math.round(progress);
-            }, 
+            },
             (error) => {
                 console.error("Upload failed:", error);
                 progressDiv.style.display = 'none';
                 reject(error);
-            }, 
+            },
             async () => {
                 try {
                     const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
@@ -340,7 +340,7 @@ function urlBase64ToUint8Array(base64String) {
     for (let i = 0; i < rawData.length; ++i) { outputArray[i] = rawData.charCodeAt(i); }
     return outputArray;
 }
-function generateDashboardData(startDate = null, endDate = null) {
+async function generateDashboardData(startDate = null, endDate = null) {
     const itemTotalEl = document.getElementById('itemTotalSales');
     const deliveryFeeEl = document.getElementById('totalDeliveryFees');
     const totalSalesEl = document.getElementById('totalSales');
@@ -379,17 +379,31 @@ function generateDashboardData(startDate = null, endDate = null) {
     });
     const sortedItems = Object.entries(itemCounts).sort(([, qtyA], [, qtyB]) => qtyB - qtyA).slice(0, 10);
     topItemsList.innerHTML = '';
+
     if (sortedItems.length === 0) {
         topItemsList.innerHTML = '<p>No items sold in this period.</p>';
+        // --- YAHAN SE CODE SHURU ---
+        // Top 5 items ke naam Firebase par save karein
+        const topSellerNames = sortedItems.slice(0, 5).map(([name, quantity]) => name);
+        try {
+            await db.ref('topSellers').set(topSellerNames);
+        } catch (error) {
+            console.error("Could not save top sellers:", error);
+        }
+        // --- YAHAN PE KHATAM ---
         return;
     }
+
     sortedItems.forEach(([name, quantity]) => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'top-item';
         itemDiv.innerHTML = `<span class="top-item-name">${name}</span><span class="top-item-qty">${quantity} units sold</span>`;
         topItemsList.appendChild(itemDiv);
     });
+    
+    // --- Yeh line duplicate thi isliye isse yahan se hatakar upar daala gaya hai ---
 }
+
 filterButtons.forEach(button => {
     button.addEventListener('click', () => {
         filterButtons.forEach(btn => btn.classList.remove('active'));
@@ -417,6 +431,7 @@ filterButtons.forEach(button => {
         generateDashboardData(startDate, endDate);
     });
 });
+
 applyDateRangeBtn.addEventListener('click', () => {
     const start = startDateInput.value;
     const end = endDateInput.value;
