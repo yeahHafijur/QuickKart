@@ -213,6 +213,8 @@ main.container {
 }
 
 .item {
+    position: relative; /* Badge iske hisaab se position hoga */
+    padding-top: 30px; /* IMPORTANT: Yeh badge ke liye upar jagah banayega */
     background: white;
     border-radius: 10px;
     overflow: hidden;
@@ -1412,18 +1414,27 @@ input:checked + .slider-small:before { transform: translateX(18px); }
 .summary-card.total-sales-card p {
     color: var(--secondary);
 }
-/* style.css mein yeh add karein */
-
 .top-seller-badge {
     position: absolute;
-    top: 8px;
-    left: -2px;
-    background-color: var(--secondary); /* Orange color */
+    top: 12px;
+    left: -2px; /* Thoda sa bahar nikla hua effect */
+    background: linear-gradient(45deg, #ff8c00, #ffc107);
     color: white;
     padding: 4px 10px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    border-radius: 0 5px 5px 0;
+    font-size: 10px; /* Thoda chhota font */
+    font-weight: 700;
+    border-radius: 0 20px 20px 0;
     z-index: 2;
-    box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Yeh sabse IMPORTANT change hai */
+.item-details {
+    padding: 20px 10px 10px 10px; /* Upar se 20px ki padding di hai */
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }

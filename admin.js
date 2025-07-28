@@ -340,6 +340,8 @@ function urlBase64ToUint8Array(base64String) {
     for (let i = 0; i < rawData.length; ++i) { outputArray[i] = rawData.charCodeAt(i); }
     return outputArray;
 }
+// admin.js mein, purane generateDashboardData function ko isse replace karein
+
 async function generateDashboardData(startDate = null, endDate = null) {
     const itemTotalEl = document.getElementById('itemTotalSales');
     const deliveryFeeEl = document.getElementById('totalDeliveryFees');
@@ -347,6 +349,7 @@ async function generateDashboardData(startDate = null, endDate = null) {
     const totalOrdersEl = document.getElementById('totalOrders');
     const topItemsList = document.getElementById('topSellingItems');
     const completedOrders = allOrders.filter(order => order.status === 'Completed');
+
     if (completedOrders.length === 0) {
         itemTotalEl.textContent = '₹0.00';
         deliveryFeeEl.textContent = '₹0.00';
@@ -355,11 +358,13 @@ async function generateDashboardData(startDate = null, endDate = null) {
         topItemsList.innerHTML = '<p>No completed sales data yet.</p>';
         return;
     }
+
     const filteredOrders = completedOrders.filter(order => {
         if (!startDate || !endDate) return true;
         const orderDate = new Date(order.timestamp);
         return orderDate >= startDate && orderDate <= endDate;
     });
+
     const totalSales = filteredOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
     const totalDeliveryFees = filteredOrders.reduce((sum, order) => sum + (order.deliveryFee || 0), 0);
     const itemTotalSales = totalSales - totalDeliveryFees;
@@ -368,6 +373,7 @@ async function generateDashboardData(startDate = null, endDate = null) {
     deliveryFeeEl.textContent = `₹${totalDeliveryFees.toFixed(2)}`;
     totalSalesEl.textContent = `₹${totalSales.toFixed(2)}`;
     totalOrdersEl.textContent = totalOrders;
+
     const itemCounts = {};
     filteredOrders.forEach(order => {
         if (order.items && Array.isArray(order.items)) {
@@ -377,31 +383,29 @@ async function generateDashboardData(startDate = null, endDate = null) {
             });
         }
     });
+
     const sortedItems = Object.entries(itemCounts).sort(([, qtyA], [, qtyB]) => qtyB - qtyA).slice(0, 10);
     topItemsList.innerHTML = '';
 
     if (sortedItems.length === 0) {
         topItemsList.innerHTML = '<p>No items sold in this period.</p>';
-        // --- YAHAN SE CODE SHURU ---
-        // Top 5 items ke naam Firebase par save karein
-        const topSellerNames = sortedItems.slice(0, 5).map(([name, quantity]) => name);
-        try {
-            await db.ref('topSellers').set(topSellerNames);
-        } catch (error) {
-            console.error("Could not save top sellers:", error);
-        }
-        // --- YAHAN PE KHATAM ---
-        return;
+    } else {
+        sortedItems.forEach(([name, quantity]) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'top-item';
+            itemDiv.innerHTML = `<span class="top-item-name">${name}</span><span class="top-item-qty">${quantity} units sold</span>`;
+            topItemsList.appendChild(itemDiv);
+        });
     }
 
-    sortedItems.forEach(([name, quantity]) => {
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'top-item';
-        itemDiv.innerHTML = `<span class="top-item-name">${name}</span><span class="top-item-qty">${quantity} units sold</span>`;
-        topItemsList.appendChild(itemDiv);
-    });
-    
-    // --- Yeh line duplicate thi isliye isse yahan se hatakar upar daala gaya hai ---
+    // Top 5 items ke naam Firebase par save karein
+    const topSellerNames = sortedItems.slice(0, 10).map(([name, quantity]) => name);
+    try {
+        await db.ref('topSellers').set(topSellerNames);
+        console.log("Top sellers list updated in Firebase:", topSellerNames); // Yeh line check karne ke liye hai
+    } catch (error) {
+        console.error("Could not save top sellers:", error);
+    }
 }
 
 filterButtons.forEach(button => {
