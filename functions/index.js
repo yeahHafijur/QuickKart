@@ -1,46 +1,73 @@
-// functions/index.js (Poori file ko isse badal dein)
+
 
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const webpush = require("web-push");
+const { onValueCreated } = require("firebase-functions/v2/database");
 
 admin.initializeApp();
 
-// Yeh function tab chalega jab 'orders' me koi naya order aayega
-exports.sendNewOrderNotification = functions.database.ref("/orders/{orderId}")
-    .onCreate(async (snapshot, context) => {
-        
-        // 1. Naye order ka data lena
-        const orderData = snapshot.val();
-        const customerName = orderData.customerName;
+const db = admin.database();
 
-        // 2. Notification ka message banana
-        const payload = {
-            notification: {
-                title: "🚀 New QuickKart Order!",
-                body: `A new order has been received from ${customerName}.`,
-                icon: "/images/icons/icon-512x512.png", // Aapka app icon
-            }
-        };
+// --- YAHAN APNI VAPID KEYS DAALEIN (Jaisa pehle kiya tha) ---
+const vapidKeys = {
+      publicKey: "BD7ekfMaxKz0kUHWYFlGc1H4HJh_vVLlHVNA-AWhBbKgAakjBkpEXG8x9hWSnra5g8rxBH5dOd65L_oBukyBHfQ",
+      privateKey: "QCL98nhFkGr6aatugOTI_PjqADxaFpQS5lPE8mL4lPs",
+};
 
-        try {
-            // 3. Sabhi admin tokens ko database se nikalna
-            const tokensSnapshot = await admin.database().ref("/admin_tokens").once("value");
-            if (!tokensSnapshot.exists()) {
-                console.log("No admin tokens found to send notification.");
-                return null;
-            }
+webpush.setVapidDetails(
+  "mailto:hafijurnits@gmail.com",
+  vapidKeys.publicKey,
+  vapidKeys.privateKey
+);
 
-            // Firebase me token JSON string ki tarah save hai, use parse karna hoga
-            const tokens = Object.values(tokensSnapshot.val()).map(t => JSON.parse(t));
+exports.sendNewOrderNotification = onValueCreated(
+  {
+    ref: "/orders/{orderId}",
+    region: "asia-southeast1", // <-- YEH LINE ADD KI GAYI HAI
+  },
+  async (event) => {
+    const newOrder = event.data.val();
 
-            // 4. Sabhi admin devices par notification bhejna
-            console.log("Sending notification to all admin devices...");
-            const response = await admin.messaging().sendToDevice(tokens, payload);
-            console.log("Notifications sent successfully:", response);
-
-        } catch (error) {
-            console.error("Failed to send notifications:", error);
-        }
-        
+    if (!newOrder) {
+        console.log("New order data is null, exiting function.");
         return null;
-    });
+    }
+
+    const notificationPayload = {
+      title: "🚀 New QuickKart Order!",
+      body: `New order from ${newOrder.customerName} for ₹${newOrder.totalAmount}.`,
+      icon: "images/icons/icon-192x192.png",
+    };
+
+    try {
+      const tokensSnapshot = await db.ref("admin_tokens").once("value");
+      const tokensData = tokensSnapshot.val();
+
+      if (!tokensData) {
+        console.log("No admin tokens found to send notification.");
+        return null;
+      }
+
+      const promises = [];
+      for (const uid in tokensData) {
+        if (Object.prototype.hasOwnProperty.call(tokensData, uid)) {
+          const subscription = JSON.parse(tokensData[uid]);
+          promises.push(
+            webpush.sendNotification(
+              subscription,
+              JSON.stringify(notificationPayload)
+            )
+          );
+        }
+      }
+
+      await Promise.all(promises);
+      console.log("Notifications sent successfully.");
+      return null;
+    } catch (error) {
+      console.error("Error sending notification:", error);
+      return null;
+    }
+  }
+);

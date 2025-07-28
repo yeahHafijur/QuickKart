@@ -308,19 +308,29 @@ enableNotificationsBtn.addEventListener('click', () => { askForNotificationPermi
 async function askForNotificationPermission() {
     try {
         const permissionResult = await Notification.requestPermission();
-        if (permissionResult !== 'granted') { throw new Error('Notification permission not granted.'); }
+        if (permissionResult !== 'granted') {
+            throw new Error('Notification permission not granted.');
+        }
+
         const swRegistration = await navigator.serviceWorker.ready;
         const subscription = await swRegistration.pushManager.subscribe({
             userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array('BFHMLoX5Cda3QW4O1-J6zZc4n4x8S-63i-m2A3R-l_C6A4S-d5v3v6Z8A6B8D-g2E-h5j7k9L1m3N5')
+            // YEH AAPKI NAYI PUBLIC KEY HAI JO AB SAHI HAI
+            applicationServerKey: urlBase64ToUint8Array('BD7ekfMaxKz0kUHWYFlGc1H4HJh_vVLlHVNA-AWhBbKgAakjBkpEXG8x9hWSnra5g8rxBH5dOd65L_oBukyBHfQ')
         });
+
         const currentUser = auth.currentUser;
         if (currentUser) {
             const token = JSON.stringify(subscription);
             db.ref(`admin_tokens/${currentUser.uid}`).set(token);
             alert('Notifications have been enabled successfully!');
-        } else { alert('Please login to enable notifications.'); }
-    } catch (error) { console.error('Failed to enable notifications:', error); alert('Could not enable notifications. Check console for errors.'); }
+        } else {
+            alert('Please login to enable notifications.');
+        }
+    } catch (error) {
+        console.error('Failed to enable notifications:', error);
+        alert('Could not enable notifications. Check console for errors.');
+    }
 }
 function urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
