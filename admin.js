@@ -1,4 +1,4 @@
-// admin.js (Order History and Product Sorting Updated)
+// admin.js (FINAL WORKING CODE - JULY 28, 2025)
 
 import { db, auth, storage } from './firebase-config.js';
 
@@ -69,16 +69,11 @@ function renderOrders(orders) {
         orderListDiv.innerHTML = '<p>No orders found.</p>';
         return;
     }
-
-    // === YAHAN BADLAV KIYA GAYA HAI: PENDING ORDERS UPAR AAYENGE ===
     orders.sort((a, b) => {
-        // Rule 1: Pending orders hamesha upar
         if (a.status === 'Pending' && b.status !== 'Pending') return -1;
         if (a.status !== 'Pending' && b.status === 'Pending') return 1;
-        // Rule 2: Agar status same hai, to naye order upar
         return new Date(b.timestamp) - new Date(a.timestamp);
     });
-
     orders.forEach(order => {
         const orderCard = document.createElement('div');
         orderCard.className = 'order-list-item';
@@ -167,7 +162,8 @@ async function fetchAndRenderProducts() {
     } catch (error) { console.error("Error loading products:", error); productListDiv.innerHTML = '<p>Could not load products.</p>'; }
 }
 
-// REPLACE the existing addProductForm event listener with this entire block
+
+// --- YEH POORA FUNCTION FILE UPLOAD AUR EDIT FIX KE LIYE UPDATE KIYA GAYA HAI ---
 addProductForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     submitProductBtn.textContent = 'Saving...';
@@ -179,7 +175,6 @@ addProductForm.addEventListener('submit', async (e) => {
     const file = document.getElementById('productImageFile').files[0];
     const editingId = editingIdInput.value;
     
-    // Yahan hum image URL ko store karenge, chahe woh purana ho ya naya upload hua ho
     let imageUrl = ''; 
 
     if (!name || !price || !category) {
@@ -195,19 +190,15 @@ addProductForm.addEventListener('submit', async (e) => {
             const productToEdit = allProducts.find(p => p.key === editingId);
             imageUrl = productToEdit.image; // Default to the old image URL
 
-            // Agar user ne nayi file select ki hai, to use upload karo
             if (file) {
-                // Upload the new file and get its URL
                 imageUrl = await uploadImageAndGetURL(file);
             }
             
-            // Database mein product update karo
             await db.ref(`products/${editingId}`).update({ name, price, category, image: imageUrl });
             alert('Product updated successfully!');
 
         // CASE 2: Adding a new product
         } else {
-            // Naye product ke liye image zaroori hai
             if (!file) {
                 alert('Please select an image file to upload.');
                 submitProductBtn.disabled = false;
@@ -215,10 +206,8 @@ addProductForm.addEventListener('submit', async (e) => {
                 return;
             }
 
-            // Image upload karo aur uska URL pao
             imageUrl = await uploadImageAndGetURL(file);
             
-            // Database mein naya product add karo
             await db.ref('products').push({ name: name, price, category, image: imageUrl, inStock: true });
             alert('Product added successfully!');
         }
@@ -230,40 +219,33 @@ addProductForm.addEventListener('submit', async (e) => {
         console.error("Error saving product:", error);
         alert(`Failed to save product: ${error.message}`);
     } finally {
-        // Form ko reset karo aur button ko re-enable karo
         submitProductBtn.disabled = false;
         resetForm();
     }
 });
 
-// YEH NAYA HELPER FUNCTION ADD KAREIN
-// Yeh function file upload karega aur download URL return karega
+// --- YEH NAYA HELPER FUNCTION HAI FILE UPLOAD KARNE KE LIYE ---
 async function uploadImageAndGetURL(file) {
     const progressDiv = document.getElementById('uploadProgress');
     const progressSpan = progressDiv.querySelector('span');
     progressDiv.style.display = 'block';
     
     return new Promise((resolve, reject) => {
-        // Ek unique file name banayein
-        const fileName = `product_${Date.now()}_${file.name}`;
-        const storageRef = storage.ref(`product_images/${fileName}`);
+        const fileName = `product_images/product_${Date.now()}_${file.name}`;
+        const storageRef = storage.ref(fileName);
         const uploadTask = storageRef.put(file);
 
-        // Upload progress ko sunein
         uploadTask.on('state_changed', 
             (snapshot) => {
-                // Progress update karein
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 progressSpan.textContent = Math.round(progress);
             }, 
             (error) => {
-                // Error handle karein
                 console.error("Upload failed:", error);
                 progressDiv.style.display = 'none';
                 reject(error);
             }, 
             async () => {
-                // Upload complete hone par
                 try {
                     const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
                     progressDiv.style.display = 'none';
@@ -276,6 +258,7 @@ async function uploadImageAndGetURL(file) {
     });
 }
 
+
 cancelEditBtn.addEventListener('click', () => { resetForm(); showSection('productList'); });
 
 productListDiv.addEventListener('click', (e) => {
@@ -286,6 +269,7 @@ productListDiv.addEventListener('click', (e) => {
             db.ref(`products/${productId}`).remove().then(() => { alert('Product deleted successfully.'); fetchAndRenderProducts(); }).catch(() => alert('Failed to delete product.'));
         }
     }
+    // --- YAHAN EDIT BUTTON KA FIX HAI ---
     if (target.classList.contains('admin-btn-edit')) {
         const productId = target.getAttribute('data-id');
         const productToEdit = allProducts.find(p => p.key === productId);
@@ -293,7 +277,7 @@ productListDiv.addEventListener('click', (e) => {
             document.getElementById('productName').value = productToEdit.name;
             document.getElementById('productPrice').value = productToEdit.price;
             document.getElementById('productCategory').value = productToEdit.category;
-            document.getElementById('productImageUrl').value = productToEdit.image;
+            // YAHAN SE 'productImageUrl' WALI GALAT LINE HATA DI GAYI HAI
             editingIdInput.value = productId;
             formTitle.textContent = 'Edit Product';
             submitProductBtn.textContent = 'Update Product';
@@ -319,6 +303,7 @@ productListDiv.addEventListener('change', async (e) => {
 });
 adminSearchInput.addEventListener('input', (e) => renderProducts(e.target.value));
 
+// --- NOTIFICATION AUR DASHBOARD CODE (NO CHANGES) ---
 enableNotificationsBtn.addEventListener('click', () => { askForNotificationPermission(); });
 async function askForNotificationPermission() {
     try {
@@ -345,8 +330,6 @@ function urlBase64ToUint8Array(base64String) {
     for (let i = 0; i < rawData.length; ++i) { outputArray[i] = rawData.charCodeAt(i); }
     return outputArray;
 }
-
-// === DASHBOARD DATA GENERATION ===
 function generateDashboardData(startDate = null, endDate = null) {
     const itemTotalEl = document.getElementById('itemTotalSales');
     const deliveryFeeEl = document.getElementById('totalDeliveryFees');
@@ -397,8 +380,6 @@ function generateDashboardData(startDate = null, endDate = null) {
         topItemsList.appendChild(itemDiv);
     });
 }
-
-// === DASHBOARD FILTER EVENT LISTENERS ===
 filterButtons.forEach(button => {
     button.addEventListener('click', () => {
         filterButtons.forEach(btn => btn.classList.remove('active'));
