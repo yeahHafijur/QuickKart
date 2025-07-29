@@ -1,14 +1,14 @@
 // main.js (REPLACE THIS ENTIRE FILE)
 
 import { auth, setupShopStatus } from './firebase-config.js';
-import { initStore, renderCategoryGrid } from './store.js';
+import { initStore, renderCategoryGrid, fetchTopSellers } from './store.js';
 import { initLocation } from './location.js';
 import { updateCartUI, openCart, closeCart, setupCartElements } from './cart.js';
 import { showNotification } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- SPLASH SCREEN LOGIC START (UPDATED) ---
+    // --- SPLASH SCREEN LOGIC ---
     const splashScreen = document.getElementById('splash-screen');
     const logoAnimated = document.querySelector('.logo-text-animated');
 
@@ -29,19 +29,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         logoAnimated.innerHTML = html;
 
-        // Step 1: Animation shuru hone ke 2 second baad fade-out start karo
         setTimeout(() => {
             splashScreen.classList.add('hidden');
-            
-            // Step 2: Fade-out transition (jo 0.8s ka hai) poora hone ke baad, element ko poori tarah hata do
             setTimeout(() => {
                 splashScreen.style.display = 'none';
-            }, 800); // Yeh time CSS ke transition time se match hona chahiye
-
-        }, 2000); // 2 seconds
+            }, 800);
+        }, 2000);
     }
-    // --- SPLASH SCREEN LOGIC END ---
-
+    
     const elements = {
         body: document.body,
         storeDiv: document.getElementById('storeItems'),
@@ -61,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         shopStatusText: document.getElementById('shopStatusText'),
         searchSection: document.querySelector('.search-section'),
         categoriesScroll: document.querySelector('.categories-scroll'),
-        sectionTitle: document.querySelector('.section-title'),
+        mainSectionTitle: document.getElementById('mainSectionTitle'), // <-- UPDATED
         logoBox: document.querySelector('.logo-box'),
         loginModal: document.getElementById('loginModal'),
         loginForm: document.getElementById('loginForm'),
@@ -74,15 +69,20 @@ document.addEventListener('DOMContentLoaded', () => {
         navSearch: document.getElementById('navSearch'),
         navCart: document.getElementById('navCart'),
         navCartCount: document.getElementById('navCartCount'),
+        topSellersSection: document.querySelector('.top-sellers-section'),
     };
     
     const showProductView = (category, focusSearch = false) => {
         elements.body.classList.remove('category-view');
+
+        if (elements.topSellersSection) elements.topSellersSection.style.display = 'none';
+
         elements.searchSection.classList.remove('hidden');
         elements.categoriesScroll.classList.remove('hidden');
+        
         elements.logoBox.innerHTML = `<i class="fas fa-arrow-left"></i> Back`;
         elements.logoBox.style.cursor = 'pointer';
-        elements.sectionTitle.textContent = category === 'all' ? 'All Products' : category;
+        elements.mainSectionTitle.textContent = category === 'all' ? 'All Products' : category; // <-- UPDATED
         initStore(category, '', elements.storeDiv);
         elements.categoryBtns.forEach(b => b.classList.toggle('active', b.dataset.category === category));
         if (category !== 'all') {
@@ -97,11 +97,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const showCategoryView = () => {
         elements.body.classList.add('category-view');
+
         elements.searchSection.classList.add('hidden');
         elements.categoriesScroll.classList.add('hidden');
+
+        renderTopSellers(); 
+        
         elements.logoBox.innerHTML = `<span class="logo-text">Quick<span>Kart</span></span>`;
         elements.logoBox.style.cursor = 'default';
-        elements.sectionTitle.textContent = 'Shop by Category';
+        elements.mainSectionTitle.textContent = 'Shop by Category'; // <-- UPDATED
         renderCategoryGrid(elements.storeDiv, showProductView);
         updateActiveNav(elements.navHome);
         window.scrollTo(0, 0);
@@ -111,6 +115,36 @@ document.addEventListener('DOMContentLoaded', () => {
         [elements.navHome, elements.navAllItems, elements.navSearch, elements.navCart].forEach(btn => btn.classList.remove('active'));
         if (activeButton) activeButton.classList.add('active');
     };
+
+    async function renderTopSellers() {
+        if (!elements.topSellersSection) return;
+
+        const container = document.getElementById('topSellersContainer');
+        const topSellers = await fetchTopSellers();
+
+        if (topSellers.length === 0) {
+            elements.topSellersSection.style.display = 'none';
+            return;
+        }
+        
+        elements.topSellersSection.style.display = 'block';
+        container.innerHTML = ''; 
+
+        topSellers.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'top-seller-item';
+            div.innerHTML = `
+                <img src="${item.image}" alt="${item.name}" class="top-seller-image" onerror="this.onerror=null;this.src='images/placeholder.png'">
+                <span class="top-seller-name">${item.name}</span>
+            `;
+            div.addEventListener('click', () => {
+                showProductView('all');
+                elements.searchInput.value = item.name;
+                elements.searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+            });
+            container.appendChild(div);
+        });
+    }
     
     function setupAllEventListeners() {
         const handleCloseCart = () => {
@@ -132,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const searchTerm = elements.searchInput.value.trim().toLowerCase();
                 initStore('all', searchTerm, elements.storeDiv);
                 elements.categoryBtns.forEach(b => b.classList.remove('active'));
-                elements.sectionTitle.textContent = searchTerm ? `Search results for "${searchTerm}"` : 'All Products';
+                elements.mainSectionTitle.textContent = searchTerm ? `Search results for "${searchTerm}"` : 'All Products'; // <-- UPDATED
             }, 300);
         });
 
@@ -164,24 +198,11 @@ document.addEventListener('DOMContentLoaded', () => {
     showCategoryView(); 
     updateCartUI(); 
     
-    // ... aapka saara purana code yahan hai ...
-    setupShopStatus(elements, closeCart); 
-    setupAllEventListeners();
-    setupCartElements(elements, { navCartCount: elements.navCartCount });
-    initLocation();
-    showCategoryView(); 
-    updateCartUI(); 
-
-    // === YEH CODE ADD KAREIN START ===
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/sw.js')
-                .then(registration => {
-                    console.log('ServiceWorker Registered with scope:', registration.scope);
-                })
-                .catch(err => {
-                    console.log('ServiceWorker Registration Failed:', err);
-                });
+                .then(registration => console.log('ServiceWorker Registered with scope:', registration.scope))
+                .catch(err => console.log('ServiceWorker Registration Failed:', err));
         });
     }
 });

@@ -79,6 +79,8 @@ function showSkeletons(storeDiv, count = 8) {
 }
 // store.js (poore initStore function ko isse replace karein)
 
+// store.js (poore initStore function ko isse replace karein)
+
 async function initStore(filterCategory = 'all', searchTerm = '', storeDiv) {
     if (!storeDiv) return;
     showSkeletons(storeDiv);
@@ -162,6 +164,30 @@ async function initStore(filterCategory = 'all', searchTerm = '', storeDiv) {
     } catch (error) {
         console.error("Error fetching products from Firebase: ", error);
         storeDiv.innerHTML = `<p style="text-align: center; grid-column: 1 / -1;">Could not load products. Please try again later.</p>`;
+    }
+}
+
+// +++ ADD THIS NEW FUNCTION AND EXPORT IT +++
+export async function fetchTopSellers() {
+    try {
+        const topSellersSnapshot = await db.ref('topSellers').once('value');
+        const topSellersNames = topSellersSnapshot.val() || [];
+        if (topSellersNames.length === 0) return [];
+
+        const productsSnapshot = await db.ref('products').once('value');
+        const allItemsObject = productsSnapshot.val();
+        if (!allItemsObject) return [];
+        
+        const allItems = Object.values(allItemsObject);
+        const topSellerProducts = topSellersNames.map(name => {
+            return allItems.find(item => item.name === name);
+        }).filter(Boolean);
+
+        return topSellerProducts;
+
+    } catch (error) {
+        console.error("Error fetching top sellers:", error);
+        return [];
     }
 }
 async function renderCategoryGrid(storeDiv, onCategoryClick) {
