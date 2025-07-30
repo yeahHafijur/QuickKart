@@ -52,6 +52,8 @@ export function updateCartUI() {
         let total = 0;
         let totalItems = 0;
         const clearCartBtn = document.getElementById('clearCartBtn');
+        const placeOrderBtn = document.getElementById('placeOrderBtn');
+        const locationStatus = document.getElementById('locationStatus');
 
         if (cart.length === 0) {
             elements.cartEmpty.style.display = 'flex';
@@ -78,6 +80,16 @@ export function updateCartUI() {
 
         elements.itemTotal.textContent = `₹${total}`;
         elements.cartTotal.textContent = `₹${total}`;
+
+        if (total < 50 && cart.length > 0) {
+            placeOrderBtn.disabled = true;
+            locationStatus.textContent = `Add ₹${50 - total} more to place order.`;
+        } else {
+            placeOrderBtn.disabled = false;
+            if (locationStatus.textContent.includes('more to place order')) {
+                locationStatus.textContent = '';
+            }
+        }
         
         if (navElements.navCartCount) {
             navElements.navCartCount.textContent = totalItems;

@@ -1,4 +1,4 @@
-// location.js (Updated with correct maps link)
+// location.js (Updated with correct maps link and minimum order value)
 
 import cart from './cart-data.js';
 import { isShopOpen, db } from './firebase-config.js';
@@ -136,6 +136,13 @@ async function handleOrderWithLocation() {
         return;
     }
 
+    const itemTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    if (itemTotal < 50) {
+        showNotification('Minimum order value is ₹50.', 'error');
+        statusEl.textContent = 'Minimum order value is ₹50.';
+        return;
+    }
+
     if (!isShopOpen) {
         statusEl.textContent = 'Shop is closed. Cannot place order.';
         return;
@@ -181,7 +188,6 @@ async function handleOrderWithLocation() {
         }
         document.getElementById('deliveryFee').textContent = `₹${deliveryFee}`;
 
-        const itemTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
         const total = itemTotal + deliveryFee;
         document.getElementById('cartTotal').textContent = `₹${total}`;
 
