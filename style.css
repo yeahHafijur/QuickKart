@@ -575,10 +575,10 @@ main.container {
 }
 
 #locationStatus {
-    font-size: 0.8rem;
+    font-size: 1.2rem;
     text-align: center;
     margin-top: 10px;
-    color: var(--muted);
+    color: red;
 }
 
 .cart-overlay {
