@@ -1545,3 +1545,22 @@ body.category-view .top-sellers-section {
     padding-bottom: 10px;
     margin-bottom: 5px;
 }
+/* Location link in order history */
+.location-link {
+    margin-left: 10px;
+    font-size: 0.8rem;
+    color: var(--info);
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-block; /* Helps with spacing */
+    vertical-align: middle; /* Aligns with text */
+}
+
+.location-link i {
+    margin-right: 4px;
+}
+
+.location-link:hover {
+    text-decoration: underline;
+    color: var(--primary-dark);
+}

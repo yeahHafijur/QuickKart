@@ -79,12 +79,22 @@ function renderOrders(orders) {
         orderCard.className = 'order-list-item';
         const itemsHtml = order.items.map(item => `<li>${item.name} (Qty: ${item.quantity}) - ₹${item.price * item.quantity}</li>`).join('');
         const orderDate = new Date(order.timestamp).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+        
+        // Location link banane ka code
+        let locationLinkHtml = '';
+        if (order.location && order.location.lat && order.location.lng) {
+            const mapsLink = `https://www.google.com/maps?q=${order.location.lat},${order.location.lng}`;
+            locationLinkHtml = `<a href="${mapsLink}" target="_blank" class="location-link"><i class="fas fa-map-marker-alt"></i> View on Map</a>`;
+        }
+        
         let completeButtonHtml = '';
         if (order.status !== 'Completed') {
             completeButtonHtml = `<button class="admin-btn-complete" data-id="${order.key}">Mark Completed</button>`;
         }
         const statusClass = order.status ? order.status.toLowerCase() : 'pending';
-        orderCard.innerHTML = `<div class="order-header"><span class="order-customer">${order.customerName}</span><span class="order-date">${orderDate}</span></div><div class="order-details"><p><strong>Phone:</strong> ${order.customerPhone}</p><p><strong>Address:</strong> ${order.address}</p><p><strong>Total:</strong> ₹${order.totalAmount} (Delivery: ₹${order.deliveryFee})</p><strong>Items:</strong><ul>${itemsHtml}</ul></div><div class="order-footer"><span>Status: <strong id="status-${order.key}" class="status-badge ${statusClass}">${order.status}</strong></span><div class="order-buttons">${completeButtonHtml}<button class="admin-btn-delete-order" data-id="${order.key}">Delete</button></div></div>`;
+        
+        // innerHTML me address ke aage locationLinkHtml add kiya gaya hai
+        orderCard.innerHTML = `<div class="order-header"><span class="order-customer">${order.customerName}</span><span class="order-date">${orderDate}</span></div><div class="order-details"><p><strong>Phone:</strong> ${order.customerPhone}</p><p><strong>Address:</strong> ${order.address} ${locationLinkHtml}</p><p><strong>Total:</strong> ₹${order.totalAmount} (Delivery: ₹${order.deliveryFee})</p><strong>Items:</strong><ul>${itemsHtml}</ul></div><div class="order-footer"><span>Status: <strong id="status-${order.key}" class="status-badge ${statusClass}">${order.status}</strong></span><div class="order-buttons">${completeButtonHtml}<button class="admin-btn-delete-order" data-id="${order.key}">Delete</button></div></div>`;
         orderListDiv.appendChild(orderCard);
     });
 }
