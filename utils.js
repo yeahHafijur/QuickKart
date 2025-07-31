@@ -2,13 +2,32 @@
 export function showNotification(msg, type = 'success') {
     try {
         const notification = document.getElementById('notification');
-        if (!notification) {
-            console.warn('Notification element not found');
+        const notificationText = document.getElementById('notification-text');
+        const notificationIcon = notification.querySelector('i');
+
+        if (!notification || !notificationText || !notificationIcon) {
+            console.warn('Notification elements not found');
             return;
         }
-        
-        notification.textContent = msg;
-        notification.className = `quickkart-notification show ${type}`;
+
+        notificationText.textContent = msg;
+
+        // Reset classes
+        notification.className = 'quickkart-notification';
+        notificationIcon.className = '';
+
+        // Add new classes based on type
+        setTimeout(() => {
+            notification.classList.add('show', type);
+            if (type === 'success') {
+                notificationIcon.classList.add('fas', 'fa-check-circle');
+            } else if (type === 'error') {
+                notificationIcon.classList.add('fas', 'fa-times-circle');
+            } else if (type === 'info') {
+                notificationIcon.classList.add('fas', 'fa-info-circle');
+            }
+        }, 10); // Small delay to ensure transition triggers
+
         setTimeout(() => {
             notification.classList.remove('show');
         }, 3000);

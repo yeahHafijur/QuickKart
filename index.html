@@ -127,17 +127,19 @@
           <input type="text" id="customerName" placeholder="আপোনাৰ নাম" required>
           <input type="hidden" id="autoAddress"><input type="hidden" id="userLat"><input type="hidden" id="userLng">
           <input type="tel" id="customerPhone" pattern="[0-9]{10}" maxlength="10" placeholder="📞 মোবাইল নম্বৰ" required>
+          <div id="locationStatus" class="location-message"></div>
           <button id="placeOrderBtn" class="quickkart-btn">
             <i class="fab fa-whatsapp"></i> <span id="btnText">Place Order</span>
             <span id="locationSpinner" style="display:none;"><i class="fas fa-spinner fa-spin"></i> Fetching...</span>
           </button>
-          <div id="locationStatus" class="location-message"></div>
         </div>
     </div>
   </div>
 
   <div id="cartOverlay" class="cart-overlay"></div>
-  <div id="notification" class="quickkart-notification"></div>
+  <div id="notification" class="quickkart-notification">
+    <i class="fas fa-check-circle"></i><span id="notification-text"></span>
+  </div>
   
   <nav class="bottom-nav-bar">
     <button class="nav-btn" id="navHome"><i class="fas fa-home"></i><span>Home</span></button>

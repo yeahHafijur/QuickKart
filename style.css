@@ -575,10 +575,11 @@ main.container {
 }
 
 #locationStatus {
-    font-size: 1.2rem;
+    font-size: 0.9rem;
     text-align: center;
-    margin-top: 10px;
-    color: red;
+    margin-bottom: 10px;
+    color: var(--secondary);
+    font-weight: 500;
 }
 
 .cart-overlay {
@@ -810,30 +811,62 @@ main.container {
   position: fixed;
   bottom: 80px;
   left: 50%;
-  transform: translateX(-50%);
-  background: var(--primary);
-  color: white;
-  padding: 12px 24px;
-  border-radius: var(--radius);
-  font-size: 0.9rem;
-  box-shadow: var(--shadow);
+  transform: translateX(-50%) translateY(30px);
+  background: var(--white);
+  color: var(--text);
+  padding: 14px 22px;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   z-index: 1100;
   opacity: 0;
-  transition: all 0.4s ease;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
   max-width: 90%;
   text-align: center;
   pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border);
 }
 
 .quickkart-notification.show {
   opacity: 1;
-  bottom: 90px;
+  transform: translateX(-50%) translateY(0);
   pointer-events: auto;
 }
 
-.quickkart-notification.success { background-color: var(--primary); }
-.quickkart-notification.error { background-color: var(--error); }
-.quickkart-notification.info { background-color: var(--info); }
+.quickkart-notification i {
+    font-size: 1.2rem;
+}
+
+.quickkart-notification.success {
+    background-color: #e5f7ed;
+    border-color: #b7e4c7;
+    color: #0d6b33;
+}
+.quickkart-notification.success i {
+    color: #00b140;
+}
+
+.quickkart-notification.error {
+    background-color: #fff0f0;
+    border-color: #ffc9c9;
+    color: #c92a2a;
+}
+.quickkart-notification.error i {
+    color: #ff4444;
+}
+
+.quickkart-notification.info {
+    background-color: #e7f5ff;
+    border-color: #a5d8ff;
+    color: #1971c2;
+}
+.quickkart-notification.info i {
+    color: #007bff;
+}
 
 
 /* --- IMPROVED TOGGLE SWITCH --- */
