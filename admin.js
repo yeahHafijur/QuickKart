@@ -322,20 +322,25 @@ async function askForNotificationPermission() {
             throw new Error('Notification permission not granted.');
         }
 
+        // Get the currently active service worker
         const swRegistration = await navigator.serviceWorker.ready;
+        
+        // Subscribe to get the token
         const subscription = await swRegistration.pushManager.subscribe({
             userVisibleOnly: true,
-            // YEH AAPKI NAYI PUBLIC KEY HAI JO AB SAHI HAI
             applicationServerKey: urlBase64ToUint8Array('BD7ekfMaxKz0kUHWYFlGc1H4HJh_vVLlHVNA-AWhBbKgAakjBkpEXG8x9hWSnra5g8rxBH5dOd65L_oBukyBHfQ')
         });
 
+        // Get the current user
         const currentUser = auth.currentUser;
         if (currentUser) {
             const token = JSON.stringify(subscription);
-            db.ref(`admin_tokens/${currentUser.uid}`).set(token);
+            // Save the token to the database under the user's ID
+            await db.ref(`admin_tokens/${currentUser.uid}`).set(token);
             alert('Notifications have been enabled successfully!');
         } else {
-            alert('Please login to enable notifications.');
+            // This is a fallback, but the button should ideally not be clickable if not logged in
+            alert('Could not identify user. Please login again to enable notifications.');
         }
     } catch (error) {
         console.error('Failed to enable notifications:', error);
