@@ -1,4 +1,4 @@
-// admin.js (FINAL WORKING CODE - JULY 28, 2025)
+// admin.js (UPDATED AND CORRECTED CODE)
 
 import { db, auth, storage } from './firebase-config.js';
 
@@ -143,11 +143,30 @@ function resetForm() {
     submitProductBtn.textContent = 'Add Product';
     cancelEditBtn.style.display = 'none';
 }
+
+// +++ YAHAN BADLAV KIYA GAYA HAI +++
+// This function now reads categories from the buttons in index.html, not from existing products.
 function populateCategoryDropdown() {
-    const categories = new Set(allProducts.map(p => p.category).filter(Boolean));
+    // This is a placeholder since we can't directly access index.html's DOM from admin.js
+    // We will list the categories manually. For a better solution, categories should be stored in the database.
+    const categories = [
+        "Atta Rice & Daal", "Masala & Oil", "Bakery & Biscuits", 
+        "Cold Drinks & Juices", "Pan Corner", "Personal Care", 
+        "Cleaning Care", "Dry Fruits", "Baby Care", 
+        "Maxo Killer & candle", "Gass", "Electronics", "Stationary", 
+        "Colgate & Brush", "Fish & Chicken", "Sweet & Snacks", 
+        "Dawat-e-Biriyani", "Bakery & Cake"
+    ];
+    
     categoryList.innerHTML = '';
-    categories.forEach(cat => { const option = document.createElement('option'); option.value = cat; categoryList.appendChild(option); });
+    categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        categoryList.appendChild(option);
+    });
 }
+
+
 function renderProducts(searchTerm = '') {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
     const filteredProducts = allProducts.filter(product => product.name && product.name.toLowerCase().includes(lowerCaseSearchTerm));
@@ -168,7 +187,7 @@ async function fetchAndRenderProducts() {
         const productsObject = snapshot.val();
         allProducts = productsObject ? Object.entries(productsObject).map(([key, value]) => ({ ...value, key })) : [];
         renderProducts(adminSearchInput.value);
-        populateCategoryDropdown();
+        populateCategoryDropdown(); // Yeh function ab sahi categories laayega
     } catch (error) { console.error("Error loading products:", error); productListDiv.innerHTML = '<p>Could not load products.</p>'; }
 }
 
@@ -287,7 +306,6 @@ productListDiv.addEventListener('click', (e) => {
             document.getElementById('productName').value = productToEdit.name;
             document.getElementById('productPrice').value = productToEdit.price;
             document.getElementById('productCategory').value = productToEdit.category;
-            // YAHAN SE 'productImageUrl' WALI GALAT LINE HATA DI GAYI HAI
             editingIdInput.value = productId;
             formTitle.textContent = 'Edit Product';
             submitProductBtn.textContent = 'Update Product';
@@ -322,24 +340,19 @@ async function askForNotificationPermission() {
             throw new Error('Notification permission not granted.');
         }
 
-        // Get the currently active service worker
         const swRegistration = await navigator.serviceWorker.ready;
         
-        // Subscribe to get the token
         const subscription = await swRegistration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array('BD7ekfMaxKz0kUHWYFlGc1H4HJh_vVLlHVNA-AWhBbKgAakjBkpEXG8x9hWSnra5g8rxBH5dOd65L_oBukyBHfQ')
         });
 
-        // Get the current user
         const currentUser = auth.currentUser;
         if (currentUser) {
             const token = JSON.stringify(subscription);
-            // Save the token to the database under the user's ID
             await db.ref(`admin_tokens/${currentUser.uid}`).set(token);
             alert('Notifications have been enabled successfully!');
         } else {
-            // This is a fallback, but the button should ideally not be clickable if not logged in
             alert('Could not identify user. Please login again to enable notifications.');
         }
     } catch (error) {
@@ -355,7 +368,6 @@ function urlBase64ToUint8Array(base64String) {
     for (let i = 0; i < rawData.length; ++i) { outputArray[i] = rawData.charCodeAt(i); }
     return outputArray;
 }
-// admin.js mein, purane generateDashboardData function ko isse replace karein
 
 async function generateDashboardData(startDate = null, endDate = null) {
     const itemTotalEl = document.getElementById('itemTotalSales');
@@ -413,11 +425,9 @@ async function generateDashboardData(startDate = null, endDate = null) {
         });
     }
 
-    // Top 5 items ke naam Firebase par save karein
     const topSellerNames = sortedItems.slice(0, 10).map(([name, quantity]) => name);
     try {
         await db.ref('topSellers').set(topSellerNames);
-        console.log("Top sellers list updated in Firebase:", topSellerNames); // Yeh line check karne ke liye hai
     } catch (error) {
         console.error("Could not save top sellers:", error);
     }
