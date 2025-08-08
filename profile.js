@@ -1,6 +1,6 @@
 // profile.js (FINAL AND CORRECTED CODE)
 
-import { db, auth, firebase } from './firebase-config.js';
+import { db, auth, firebase } from './firebase-config.js'; // `firebase` ko yahan import karna zaroori hai
 
 // DOM Elements
 const authSection = document.getElementById('authSection');
@@ -40,10 +40,8 @@ async function handleSendOtp(e) {
     errorEl.textContent = '';
     sendOtpBtn.disabled = true;
     sendOtpBtn.textContent = 'Sending...';
-
     const name = document.getElementById('loginName').value.trim();
     const phoneNumberInput = document.getElementById('phoneNumber').value;
-
     if (!name || phoneNumberInput.length !== 10) {
         errorEl.textContent = "Please enter your full name and a valid 10-digit number.";
         sendOtpBtn.disabled = false;
@@ -51,10 +49,8 @@ async function handleSendOtp(e) {
         return;
     }
     sessionStorage.setItem('userNameForSignup', name);
-
     const fullPhoneNumber = "+91" + phoneNumberInput;
     const appVerifier = window.recaptchaVerifier;
-
     try {
         const confirmationResult = await auth.signInWithPhoneNumber(fullPhoneNumber, appVerifier);
         window.confirmationResult = confirmationResult;
@@ -64,7 +60,6 @@ async function handleSendOtp(e) {
     } catch (error) {
         console.error("Error sending OTP:", error);
         errorEl.textContent = "Failed to send OTP. Is the number correct?";
-        // In case of error, reset reCAPTCHA
         if (window.recaptchaVerifier) {
             window.recaptchaVerifier.render().then(widgetId => {
                 grecaptcha.reset(widgetId);
@@ -83,12 +78,11 @@ async function handleVerifyOtp(e) {
     verifyOtpBtn.disabled = true;
     verifyOtpBtn.textContent = 'Verifying...';
     const otp = document.getElementById('otpInput').value;
-
     try {
         const result = await window.confirmationResult.confirm(otp);
         const user = result.user;
         const storedName = sessionStorage.getItem('userNameForSignup');
-        if (storedName && !user.displayName) {
+        if (storedName) {
             await user.updateProfile({ displayName: storedName });
             sessionStorage.removeItem('userNameForSignup');
         }
@@ -123,7 +117,7 @@ function showLoginForm() {
 function getProgress(status) {
     if (status === 'Confirmed') return { width: '50%', text: 'Order Confirmed' };
     if (status === 'Completed') return { width: '100%', text: 'Order Completed' };
-    return { width: '10%', text: 'Order Pending' }; // Default for Pending
+    return { width: '10%', text: 'Order Pending' };
 }
 
 // Fetch and display orders for the logged-in user
@@ -145,6 +139,11 @@ async function fetchOrders(userId) {
                 const orderDate = new Date(order.timestamp).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
                 const itemsHtml = order.items.map(item => `<li>${item.name} (x${item.quantity})</li>`).join('');
                 const progress = getProgress(order.status);
+                
+                // === YAHAN BADLAV KIYA GAYA HAI ===
+                const deliveryMessage = order.status === 'Confirmed' 
+                    ? `<div class="delivery-estimate"><i class="fas fa-shipping-fast"></i> Your order will be delivered within 25 min</div>` 
+                    : '';
 
                 orderCard.innerHTML = `
                     <div class="order-card-header">
@@ -157,6 +156,7 @@ async function fetchOrders(userId) {
                         </div>
                         <div class="progress-text">${progress.text}</div>
                     </div>
+                    ${deliveryMessage} 
                     <div class="order-card-body">
                         <strong>Items:</strong>
                         <ul>${itemsHtml}</ul>
@@ -172,7 +172,6 @@ async function fetchOrders(userId) {
 
 // === MAIN LOGIC & EVENT LISTENERS ===
 setupRecaptcha();
-
 auth.onAuthStateChanged(user => {
     if (user) {
         showUserProfile(user);
@@ -180,7 +179,6 @@ auth.onAuthStateChanged(user => {
         showLoginForm();
     }
 });
-
 phoneForm.addEventListener('submit', handleSendOtp);
 otpForm.addEventListener('submit', handleVerifyOtp);
 logoutBtn.addEventListener('click', () => {
