@@ -13,10 +13,10 @@ const navButtons = {
     dashboard: document.getElementById('navDashboard'),
 };
 const sections = {
-    productList: document.getElementById('productListSection'),
-    addProduct: document.getElementById('addProductSection'),
-    orderHistory: document.getElementById('orderHistorySection'),
-    dashboard: document.getElementById('dashboardSection'),
+    productListSection: document.getElementById('productListSection'),
+    addProductSection: document.getElementById('addProductSection'),
+    orderHistorySection: document.getElementById('orderHistorySection'),
+    dashboardSection: document.getElementById('dashboardSection'),
 };
 const addProductForm = document.getElementById('addProductForm');
 const productListDiv = document.getElementById('productList');
@@ -41,25 +41,31 @@ auth.onAuthStateChanged(user => {
         fetchAndRenderProducts();
         fetchAndRenderOrders();
         setupNewOrderNotifications();
-        showSection('dashboard');
+        showSection('dashboardSection');
     } else {
         window.location.href = 'index.html';
     }
 });
 
 // === NAVIGATION LOGIC ===
-function showSection(sectionToShow) {
+function showSection(sectionId) {
     Object.values(sections).forEach(section => section.classList.remove('active'));
     Object.values(navButtons).forEach(button => button.classList.remove('active'));
-    if (sectionToShow === 'addProduct') { sections.addProduct.classList.add('active'); navButtons.addProduct.classList.add('active'); }
-    else if (sectionToShow === 'orderHistory') { sections.orderHistory.classList.add('active'); navButtons.orderHistory.classList.add('active'); }
-    else if (sectionToShow === 'dashboard') { sections.dashboard.classList.add('active'); navButtons.dashboard.classList.add('active'); }
-    else { sections.productList.classList.add('active'); navButtons.viewProducts.classList.add('active'); }
+    
+    if (sections[sectionId]) {
+        sections[sectionId].classList.add('active');
+    }
+
+    if (sectionId === 'productListSection') navButtons.viewProducts.classList.add('active');
+    else if (sectionId === 'addProductSection') navButtons.addProduct.classList.add('active');
+    else if (sectionId === 'orderHistorySection') navButtons.orderHistory.classList.add('active');
+    else if (sectionId === 'dashboardSection') navButtons.dashboard.classList.add('active');
 }
-navButtons.viewProducts.addEventListener('click', () => showSection('productList'));
-navButtons.addProduct.addEventListener('click', () => { resetForm(); showSection('addProduct'); });
-navButtons.orderHistory.addEventListener('click', () => showSection('orderHistory'));
-navButtons.dashboard.addEventListener('click', () => showSection('dashboard'));
+navButtons.viewProducts.addEventListener('click', () => showSection('productListSection'));
+navButtons.addProduct.addEventListener('click', () => { resetForm(); showSection('addProductSection'); });
+navButtons.orderHistory.addEventListener('click', () => showSection('orderHistorySection'));
+navButtons.dashboard.addEventListener('click', () => showSection('dashboardSection'));
+
 
 // === ORDER HISTORY & DATA FETCHING ===
 function renderOrders(orders) {
@@ -69,34 +75,54 @@ function renderOrders(orders) {
         orderListDiv.innerHTML = '<p>No orders found.</p>';
         return;
     }
+    
+    // Orders ko status ke hisaab se sort karein
     orders.sort((a, b) => {
-        if (a.status === 'Pending' && b.status !== 'Pending') return -1;
-        if (a.status !== 'Pending' && b.status === 'Pending') return 1;
+        const statusOrder = { 'Pending': 1, 'Confirmed': 2, 'Completed': 3 };
+        const statusA = statusOrder[a.status] || 4;
+        const statusB = statusOrder[b.status] || 4;
+        if (statusA !== statusB) {
+            return statusA - statusB;
+        }
         return new Date(b.timestamp) - new Date(a.timestamp);
     });
+
     orders.forEach(order => {
         const orderCard = document.createElement('div');
-        orderCard.className = 'order-list-item';
+        const statusClass = (order.status || 'pending').toLowerCase();
+        orderCard.className = `order-list-item status-border-${statusClass}`;
         const itemsHtml = order.items.map(item => `<li>${item.name} (Qty: ${item.quantity}) - ₹${item.price * item.quantity}</li>`).join('');
         const orderDate = new Date(order.timestamp).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
         
-        // Location link banane ka code
         let locationLinkHtml = '';
         if (order.location && order.location.lat && order.location.lng) {
-            const mapsLink = `https://www.google.com/maps?q=${order.location.lat},${order.location.lng}`;locationLinkHtml = `<a href="${mapsLink}" target="_blank" class="location-link"><i class="fas fa-map-marker-alt"></i> View on Map</a>`;
+            const mapsLink = `https://www.google.com/maps?q=${order.location.lat},${order.location.lng}`;
+            locationLinkHtml = `<a href="${mapsLink}" target="_blank" class="location-link"><i class="fas fa-map-marker-alt"></i> View on Map</a>`;
         }
         
-        let completeButtonHtml = '';
-        if (order.status !== 'Completed') {
-            completeButtonHtml = `<button class="admin-btn-complete" data-id="${order.key}">Mark Completed</button>`;
-        }
-        const statusClass = order.status ? order.status.toLowerCase() : 'pending';
-        
-        // innerHTML me address ke aage locationLinkHtml add kiya gaya hai
-        orderCard.innerHTML = `<div class="order-header"><span class="order-customer">${order.customerName}</span><span class="order-date">${orderDate}</span></div><div class="order-details"><p><strong>Phone:</strong> ${order.customerPhone}</p><p><strong>Address:</strong> ${order.address} ${locationLinkHtml}</p><p><strong>Total:</strong> ₹${order.totalAmount} (Delivery: ₹${order.deliveryFee})</p><strong>Items:</strong><ul>${itemsHtml}</ul></div><div class="order-footer"><span>Status: <strong id="status-${order.key}" class="status-badge ${statusClass}">${order.status}</strong></span><div class="order-buttons">${completeButtonHtml}<button class="admin-btn-delete-order" data-id="${order.key}">Delete</button></div></div>`;
+        orderCard.innerHTML = `
+            <div class="order-header">
+                <span class="order-customer">${order.customerName}</span>
+                <span class="order-date">${orderDate}</span>
+            </div>
+            <div class="order-details">
+                <p><strong>Phone:</strong> ${order.customerPhone}</p>
+                <p><strong>Address:</strong> ${order.address} ${locationLinkHtml}</p>
+                <p><strong>Total:</strong> ₹${order.totalAmount} (Delivery: ₹${order.deliveryFee})</p>
+                <strong>Items:</strong><ul>${itemsHtml}</ul>
+            </div>
+            <div class="order-footer">
+                <div class="order-status-buttons" data-id="${order.key}">
+                    <button class="status-btn pending ${order.status === 'Pending' ? 'active' : ''}" data-status="Pending">Pending</button>
+                    <button class="status-btn confirmed ${order.status === 'Confirmed' ? 'active' : ''}" data-status="Confirmed">Confirmed</button>
+                    <button class="status-btn completed ${order.status === 'Completed' ? 'active' : ''}" data-status="Completed">Completed</button>
+                </div>
+                <button class="admin-btn-delete-order" data-id="${order.key}"><i class="fas fa-trash"></i></button>
+            </div>`;
         orderListDiv.appendChild(orderCard);
     });
 }
+
 async function fetchAndRenderOrders() {
     if (!orderListDiv) return;
     orderListDiv.innerHTML = '<p>Loading orders...</p>';
@@ -110,22 +136,24 @@ async function fetchAndRenderOrders() {
         });
     } catch (error) { console.error("Error loading orders:", error); orderListDiv.innerHTML = '<p>Could not load orders.</p>'; }
 }
+
 orderListDiv.addEventListener('click', (e) => {
-    if (e.target.classList.contains('admin-btn-delete-order')) {
-        const orderId = e.target.getAttribute('data-id');
-        if (confirm('Are you sure you want to delete this order history?')) {
-            db.ref(`orders/${orderId}`).remove().then(() => alert('Order deleted successfully.')).catch(error => alert(`Failed to delete order: ${error.message}`));
+    const target = e.target;
+    if (target.classList.contains('admin-btn-delete-order') || target.parentElement.classList.contains('admin-btn-delete-order')) {
+        const button = target.closest('.admin-btn-delete-order');
+        const orderId = button.getAttribute('data-id');
+        if (confirm('Are you sure you want to delete this order?')) {
+            db.ref(`orders/${orderId}`).remove().catch(error => alert(`Failed to delete order: ${error.message}`));
         }
     }
-    if (e.target.classList.contains('admin-btn-complete')) {
-        const orderId = e.target.getAttribute('data-id');
-        db.ref(`orders/${orderId}`).update({ status: 'Completed' }).then(() => {
-            alert('Order marked as Completed!');
-            const activeFilter = document.querySelector('.filter-btn.active');
-            if (activeFilter) activeFilter.click();
-        }).catch(error => alert(`Failed to update status: ${error.message}`));
+    if (target.classList.contains('status-btn')) {
+        const orderId = target.parentElement.getAttribute('data-id');
+        const newStatus = target.getAttribute('data-status');
+        db.ref(`orders/${orderId}`).update({ status: newStatus })
+            .catch(error => alert(`Failed to update status: ${error.message}`));
     }
 });
+
 
 // === NEW ORDER NOTIFICATION ===
 let isInitialOrdersLoaded = false;
@@ -143,11 +171,7 @@ function resetForm() {
     cancelEditBtn.style.display = 'none';
 }
 
-// +++ YAHAN BADLAV KIYA GAYA HAI +++
-// This function now reads categories from the buttons in index.html, not from existing products.
 function populateCategoryDropdown() {
-    // This is a placeholder since we can't directly access index.html's DOM from admin.js
-    // We will list the categories manually. For a better solution, categories should be stored in the database.
     const categories = [
         "Atta Rice & Daal", "Masala & Oil", "Bakery & Biscuits", 
         "Cold Drinks & Juices", "Pan Corner", "Personal Care", 
@@ -156,7 +180,6 @@ function populateCategoryDropdown() {
         "Colgate & Brush", "Fish & Chicken", "Sweet & Snacks", 
         "Dawat-e-Biriyani", "Bakery & Cake"
     ];
-    
     categoryList.innerHTML = '';
     categories.forEach(cat => {
         const option = document.createElement('option');
@@ -164,7 +187,6 @@ function populateCategoryDropdown() {
         categoryList.appendChild(option);
     });
 }
-
 
 function renderProducts(searchTerm = '') {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
@@ -186,46 +208,35 @@ async function fetchAndRenderProducts() {
         const productsObject = snapshot.val();
         allProducts = productsObject ? Object.entries(productsObject).map(([key, value]) => ({ ...value, key })) : [];
         renderProducts(adminSearchInput.value);
-        populateCategoryDropdown(); // Yeh function ab sahi categories laayega
+        populateCategoryDropdown();
     } catch (error) { console.error("Error loading products:", error); productListDiv.innerHTML = '<p>Could not load products.</p>'; }
 }
 
-
-// --- YEH POORA FUNCTION FILE UPLOAD AUR EDIT FIX KE LIYE UPDATE KIYA GAYA HAI ---
 addProductForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     submitProductBtn.textContent = 'Saving...';
     submitProductBtn.disabled = true;
-
     const name = document.getElementById('productName').value.trim();
     const price = Number(document.getElementById('productPrice').value);
     const category = document.getElementById('productCategory').value.trim();
     const file = document.getElementById('productImageFile').files[0];
     const editingId = editingIdInput.value;
-
     let imageUrl = '';
-
     if (!name || !price || !category) {
         alert('Please fill all text fields.');
         submitProductBtn.disabled = false;
         submitProductBtn.textContent = editingId ? 'Update Product' : 'Add Product';
         return;
     }
-
     try {
-        // CASE 1: Editing an existing product
         if (editingId) {
             const productToEdit = allProducts.find(p => p.key === editingId);
-            imageUrl = productToEdit.image; // Default to the old image URL
-
+            imageUrl = productToEdit.image;
             if (file) {
                 imageUrl = await uploadImageAndGetURL(file);
             }
-
             await db.ref(`products/${editingId}`).update({ name, price, category, image: imageUrl });
             alert('Product updated successfully!');
-
-        // CASE 2: Adding a new product
         } else {
             if (!file) {
                 alert('Please select an image file to upload.');
@@ -233,16 +244,12 @@ addProductForm.addEventListener('submit', async (e) => {
                 submitProductBtn.textContent = 'Add Product';
                 return;
             }
-
             imageUrl = await uploadImageAndGetURL(file);
-
             await db.ref('products').push({ name: name, price, category, image: imageUrl, inStock: true });
             alert('Product added successfully!');
         }
-
         await fetchAndRenderProducts();
-        showSection('productList');
-
+        showSection('productListSection');
     } catch (error) {
         console.error("Error saving product:", error);
         alert(`Failed to save product: ${error.message}`);
@@ -252,17 +259,14 @@ addProductForm.addEventListener('submit', async (e) => {
     }
 });
 
-// --- YEH NAYA HELPER FUNCTION HAI FILE UPLOAD KARNE KE LIYE ---
 async function uploadImageAndGetURL(file) {
     const progressDiv = document.getElementById('uploadProgress');
     const progressSpan = progressDiv.querySelector('span');
     progressDiv.style.display = 'block';
-
     return new Promise((resolve, reject) => {
         const fileName = `product_images/product_${Date.now()}_${file.name}`;
         const storageRef = storage.ref(fileName);
         const uploadTask = storageRef.put(file);
-
         uploadTask.on('state_changed',
             (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
@@ -286,8 +290,7 @@ async function uploadImageAndGetURL(file) {
     });
 }
 
-
-cancelEditBtn.addEventListener('click', () => { resetForm(); showSection('productList'); });
+cancelEditBtn.addEventListener('click', () => { resetForm(); showSection('productListSection'); });
 
 productListDiv.addEventListener('click', (e) => {
     const target = e.target;
@@ -297,7 +300,6 @@ productListDiv.addEventListener('click', (e) => {
             db.ref(`products/${productId}`).remove().then(() => { alert('Product deleted successfully.'); fetchAndRenderProducts(); }).catch(() => alert('Failed to delete product.'));
         }
     }
-    // --- YAHAN EDIT BUTTON KA FIX HAI ---
     if (target.classList.contains('admin-btn-edit')) {
         const productId = target.getAttribute('data-id');
         const productToEdit = allProducts.find(p => p.key === productId);
@@ -309,7 +311,7 @@ productListDiv.addEventListener('click', (e) => {
             formTitle.textContent = 'Edit Product';
             submitProductBtn.textContent = 'Update Product';
             cancelEditBtn.style.display = 'block';
-            showSection('addProduct');
+            showSection('addProductSection');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }

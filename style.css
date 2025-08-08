@@ -1572,3 +1572,25 @@ body.category-view .top-sellers-section {
 .quickkart-btn.login-btn:hover {
     background: #e68900;
 }
+/* Add to admin styles in style.css */
+.order-status-buttons {
+    display: flex;
+    gap: 8px;
+}
+.status-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+.status-btn.pending.active { background-color: #ffc107; border-color: #ffc107; color: #333; }
+.status-btn.confirmed.active { background-color: #17a2b8; border-color: #17a2b8; color: white; }
+.status-btn.completed.active { background-color: #28a745; border-color: #28a745; color: white; }
+
+.status-border-pending { border-left: 5px solid #ffc107; }
+.status-border-confirmed { border-left: 5px solid #17a2b8; }
+.status-border-completed { border-left: 5px solid #28a745; }

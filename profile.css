@@ -239,3 +239,34 @@ body {
     font-size: 1.1rem;
     color: var(--primary-dark);
 }
+/* Add to profile.css */
+.order-card-total {
+    font-size: 1.1rem;
+    color: var(--primary-dark);
+}
+.progress-container {
+    padding: 1rem;
+}
+.progress-bar-wrapper {
+    width: 100%;
+    background-color: #e9ecef;
+    border-radius: 20px;
+    height: 10px;
+    overflow: hidden;
+}
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--secondary), var(--primary));
+    border-radius: 20px;
+    transition: width 0.5s ease-in-out;
+}
+.progress-text {
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary-dark);
+    margin-top: 8px;
+}
+.order-card-body {
+    padding-top: 0;
+}
