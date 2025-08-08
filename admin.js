@@ -83,8 +83,7 @@ function renderOrders(orders) {
         // Location link banane ka code
         let locationLinkHtml = '';
         if (order.location && order.location.lat && order.location.lng) {
-            const mapsLink = `https://www.google.com/maps?q=${order.location.lat},${order.location.lng}`;
-            locationLinkHtml = `<a href="${mapsLink}" target="_blank" class="location-link"><i class="fas fa-map-marker-alt"></i> View on Map</a>`;
+            const mapsLink = `https://www.google.com/maps?q=${order.location.lat},${order.location.lng}`;locationLinkHtml = `<a href="${mapsLink}" target="_blank" class="location-link"><i class="fas fa-map-marker-alt"></i> View on Map</a>`;
         }
         
         let completeButtonHtml = '';

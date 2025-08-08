@@ -1,7 +1,7 @@
-// location.js (Updated with correct maps link and minimum order value)
+// location.js (UPDATED AND CORRECTED CODE)
 
 import cart from './cart-data.js';
-import { isShopOpen, db } from './firebase-config.js';
+import { isShopOpen, db, auth } from './firebase-config.js'; // auth ko import karein
 import { showNotification } from './utils.js';
 
 const storeLocation = { lat: 26.646883, lng: 92.075486 };
@@ -61,18 +61,14 @@ async function getAddressFromCoords(lat, lng) {
 
 async function sendWhatsAppOrder(customerName, customerPhone, address, lat, lng, deliveryFee, cartTotal, cartItems) {
     try {
-        // Get current user
         const user = auth.currentUser;
         if (!user) {
-            // If user is not logged in, ask them to login first.
-            // This can be improved by showing a login popup.
             showNotification('Please login to place an order.', 'error');
             return false;
         }
-
-        // 1. Save order to Firebase with userId
+        
         const orderData = {
-            userId: user.uid, // <-- YEH LINE ADD KI GAYI HAI
+            userId: user.uid,
             customerName,
             customerPhone,
             address,
@@ -85,12 +81,12 @@ async function sendWhatsAppOrder(customerName, customerPhone, address, lat, lng,
         };
         await db.ref('orders').push(orderData);
 
-        // 2. Prepare and send WhatsApp message
         const cartItemsText = cartItems.map(item =>
             ` ➤ ${item.name} (${item.quantity} × ₹${item.price}) = ₹${item.price * item.quantity}`
         ).join('\n');
 
-        const mapsLink = `https://maps.google.com/?q=${lat},${lng}`;
+        // === YAHAN LINK THEEK KIYA GAYA HAI ===
+        const mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
 
         const message = `✨ *New QuickKart Order!* ✨
 ====================
@@ -118,8 +114,6 @@ ${cartItemsText}
   *Total Amount: ₹${cartTotal}*
 
 ====================
-
-📝 *Special Instructions (if any):*
 `;
 
         const encodedMessage = encodeURIComponent(message);
