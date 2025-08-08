@@ -61,8 +61,18 @@ async function getAddressFromCoords(lat, lng) {
 
 async function sendWhatsAppOrder(customerName, customerPhone, address, lat, lng, deliveryFee, cartTotal, cartItems) {
     try {
-        // 1. Save order to Firebase
+        // Get current user
+        const user = auth.currentUser;
+        if (!user) {
+            // If user is not logged in, ask them to login first.
+            // This can be improved by showing a login popup.
+            showNotification('Please login to place an order.', 'error');
+            return false;
+        }
+
+        // 1. Save order to Firebase with userId
         const orderData = {
+            userId: user.uid, // <-- YEH LINE ADD KI GAYI HAI
             customerName,
             customerPhone,
             address,
@@ -80,7 +90,6 @@ async function sendWhatsAppOrder(customerName, customerPhone, address, lat, lng,
             ` ➤ ${item.name} (${item.quantity} × ₹${item.price}) = ₹${item.price * item.quantity}`
         ).join('\n');
 
-        // === YAHAN BADLAV KIYA GAYA HAI (MAPS LINK CORRECTED) ===
         const mapsLink = `https://maps.google.com/?q=${lat},${lng}`;
 
         const message = `✨ *New QuickKart Order!* ✨

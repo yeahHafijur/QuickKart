@@ -7,7 +7,7 @@ import { updateCartUI, openCart, closeCart, setupCartElements } from './cart.js'
 import { showNotification } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    
+
     // --- SPLASH SCREEN LOGIC ---
     const splashScreen = document.getElementById('splash-screen');
     const logoAnimated = document.querySelector('.logo-text-animated');
@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     }
     
+    // All element selections are now safely inside DOMContentLoaded
     const elements = {
         body: document.body,
         storeDiv: document.getElementById('storeItems'),
@@ -56,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         shopStatusText: document.getElementById('shopStatusText'),
         searchSection: document.querySelector('.search-section'),
         categoriesScroll: document.querySelector('.categories-scroll'),
-        mainSectionTitle: document.getElementById('mainSectionTitle'), // <-- UPDATED
+        mainSectionTitle: document.getElementById('mainSectionTitle'),
         logoBox: document.querySelector('.logo-box'),
         loginModal: document.getElementById('loginModal'),
         loginForm: document.getElementById('loginForm'),
@@ -66,70 +67,59 @@ document.addEventListener('DOMContentLoaded', () => {
         adminPanelBtn: document.getElementById('adminPanelBtn'),
         navHome: document.getElementById('navHome'),
         navAllItems: document.getElementById('navAllItems'), 
-        navSearch: document.getElementById('navSearch'),
+        navProfile: document.getElementById('navProfile'),
         navCart: document.getElementById('navCart'),
         navCartCount: document.getElementById('navCartCount'),
         topSellersSection: document.querySelector('.top-sellers-section'),
     };
     
-    const showProductView = (category, focusSearch = false) => {
+    const showProductView = (category) => {
         elements.body.classList.remove('category-view');
-
         if (elements.topSellersSection) elements.topSellersSection.style.display = 'none';
-
         elements.searchSection.classList.remove('hidden');
         elements.categoriesScroll.classList.remove('hidden');
-        
         elements.logoBox.innerHTML = `<i class="fas fa-arrow-left"></i> Back`;
         elements.logoBox.style.cursor = 'pointer';
-        elements.mainSectionTitle.textContent = category === 'all' ? 'All Products' : category; // <-- UPDATED
+        elements.mainSectionTitle.textContent = category === 'all' ? 'All Products' : category;
         initStore(category, '', elements.storeDiv);
         elements.categoryBtns.forEach(b => b.classList.toggle('active', b.dataset.category === category));
         if (category !== 'all') {
             const activeBtn = document.querySelector(`.category-btn.active`);
             activeBtn?.scrollIntoView({ behavior: 'smooth', inline: 'center' });
         }
-        if (focusSearch) elements.searchInput.focus();
-        const activeNav = focusSearch ? elements.navSearch : (category === 'all' ? elements.navAllItems : elements.navHome);
+        const activeNav = (category === 'all' ? elements.navAllItems : elements.navHome);
         updateActiveNav(activeNav);
         window.scrollTo(0, 0);
     };
 
     const showCategoryView = () => {
         elements.body.classList.add('category-view');
-
         elements.searchSection.classList.add('hidden');
         elements.categoriesScroll.classList.add('hidden');
-
         renderTopSellers(); 
-        
         elements.logoBox.innerHTML = `<span class="logo-text">Quick<span>Kart</span></span>`;
         elements.logoBox.style.cursor = 'default';
-        elements.mainSectionTitle.textContent = 'Shop by Category'; // <-- UPDATED
+        elements.mainSectionTitle.textContent = 'Shop by Category';
         renderCategoryGrid(elements.storeDiv, showProductView);
         updateActiveNav(elements.navHome);
         window.scrollTo(0, 0);
     };
     
     const updateActiveNav = (activeButton) => {
-        [elements.navHome, elements.navAllItems, elements.navSearch, elements.navCart].forEach(btn => btn.classList.remove('active'));
+        [elements.navHome, elements.navAllItems, elements.navProfile, elements.navCart].forEach(btn => btn.classList.remove('active'));
         if (activeButton) activeButton.classList.add('active');
     };
 
     async function renderTopSellers() {
         if (!elements.topSellersSection) return;
-
         const container = document.getElementById('topSellersContainer');
         const topSellers = await fetchTopSellers();
-
         if (topSellers.length === 0) {
             elements.topSellersSection.style.display = 'none';
             return;
         }
-        
         elements.topSellersSection.style.display = 'block';
         container.innerHTML = ''; 
-
         topSellers.forEach(item => {
             const div = document.createElement('div');
             div.className = 'top-seller-item';
@@ -166,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const searchTerm = elements.searchInput.value.trim().toLowerCase();
                 initStore('all', searchTerm, elements.storeDiv);
                 elements.categoryBtns.forEach(b => b.classList.remove('active'));
-                elements.mainSectionTitle.textContent = searchTerm ? `Search results for "${searchTerm}"` : 'All Products'; // <-- UPDATED
+                elements.mainSectionTitle.textContent = searchTerm ? `Search results for "${searchTerm}"` : 'All Products';
             }, 300);
         });
 
@@ -179,7 +169,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         elements.navHome.addEventListener('click', () => { closeCart(); showCategoryView(); });
         elements.navAllItems.addEventListener('click', () => { closeCart(); showProductView('all'); });
-        elements.navSearch.addEventListener('click', () => { closeCart(); showProductView('all', true); });
+        elements.navProfile.addEventListener('click', () => {
+            window.location.href = 'profile.html';
+        });
         elements.navCart.addEventListener('click', () => { openCart(); updateActiveNav(elements.navCart); });
         
         elements.logoutBtn.addEventListener('click', () => {

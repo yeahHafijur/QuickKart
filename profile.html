@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - QuickKart</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="profile.css">
+</head>
+<body>
+
+    <header class="profile-header">
+    <div class="header-left-group">
+        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <h1>My Profile</h1>
+    </div>
+    <button id="logoutBtn" class="logout-btn-profile" style="display: none;"><i class="fas fa-sign-out-alt"></i></button>
+</header>
+
+    <main class="container">
+        <div id="authSection">
+            <div class="auth-container">
+                <h3>Login with Phone</h3>
+                <p>Please enter your phone number to continue.</p>
+                
+                <form id="phoneForm">
+                    <div class="phone-input-group">
+                        <span>+91</span>
+                        <input type="tel" id="phoneNumber" placeholder="10-digit mobile number" required>
+                    </div>
+                    <button type="submit" id="sendOtpBtn">Send OTP</button>
+                </form>
+
+                <form id="otpForm" style="display: none;">
+                    <p>Enter the OTP sent to your number.</p>
+                    <input type="text" id="otpInput" placeholder="Enter OTP" required>
+                    <button type="submit" id="verifyOtpBtn">Verify OTP</button>
+                </form>
+                
+                <p id="authError" class="auth-error-msg"></p>
+
+                <div id="recaptcha-container"></div>
+            </div>
+        </div>
+
+        <div id="profileSection" style="display: none;">
+            <div class="profile-info">
+                <p>Welcome, <span id="userPhone"></span>!</p>
+            </div>
+
+            <section class="order-history-section">
+                <h2><i class="fas fa-receipt"></i> My Orders</h2>
+                <div id="orderHistoryList">
+                    <p>Loading your orders...</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="profile.js"></script>
+</body>
+</html>

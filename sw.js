@@ -1,4 +1,4 @@
-// sw.js (Service Worker)
+// sw.js (UPDATED CODE)
 
 const CACHE_NAME = 'quickkart-v1';
 
@@ -15,6 +15,9 @@ const urlsToCache = [
   'utils.js',
   'admin.html',
   'admin.js',
+  'profile.html', // Profile page ko bhi cache karein
+  'profile.js',
+  'profile.css',
   'images/emptyCart.webp',
   'images/placeholder.png',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
@@ -28,6 +31,10 @@ self.addEventListener('install', event => {
       .then(cache => {
         console.log('Cache खोला गया');
         return cache.addAll(urlsToCache);
+      })
+      .catch(error => {
+          // ADDED: Error handling to see which file failed
+          console.error('Failed to cache files during install:', error);
       })
   );
 });

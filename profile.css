@@ -1,0 +1,241 @@
+/* profile.css (NEW & IMPROVED DESIGN) */
+
+:root {
+  --primary: #00b140;
+  --primary-dark: #007d33;
+  --primary-light: #e5f7ed;
+  --secondary: #ff6f00;
+  --text: #333;
+  --muted: #777;
+  --bg: #f1f3f6;
+  --white: #ffffff;
+  --border: #e0e0e0;
+  --radius: 12px; /* Thoda aur rounded corners */
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+body {
+    background-color: var(--bg);
+}
+/* Is code ko profile.css mein add karein */
+.header-left-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem; /* Arrow aur Title ke beech mein thoda space */
+}
+
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background-color: var(--white);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.back-btn, .logout-btn-profile {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+.back-btn:hover, .logout-btn-profile:hover {
+    color: var(--primary);
+}
+
+.profile-header h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+/* Auth Form Styles - Modern Look */
+.auth-container {
+    background-color: var(--white);
+    padding: 2.5rem;
+    margin: 2rem auto;
+    max-width: 400px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    text-align: center;
+    border-top: 4px solid var(--primary);
+}
+
+.auth-container h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+
+.auth-container p {
+    margin-bottom: 2rem;
+    color: var(--muted);
+}
+
+.auth-container .phone-input-group {
+    border-color: #ccc;
+    transition: border-color 0.3s ease;
+}
+.auth-container .phone-input-group:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-light);
+}
+.auth-container input {
+    background: #f9f9f9;
+    border-radius: 8px;
+    font-size: 1rem;
+    padding: 14px;
+    width: 100%;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border);
+    transition: all 0.2s ease-in-out;
+}
+.auth-container input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background-color: var(--white);
+    box-shadow: 0 0 0 3px rgba(0, 177, 64, 0.1);
+}
+
+
+.auth-container button {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.auth-container button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 177, 64, 0.2);
+}
+.auth-container button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Profile Info Styles */
+.profile-info {
+    text-align: center;
+    padding: 2rem;
+    background-color: var(--white);
+    margin: 1.5rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.profile-info p {
+    font-size: 1.1rem;
+    color: var(--text);
+}
+.profile-info span {
+    font-weight: 600;
+    color: var(--primary-dark);
+}
+
+/* Order History Styles - Card Design */
+.order-history-section {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+}
+
+.order-history-section h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.order-history-section h2 i {
+    color: var(--primary);
+}
+
+
+#orderHistoryList {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.order-card {
+    background-color: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden; /* For border-left */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-left: 5px solid var(--primary);
+}
+.order-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+
+.order-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #f9fafb;
+    border-bottom: 1px solid var(--border);
+}
+
+.order-card-date {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--muted);
+}
+
+.order-card-status {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.status-pending { background-color: var(--secondary); }
+.status-completed { background-color: var(--primary-dark); }
+
+
+.order-card-body {
+    padding: 1rem;
+}
+
+.order-card-body ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+.order-card-body li {
+    padding: 6px 0;
+    border-bottom: 1px dashed #eee;
+    color: #555;
+}
+.order-card-body li:last-child {
+    border-bottom: none;
+}
+
+.order-card-footer {
+    text-align: right;
+    padding: 1rem;
+    background-color: #f9fafb;
+    border-top: 1px solid var(--border);
+}
+.order-card-footer strong {
+    font-size: 1.1rem;
+    color: var(--primary-dark);
+}

@@ -1,4 +1,4 @@
-// firebase-config.js (FINAL AND 100% CORRECTED CODE)
+// firebase-config.js (UPDATED AND CORRECTED)
 
 import "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js";
 import "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js";
@@ -16,10 +16,16 @@ const firebaseConfig = {
   appId: "1:603872368115:web:3ed732f3c7afe934ee2e86"
 };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const auth = firebase.auth();
-const storage = firebase.storage();
+// Check if Firebase is already initialized
+if (!window.firebase.apps.length) {
+    window.firebase.initializeApp(firebaseConfig);
+}
+
+// Get the firebase object from the window
+const firebaseApp = window.firebase;
+const db = firebaseApp.database();
+const auth = firebaseApp.auth();
+const storage = firebaseApp.storage();
 const shopStatusRef = db.ref('shopStatus');
 let isShopOpen = true;
 
@@ -85,4 +91,5 @@ function updateShopStatus(isOpen, elements, closeCartCallback) {
         closeCartCallback();
     }
 }
-export { db, auth, storage, shopStatusRef, isShopOpen, getShopStatus, setupShopStatus, updateShopStatus };
+// Export everything including the main firebase object
+export { db, auth, storage, shopStatusRef, isShopOpen, getShopStatus, setupShopStatus, updateShopStatus, firebaseApp as firebase };
