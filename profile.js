@@ -39,19 +39,27 @@ function setupRecaptcha() {
 }
 
 // Handle Phone Form Submission (Send OTP)
+// In profile.js, replace the handleSendOtp function with this:
 async function handleSendOtp(e) {
     e.preventDefault();
     errorEl.textContent = '';
     sendOtpBtn.disabled = true;
     sendOtpBtn.textContent = 'Sending...';
 
+    const name = document.getElementById('loginName').value.trim();
     const phoneNumberInput = document.getElementById('phoneNumber').value;
-    if (phoneNumberInput.length !== 10) {
-        errorEl.textContent = "Please enter a valid 10-digit number.";
+
+    // Name aur Phone dono check karein
+    if (!name || phoneNumberInput.length !== 10) {
+        errorEl.textContent = "Please enter your full name and a valid 10-digit number.";
         sendOtpBtn.disabled = false;
         sendOtpBtn.textContent = 'Send OTP';
         return;
     }
+
+    // Naam ko temporary save karein
+    sessionStorage.setItem('userNameForSignup', name);
+
     const fullPhoneNumber = "+91" + phoneNumberInput;
     const appVerifier = window.recaptchaVerifier;
 
@@ -65,19 +73,15 @@ async function handleSendOtp(e) {
 
     } catch (error) {
         console.error("Error sending OTP:", error);
-        errorEl.textContent = "Failed to send OTP. Is the phone number correct? Please try again.";
-        // Error aane par verifier ko reset karein
-        if (window.recaptchaVerifier) {
-            window.recaptchaVerifier.clear();
-            setupRecaptcha(); // Re-initialize it
-        }
+        errorEl.textContent = "Failed to send OTP. Is the number correct?";
+        grecaptcha.reset(window.recaptchaWidgetId);
     } finally {
         sendOtpBtn.disabled = false;
         sendOtpBtn.textContent = 'Send OTP';
     }
 }
 
-// Handle OTP Form Submission (Verify OTP)
+// And replace the handleVerifyOtp function with this:
 async function handleVerifyOtp(e) {
     e.preventDefault();
     errorEl.textContent = '';
@@ -87,8 +91,21 @@ async function handleVerifyOtp(e) {
     const otp = document.getElementById('otpInput').value;
 
     try {
-        await window.confirmationResult.confirm(otp);
-        // Login safal hua! onAuthStateChanged baaki UI changes handle karega.
+        const result = await window.confirmationResult.confirm(otp);
+        const user = result.user;
+        
+        // Check karein ki kya user naya hai aur naam save karna hai
+        const storedName = sessionStorage.getItem('userNameForSignup');
+        if (storedName) {
+            // User ke profile mein naam update karein
+            await user.updateProfile({
+                displayName: storedName
+            });
+            // Temporary naam ko storage se हटा dein
+            sessionStorage.removeItem('userNameForSignup');
+        }
+        // Login safal hua! onAuthStateChanged UI update karega.
+
     } catch (error) {
         console.error("Error verifying OTP:", error);
         errorEl.textContent = "Invalid OTP. Please try again.";

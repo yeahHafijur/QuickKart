@@ -1564,3 +1564,11 @@ body.category-view .top-sellers-section {
     text-decoration: underline;
     color: var(--primary-dark);
 }
+/* Add at the end of style.css */
+.quickkart-btn.login-btn {
+    background: #ff9800; /* Orange color for login */
+}
+
+.quickkart-btn.login-btn:hover {
+    background: #e68900;
+}

@@ -126,36 +126,32 @@ ${cartItemsText}
     }
 }
 
+// Is function ko location.js mein replace karein
 async function handleOrderWithLocation() {
+    const currentUser = auth.currentUser;
+
+    // Yakeen karein ki sirf logged-in user hi order place kar sakta hai
+    if (!currentUser) {
+        showNotification('Something went wrong. Please login again.', 'error');
+        return;
+    }
+
+    if (cart.length === 0) return showNotification('Your cart is empty!', 'error');
+    if (!isShopOpen) return showNotification('Shop is currently closed.', 'error');
+    
+    // User ki details seedhe auth se lein
+    const customerName = currentUser.displayName || 'Guest'; // Agar naam set nahi hai
+    const customerPhone = currentUser.phoneNumber.replace('+91', ''); // +91 hata dein
+
+    const itemTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    if (itemTotal < 50) return showNotification('Minimum order value is ₹50.', 'error');
+
+    // Baaki ka function waisa hi rahega
     const btn = document.getElementById('placeOrderBtn');
     const spinner = document.getElementById('locationSpinner');
     const btnText = document.getElementById('btnText');
     const statusEl = document.getElementById('locationStatus');
-    const customerName = document.getElementById('customerName').value.trim();
-    const customerPhone = document.getElementById('customerPhone').value.trim();
-
-    if (cart.length === 0) {
-        showNotification('Your cart is empty! Please add items to order.', 'error');
-        return;
-    }
-
-    const itemTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    if (itemTotal < 50) {
-        showNotification('Minimum order value is ₹50.', 'error');
-        statusEl.textContent = 'Minimum order value is ₹50.';
-        return;
-    }
-
-    if (!isShopOpen) {
-        statusEl.textContent = 'Shop is closed. Cannot place order.';
-        return;
-    }
-
-    if (!customerName || !customerPhone || customerPhone.length !== 10) {
-        statusEl.textContent = 'Please enter valid name and 10-digit mobile number';
-        return;
-    }
-
+    
     btn.disabled = true;
     spinner.style.display = 'inline-block';
     btnText.style.display = 'none';
@@ -167,56 +163,29 @@ async function handleOrderWithLocation() {
         const distance = getDistanceFromLatLonInKm(storeLocation.lat, storeLocation.lng, lat, lng);
 
         if (distance > 5) {
-            statusEl.innerHTML = `Delivery not available (${distance.toFixed(1)} km away)<br>We deliver within 5km only`;
-            document.getElementById('deliveryFee').textContent = 'Not Available';
-            btn.disabled = false;
-            spinner.style.display = 'none';
-            btnText.style.display = 'inline-block';
+            statusEl.innerHTML = `Delivery not available (${distance.toFixed(1)} km away)`;
             return;
         }
 
-        statusEl.textContent = 'Getting your address...';
         const address = await getAddressFromCoords(lat, lng);
-        
-        document.getElementById('autoAddress').value = address;
-        document.getElementById('userLat').value = lat;
-        document.getElementById('userLng').value = lng;
-
         let deliveryFee = 0;
-        if (distance > 0 && distance <= 1) {
-            deliveryFee = 10;
-        } else if (distance > 1) {
-            const extraDistance = distance - 1;
-            deliveryFee = Math.round(10 + (extraDistance * 5));
-        }
-        document.getElementById('deliveryFee').textContent = `₹${deliveryFee}`;
-
+        if (distance > 0 && distance <= 1) deliveryFee = 10;
+        else if (distance > 1) deliveryFee = Math.round(10 + ((distance - 1) * 5));
+        
         const total = itemTotal + deliveryFee;
-        document.getElementById('cartTotal').textContent = `₹${total}`;
-
         const cartItemsCopy = JSON.parse(JSON.stringify(cart));
+        
         const success = await sendWhatsAppOrder(customerName, customerPhone, address, lat, lng, deliveryFee, total, cartItemsCopy);
 
         if (success) {
             cart.length = 0;
             localStorage.setItem('quickKartCart', JSON.stringify(cart));
-            import('./cart.js').then(cartModule => {
-                if (typeof cartModule.updateCartUI === 'function') {
-                    cartModule.updateCartUI();
-                }
-            });
+            import('./cart.js').then(cartModule => cartModule.updateCartUI());
             statusEl.textContent = 'Order sent successfully!';
-        } else {
-            throw new Error('Failed to send or save the order.');
         }
     } catch (error) {
         console.error('Order error:', error);
-        let errorMessage = 'Order processing failed';
-        if (error.code === error.PERMISSION_DENIED) {
-            errorMessage = 'Please enable location permissions';
-        }
-        statusEl.innerHTML = `${errorMessage}<br>Contact us at 9716940448`;
-        document.getElementById('deliveryFee').textContent = '--';
+        statusEl.innerHTML = `Order processing failed. Please try again.`;
     } finally {
         spinner.style.display = 'none';
         btnText.style.display = 'inline-block';

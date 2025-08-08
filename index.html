@@ -125,15 +125,18 @@
         <div class="bill-row total"><span>Item Total</span><span id="cartTotal">₹0</span></div>
       </div>
       <div class="cart-form">
-          <input type="text" id="customerName" placeholder="আপোনাৰ নাম" required>
-          <input type="hidden" id="autoAddress"><input type="hidden" id="userLat"><input type="hidden" id="userLng">
-          <input type="tel" id="customerPhone" pattern="[0-9]{10}" maxlength="10" placeholder="📞 মোবাইল নম্বৰ" required>
-          <div id="locationStatus" class="location-message"></div>
-          <button id="placeOrderBtn" class="quickkart-btn">
-            <i class="fab fa-whatsapp"></i> <span id="btnText">Place Order</span>
-            <span id="locationSpinner" style="display:none;"><i class="fas fa-spinner fa-spin"></i> Fetching...</span>
-          </button>
-        </div>
+    <button id="loginToOrderBtn" class="quickkart-btn login-btn" style="display: none;">
+        <i class="fas fa-sign-in-alt"></i> Login to Order
+    </button>
+    
+    <button id="placeOrderBtn" class="quickkart-btn">
+        <i class="fab fa-whatsapp"></i> 
+        <span id="btnText">Place Order</span>
+        <span id="locationSpinner" style="display:none;"><i class="fas fa-spinner fa-spin"></i> Fetching...</span>
+    </button>
+    
+    <div id="locationStatus" class="location-message"></div>
+</div>
     </div>
   </div>
 
