@@ -94,6 +94,7 @@ async function handleSendOtp(e) {
 
 
 // Handle OTP Verification
+// Handle OTP Verification
 async function handleVerifyOtp(e) {
     e.preventDefault();
     errorEl.textContent = '';
@@ -107,7 +108,6 @@ async function handleVerifyOtp(e) {
         const isNewUser = result.additionalUserInfo.isNewUser;
         const storedName = sessionStorage.getItem('userNameForSignup');
         
-        // Agar user naya hai toh referral code aur coupon balance set karo
         if (isNewUser) {
             const newReferralCode = generateReferralCode();
             const userRef = db.ref(`users/${user.uid}`);
@@ -121,20 +121,26 @@ async function handleVerifyOtp(e) {
             
             const referredByCode = sessionStorage.getItem('referredByCode');
             if (referredByCode) {
-                userData.referredBy = referredByCode; // Jisne refer kiya uska code save karo
+                userData.referredBy = referredByCode;
             }
 
             await userRef.set(userData);
             await user.updateProfile({ displayName: storedName });
 
         } else if (storedName) {
-            // Agar user purana hai lekin naam change karna chahta hai
              await user.updateProfile({ displayName: storedName });
              await db.ref(`users/${user.uid}/displayName`).set(storedName);
         }
 
         sessionStorage.removeItem('userNameForSignup');
         sessionStorage.removeItem('referredByCode');
+
+        // *** YEH LOGIC ADD KIYA GAYA HAI ***
+        // Check karein ki kya cart pe wapas redirect karna hai
+        if (sessionStorage.getItem('loginRedirectToCart') === 'true') {
+            sessionStorage.removeItem('loginRedirectToCart'); // Flag ko hata dein
+            window.location.href = 'index.html'; // Wapas main page par bhej dein
+        }
         
     } catch (error) {
         console.error("Error verifying OTP:", error);

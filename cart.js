@@ -35,6 +35,9 @@ export function setupCartElements(el, navEl = {}) {
     const loginBtn = document.getElementById('loginToOrderBtn');
     if (loginBtn) {
         loginBtn.addEventListener('click', () => {
+            // *** YEH LINE ADD KI GAYI HAI ***
+            // Browser ko batayein ki login ke baad cart pe wapas aana hai
+            sessionStorage.setItem('loginRedirectToCart', 'true');
             window.location.href = 'profile.html';
         });
     }
