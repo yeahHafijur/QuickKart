@@ -163,7 +163,38 @@ adminSearchInput.addEventListener("input",e=>renderProducts(e.target.value));
 // === DASHBOARD & PUSH NOTIFICATIONS (NO CHANGE) ===
 async function askForNotificationPermission(){try{if("granted"===Notification.permission)return void alert("Notifications are already enabled.");const e=await Notification.requestPermission();if("granted"!==e)throw new Error("Permission not granted.");const t=await navigator.serviceWorker.ready,o=await t.pushManager.subscribe({userVisibleOnly:!0,applicationServerKey:"BD7ekfMaxKz0kUHWYFlGc1H4HJh_vVLlHVNA-AWhBbKgAakjBkpEXG8x9hWSnra5g8rxBH5dOd65L_oBukyBHfQ"});auth.currentUser&&await db.ref(`admin_tokens/${auth.currentUser.uid}`).set(JSON.stringify(o)),alert("Notifications enabled!")}catch(e){alert("Could not enable notifications."),console.error(e)}}
 async function generateDashboardData(e=null,t=null){const[o,n,d,i,l]=[document.getElementById("itemTotalSales"),document.getElementById("totalDeliveryFees"),document.getElementById("totalSales"),document.getElementById("totalOrders"),document.getElementById("topSellingItems")],a=allOrders.filter(e=>"Completed"===e.status);if(0===a.length)return o.textContent="₹0.00",n.textContent="₹0.00",d.textContent="₹0.00",i.textContent="0",void(l.innerHTML="<p>No completed sales data yet.</p>");const r=a.filter(o=>!e||new Date(o.timestamp)>=e&&new Date(o.timestamp)<=t),s=r.reduce((e,t)=>e+(t.totalAmount||0),0),c=r.reduce((e,t)=>e+(t.deliveryFee||0),0);o.textContent=`₹${(s-c).toFixed(2)}`,n.textContent=`₹${c.toFixed(2)}`,d.textContent=`₹${s.toFixed(2)}`,i.textContent=r.length;const u={};r.forEach(e=>e.items?.forEach(t=>{u[t.name]=(u[t.name]||0)+t.quantity}));const p=Object.entries(u).sort(([,e],[,t])=>t-e).slice(0,10);l.innerHTML=p.length?p.map(([e,t])=>`<div class="top-item"><span class="top-item-name">${e}</span><span class="top-item-qty">${t} sold</span></div>`).join(""):"<p>No items sold in this period.</p>";try{await db.ref("topSellers").set(p.map(([e])=>e))}catch(e){console.error("Could not save top sellers:",e)}}
-filterButtons.forEach(e=>{e.addEventListener("click",()=>{filterButtons.forEach(e=>e.classList.remove("active")),e.classList.add("active");const t=e.dataset.range;let o,n=new Date;n.setHours(23,59,59,999);if("today")o=new Date(n.setHours(0,0,0,0));else if("week")o=new Date(n.setDate(n.getDate()-n.getDay()));else if("month")o=new Date(n.getFullYear(),n.getMonth(),1);else{o=null,n=null}o&&o.setHours(0,0,0,0),startDateInput.value="",endDateInput.value="",generateDashboardData(o,n)})});
+filterButtons.forEach(e => {
+    e.addEventListener('click', () => {
+        filterButtons.forEach(btn => btn.classList.remove("active"));
+        e.classList.add("active");
+        const range = e.dataset.range; // Correctly get the range
+        
+        let startDate = new Date(); 
+        let endDate = new Date(); 
+
+        // Set time for accuracy
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+
+        if (range === 'today') {
+            // Start and End date are already set to today
+        } else if (range === 'week') {
+            // Get the date for the beginning of the current week (Sunday)
+            startDate.setDate(startDate.getDate() - startDate.getDay());
+        } else if (range === 'month') {
+            // Get the date for the 1st of the current month
+            startDate.setDate(1);
+        } else { // This handles the 'all' case
+            startDate = null;
+            endDate = null;
+        }
+
+        // Clear the custom date inputs and generate the report
+        startDateInput.value = "";
+        endDateInput.value = "";
+        generateDashboardData(startDate, endDate);
+    });
+});
 applyDateRangeBtn.addEventListener("click",()=>{if(!startDateInput.value||!endDateInput.value)return alert("Please select both start and end dates.");filterButtons.forEach(e=>e.classList.remove("active"));const e=new Date(startDateInput.value);e.setHours(0,0,0,0);const t=new Date(endDateInput.value);t.setHours(23,59,59,999),generateDashboardData(e,t)});
 
 
