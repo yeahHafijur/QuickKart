@@ -75,6 +75,8 @@ navButtons.enableNotifications.addEventListener('click', () => askForNotificatio
 
 
 // === ORDER HISTORY & DATA FETCHING ===
+// admin.js mein yeh function badlein
+
 function renderOrders(orders) {
     if (!orderListDiv) return;
     orderListDiv.innerHTML = '';
@@ -82,22 +84,46 @@ function renderOrders(orders) {
         orderListDiv.innerHTML = '<p>No orders found.</p>';
         return;
     }
+    // Orders ko status aur time ke hisaab se sort karein
     orders.sort((a, b) => {
         const statusOrder = { 'Pending': 1, 'Confirmed': 2, 'Completed': 3 };
         return (statusOrder[a.status] || 4) - (statusOrder[b.status] || 4) || new Date(b.timestamp) - new Date(a.timestamp);
     });
+
     orders.forEach(order => {
         const orderCard = document.createElement('div');
         const statusClass = (order.status || 'pending').toLowerCase();
         orderCard.className = `order-list-item status-border-${statusClass}`;
         const itemsHtml = order.items.map(item => `<li>${item.name} (Qty: ${item.quantity}) - ₹${item.price * item.quantity}</li>`).join('');
         const orderDate = new Date(order.timestamp).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+        
         let locationLinkHtml = '';
         if (order.location?.lat && order.location?.lng) {
-            const mapsLink = `http://googleusercontent.com/maps/google.com/0{order.location.lat},${order.location.lng}`;
+            // === YAHAN LINK THEEK KIYA GAYA HAI ===
+            const mapsLink = `https://www.google.com/maps?q=${order.location.lat},${order.location.lng}`;
             locationLinkHtml = `<a href="${mapsLink}" target="_blank" class="location-link"><i class="fas fa-map-marker-alt"></i> View on Map</a>`;
         }
-        orderCard.innerHTML = `<div class="order-header"><span class="order-customer">${order.customerName}</span><span class="order-date">${orderDate}</span></div><div class="order-details"><p><strong>Phone:</strong> ${order.customerPhone}</p><p><strong>Address:</strong> ${order.address} ${locationLinkHtml}</p><p><strong>Total:</strong> ₹${order.totalAmount} (Delivery: ₹${order.deliveryFee})</p><strong>Items:</strong><ul>${itemsHtml}</ul></div><div class="order-footer"><div class="order-status-buttons" data-id="${order.key}"><button class="status-btn pending ${order.status === 'Pending' ? 'active' : ''}" data-status="Pending">Pending</button><button class="status-btn confirmed ${order.status === 'Confirmed' ? 'active' : ''}" data-status="Confirmed">Confirmed</button><button class="status-btn completed ${order.status === 'Completed' ? 'active' : ''}" data-status="Completed">Completed</button></div><button class="admin-btn-delete-order" data-id="${order.key}"><i class="fas fa-trash"></i></button></div>`;
+
+        orderCard.innerHTML = `
+            <div class="order-header">
+                <span class="order-customer">${order.customerName}</span>
+                <span class="order-date">${orderDate}</span>
+            </div>
+            <div class="order-details">
+                <p><strong>Phone:</strong> ${order.customerPhone}</p>
+                <p><strong>Address:</strong> ${order.address} ${locationLinkHtml}</p>
+                <p><strong>Total:</strong> ₹${order.totalAmount} (Delivery: ₹${order.deliveryFee})</p>
+                <strong>Items:</strong>
+                <ul>${itemsHtml}</ul>
+            </div>
+            <div class="order-footer">
+                <div class="order-status-buttons" data-id="${order.key}">
+                    <button class="status-btn pending ${order.status === 'Pending' ? 'active' : ''}" data-status="Pending">Pending</button>
+                    <button class="status-btn confirmed ${order.status === 'Confirmed' ? 'active' : ''}" data-status="Confirmed">Confirmed</button>
+                    <button class="status-btn completed ${order.status === 'Completed' ? 'active' : ''}" data-status="Completed">Completed</button>
+                </div>
+                <button class="admin-btn-delete-order" data-id="${order.key}"><i class="fas fa-trash"></i></button>
+            </div>`;
         orderListDiv.appendChild(orderCard);
     });
 }

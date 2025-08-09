@@ -59,6 +59,8 @@ async function getAddressFromCoords(lat, lng) {
     }
 }
 
+// location.js mein yeh function badlein
+
 async function sendWhatsAppOrder(customerName, customerPhone, address, lat, lng, deliveryFee, cartTotal, cartItems) {
     try {
         const user = auth.currentUser;
@@ -85,7 +87,7 @@ async function sendWhatsAppOrder(customerName, customerPhone, address, lat, lng,
             ` ➤ ${item.name} (${item.quantity} × ₹${item.price}) = ₹${item.price * item.quantity}`
         ).join('\n');
 
-        // === YAHAN LINK THEEK KIYA GAYA HAI ===
+        // === YAHAN BHI LINK THEEK KIYA GAYA HAI ===
         const mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
 
         const message = `✨ *New QuickKart Order!* ✨
