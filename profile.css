@@ -1,28 +1,39 @@
-/* profile.css (COMPLETE NEW DESIGN) */
+/* profile.css - ENHANCED DESIGN */
 
 :root {
   --primary: #00b140;
   --primary-dark: #007d33;
   --primary-light: #e5f7ed;
+  --primary-extra-light: #f0fdf4;
   --secondary: #ff6f00;
+  --secondary-light: #fff0e6;
   --text: #333;
+  --text-light: #555;
   --muted: #777;
-  --bg: #f1f3f6;
+  --muted-light: #aaa;
+  --bg: #f8fafc;
   --white: #ffffff;
-  --border: #e0e0e0;
-  --radius: 12px;
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --error: #ff4444;
+  --border: #e2e8f0;
+  --border-light: #f1f5f9;
+  --radius: 16px;
+  --radius-sm: 8px;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --error: #ef4444;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body {
     background-color: var(--bg);
     font-family: 'Poppins', sans-serif;
+    color: var(--text);
+    line-height: 1.6;
 }
 
 .container {
     max-width: 800px;
     margin: 0 auto;
+    padding-bottom: 2rem;
 }
 
 /* =================================== */
@@ -35,10 +46,12 @@ body {
     align-items: center;
     padding: 1rem 1.5rem;
     background-color: var(--white);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: var(--shadow-sm);
     position: sticky;
     top: 0;
     z-index: 100;
+    backdrop-filter: blur(5px);
+    background-color: rgba(255, 255, 255, 0.9);
 }
 
 .header-left-group {
@@ -48,64 +61,86 @@ body {
 }
 
 .profile-header h1 {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     font-weight: 600;
+    margin: 0;
+    color: var(--primary-dark);
 }
 
 .back-btn, .logout-btn-profile {
     background: none;
     border: none;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     color: var(--text);
     cursor: pointer;
-    transition: color 0.2s ease, transform 0.2s ease;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+
 .back-btn:hover, .logout-btn-profile:hover {
     color: var(--primary);
-    transform: scale(1.1);
+    background-color: var(--primary-extra-light);
+    transform: scale(1.05);
 }
 
 /* =================================== */
 /* AUTHENTICATION FORM STYLES */
 /* =================================== */
+
 .auth-container {
     background-color: var(--white);
-    padding: 2rem 2.5rem;
+    padding: 2.5rem;
     margin: 2rem auto;
     max-width: 450px;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     text-align: center;
+    border: 1px solid var(--border-light);
 }
 
 .auth-container h3 {
-    font-size: 1.6rem;
+    font-size: 1.75rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--text);
+    margin-bottom: 0.75rem;
+    color: var(--primary-dark);
+    background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
 
 .auth-container p {
     margin-bottom: 2rem;
     color: var(--muted);
+    font-size: 0.95rem;
 }
 
 .auth-container form input {
-    background: #f9fafb;
-    border-radius: 8px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
     font-size: 1rem;
-    padding: 14px;
+    padding: 1rem;
     width: 100%;
     margin-bottom: 1rem;
     border: 1px solid var(--border);
-    transition: all 0.2s ease-in-out;
+    transition: var(--transition);
+    font-family: 'Poppins', sans-serif;
+}
+
+.auth-container form input::placeholder {
+    color: var(--muted-light);
+    opacity: 1;
 }
 
 .auth-container form input:focus {
     outline: none;
     border-color: var(--primary);
     background-color: var(--white);
-    box-shadow: 0 0 0 3px rgba(0, 177, 64, 0.1);
+    box-shadow: 0 0 0 3px rgba(0, 177, 64, 0.15);
 }
 
 /* Phone Input Special Style */
@@ -113,23 +148,26 @@ body {
     display: flex;
     align-items: center;
     border: 1px solid var(--border);
-    border-radius: 8px;
-    background: #f9fafb;
-    transition: all 0.2s ease-in-out;
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    transition: var(--transition);
     margin-bottom: 1rem;
+    overflow: hidden;
 }
 
 .phone-input-group:focus-within {
     border-color: var(--primary);
     background-color: var(--white);
-    box-shadow: 0 0 0 3px rgba(0, 177, 64, 0.1);
+    box-shadow: 0 0 0 3px rgba(0, 177, 64, 0.15);
 }
 
 .phone-input-group span {
-    padding: 14px;
+    padding: 1rem;
     font-weight: 500;
     color: var(--muted);
     border-right: 1px solid var(--border);
+    background: var(--primary-extra-light);
+    color: var(--primary-dark);
 }
 
 .phone-input-group input {
@@ -137,42 +175,76 @@ body {
     margin-bottom: 0;
     box-shadow: none !important;
     background: transparent !important;
+    flex: 1;
 }
 
 .auth-container form button {
     width: 100%;
-    padding: 14px;
+    padding: 1rem;
     background: linear-gradient(90deg, var(--primary-dark), var(--primary));
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: var(--transition);
+    margin-top: 0.5rem;
+    position: relative;
+    overflow: hidden;
 }
+
+.auth-container form button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.1));
+    opacity: 0;
+    transition: var(--transition);
+}
+
 .auth-container form button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 177, 64, 0.2);
+    box-shadow: 0 8px 20px rgba(0, 177, 64, 0.25);
 }
+
+.auth-container form button:hover::after {
+    opacity: 1;
+}
+
 .auth-container form button:disabled {
-    background: #ccc;
+    background: #d1d5db;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
 }
+
 .auth-error-msg {
     color: var(--error);
     margin-top: 1rem;
     font-weight: 500;
+    font-size: 0.9rem;
+    padding: 0.75rem;
+    background-color: #fef2f2;
+    border-radius: var(--radius-sm);
+    display: inline-block;
 }
-
 
 /* =================================== */
 /* PROFILE SECTION STYLES */
 /* =================================== */
+
 #profileSection {
     padding: 1.5rem;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .profile-info {
@@ -182,23 +254,31 @@ body {
     margin-bottom: 2rem;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
+    border: 1px solid var(--border-light);
+    background: linear-gradient(135deg, var(--primary-extra-light), var(--white) 60%);
 }
+
 .profile-info p {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     color: var(--text);
+    margin: 0;
 }
+
 .profile-info span {
-    font-weight: 600;
+    font-weight: 700;
     color: var(--primary-dark);
+    display: inline-block;
+    margin-top: 0.5rem;
 }
 
+/* =================================== */
+/* REFERRAL & COUPON SECTION */
+/* =================================== */
 
-/* =================================== */
-/* REFERRAL & COUPON SECTION (NEW DESIGN) */
-/* =================================== */
 .referral-section {
     margin-bottom: 2.5rem;
 }
+
 .referral-section h2, .order-history-section h2 {
     font-size: 1.4rem;
     margin-bottom: 1.5rem;
@@ -209,8 +289,10 @@ body {
     padding-bottom: 10px;
     border-bottom: 1px solid var(--border);
 }
+
 .referral-section h2 i, .order-history-section h2 i {
     color: var(--primary);
+    font-size: 1.2em;
 }
 
 .referral-grid {
@@ -218,6 +300,7 @@ body {
     grid-template-columns: 1fr;
     gap: 1.5rem;
 }
+
 @media (min-width: 600px) {
     .referral-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -226,56 +309,76 @@ body {
 
 .coupon-balance-card, .referral-code-card {
     background: var(--white);
-    padding: 1.5rem;
+    padding: 1.75rem;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     text-align: center;
+    border: 1px solid var(--border-light);
+    transition: var(--transition);
+}
+
+.coupon-balance-card:hover, .referral-code-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 .coupon-balance-card h3, .referral-code-card h3 {
     color: var(--muted);
     font-weight: 500;
     font-size: 1rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
 }
+
 .coupon-balance-card p {
-    font-size: 2.5rem;
+    font-size: 2.75rem;
     font-weight: 700;
     color: var(--primary-dark);
+    margin: 0.5rem 0;
+    line-height: 1;
 }
+
 .coupon-balance-card small {
     color: var(--muted);
+    font-size: 0.85rem;
+    display: block;
 }
 
 .referral-code-card #referralCode {
     display: inline-block;
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     font-weight: 700;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
     color: var(--secondary);
     background: var(--secondary-light);
-    padding: 10px 20px;
-    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-sm);
     border: 2px dashed var(--secondary);
-    margin-bottom: 1.5rem;
+    margin: 1rem 0;
+    transition: var(--transition);
 }
 
 #shareReferralBtn {
     width: 100%;
-    padding: 12px;
+    padding: 0.875rem;
     background: var(--secondary);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
 }
+
 #shareReferralBtn:hover {
     background: #e66300;
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(255, 111, 0, 0.2);
+    box-shadow: 0 6px 15px rgba(255, 111, 0, 0.25);
 }
 
 /* =================================== */
@@ -292,21 +395,24 @@ body {
     background-color: var(--white);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: var(--transition);
     border-left: 5px solid var(--primary);
+    overflow: hidden;
+    border: 1px solid var(--border-light);
 }
 
 .order-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 .order-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--border);
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--border-light);
+    background-color: var(--primary-extra-light);
 }
 
 .order-card-date {
@@ -314,68 +420,136 @@ body {
     font-weight: 500;
     color: var(--muted);
 }
+
 .order-card-total {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: var(--primary-dark);
 }
 
 .progress-container {
     padding: 1.5rem;
+    background-color: var(--bg);
+    margin: 0.5rem;
+    border-radius: var(--radius-sm);
 }
+
 .progress-bar-wrapper {
     width: 100%;
-    background-color: #e9ecef;
+    background-color: #e2e8f0;
     border-radius: 20px;
     height: 10px;
     overflow: hidden;
+    margin-bottom: 0.5rem;
 }
+
 .progress-bar {
     height: 100%;
     background: linear-gradient(90deg, var(--secondary), var(--primary));
     border-radius: 20px;
     transition: width 0.5s ease-in-out;
+    position: relative;
 }
+
+.progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, 
+        rgba(255,255,255,0.2) 0%, 
+        rgba(255,255,255,0.4) 50%, 
+        rgba(255,255,255,0.2) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite linear;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
 .progress-text {
     text-align: center;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--primary-dark);
-    margin-top: 8px;
+    margin-top: 0.5rem;
 }
+
 .delivery-estimate {
     text-align: center;
     font-size: 0.9rem;
     font-weight: 500;
     color: var(--primary-dark);
     background: var(--primary-light);
-    padding: 10px;
-    margin: 0 1.5rem;
-    border-radius: 8px;
-}
-.delivery-estimate i {
-    margin-right: 8px;
+    padding: 0.75rem;
+    margin: 0 1.25rem;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
 .order-card-body {
-    padding: 1rem 1.5rem 1.5rem;
+    padding: 1.25rem;
 }
 
 .order-card-body strong {
     font-weight: 600;
     color: var(--text);
+    display: block;
+    margin-bottom: 0.5rem;
 }
 
 .order-card-body ul {
     list-style: none;
     padding-left: 0;
-    margin: 10px 0 0 0;
+    margin: 0;
 }
+
 .order-card-body li {
-    padding: 8px 0;
-    color: #555;
-    border-bottom: 1px dashed #eee;
+    padding: 0.75rem 0;
+    color: var(--text-light);
+    border-bottom: 1px dashed var(--border);
+    display: flex;
+    justify-content: space-between;
 }
+
 .order-card-body li:last-child {
     border-bottom: none;
+    padding-bottom: 0;
+}
+
+/* Loading State */
+#orderHistoryList p {
+    text-align: center;
+    color: var(--muted);
+    padding: 2rem;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 480px) {
+    .auth-container {
+        padding: 1.75rem 1.5rem;
+    }
+    
+    .profile-info {
+        padding: 1.5rem;
+    }
+    
+    .coupon-balance-card, .referral-code-card {
+        padding: 1.5rem;
+    }
+    
+    .referral-code-card #referralCode {
+        font-size: 1.5rem;
+        padding: 0.75rem 1rem;
+    }
 }
