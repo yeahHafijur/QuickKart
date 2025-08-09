@@ -20,6 +20,7 @@
             <button id="navViewProducts" class="admin-nav-btn"><i class="fas fa-list"></i> View Products</button>
             <button id="navAddProduct" class="admin-nav-btn"><i class="fas fa-plus-circle"></i> Add Product</button>
             <button id="navOrderHistory" class="admin-nav-btn"><i class="fas fa-history"></i> Order History</button>
+            <button id="navCoupons" class="admin-nav-btn"><i class="fas fa-user-tag"></i> Coupons</button>
             <button id="enableNotificationsBtn" class="admin-nav-btn"><i class="fas fa-bell"></i> Enable Notifications</button>
         </div>
 
@@ -93,6 +94,17 @@
             <div class="admin-card">
                 <h2><i class="fas fa-history"></i> Order History</h2>
                 <div id="orderList"><p>Loading orders...</p></div>
+            </div>
+        </div>
+        <div id="couponSection" class="admin-section">
+            <div class="admin-card">
+                <h2><i class="fas fa-user-tag"></i> Customer Coupons</h2>
+                <div class="form-group">
+                    <input type="text" id="userSearchInput" class="admin-input" placeholder="Search customer by name or phone...">
+                </div>
+                <div id="userList">
+                    <p>Search for a user to see their coupon balance.</p>
+                </div>
             </div>
         </div>
 

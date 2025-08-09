@@ -1,9 +1,10 @@
-// admin.js (UPDATED AND CORRECTED CODE)
+// admin.js (COMPLETE AND UPDATED CODE WITH COUPON FEATURE)
 
 import { db, auth, storage } from './firebase-config.js';
 
 let allProducts = [];
 let allOrders = [];
+let allUsers = []; // All users ko store karne ke liye
 
 // === DOM ELEMENTS ===
 const navButtons = {
@@ -11,12 +12,14 @@ const navButtons = {
     addProduct: document.getElementById('navAddProduct'),
     orderHistory: document.getElementById('navOrderHistory'),
     dashboard: document.getElementById('navDashboard'),
+    coupons: document.getElementById('navCoupons'), // Coupon button
 };
 const sections = {
     productListSection: document.getElementById('productListSection'),
     addProductSection: document.getElementById('addProductSection'),
     orderHistorySection: document.getElementById('orderHistorySection'),
     dashboardSection: document.getElementById('dashboardSection'),
+    couponSection: document.getElementById('couponSection'), // Coupon section
 };
 const addProductForm = document.getElementById('addProductForm');
 const productListDiv = document.getElementById('productList');
@@ -32,6 +35,10 @@ const filterButtons = document.querySelectorAll('.filter-btn');
 const startDateInput = document.getElementById('startDate');
 const endDateInput = document.getElementById('endDate');
 const applyDateRangeBtn = document.getElementById('applyDateRange');
+// Coupon section elements
+const userSearchInput = document.getElementById('userSearchInput');
+const userListDiv = document.getElementById('userList');
+
 
 // === AUTHENTICATION & INITIALIZATION ===
 document.body.style.display = 'none';
@@ -40,8 +47,9 @@ auth.onAuthStateChanged(user => {
         document.body.style.display = 'block';
         fetchAndRenderProducts();
         fetchAndRenderOrders();
+        fetchAllUsers(); // Users ko fetch karein
         setupNewOrderNotifications();
-        showSection('dashboardSection');
+        showSection('dashboardSection'); // Default dashboard dikhayein
     } else {
         window.location.href = 'index.html';
     }
@@ -60,11 +68,13 @@ function showSection(sectionId) {
     else if (sectionId === 'addProductSection') navButtons.addProduct.classList.add('active');
     else if (sectionId === 'orderHistorySection') navButtons.orderHistory.classList.add('active');
     else if (sectionId === 'dashboardSection') navButtons.dashboard.classList.add('active');
+    else if (sectionId === 'couponSection') navButtons.coupons.classList.add('active'); // Coupon nav
 }
 navButtons.viewProducts.addEventListener('click', () => showSection('productListSection'));
 navButtons.addProduct.addEventListener('click', () => { resetForm(); showSection('addProductSection'); });
 navButtons.orderHistory.addEventListener('click', () => showSection('orderHistorySection'));
 navButtons.dashboard.addEventListener('click', () => showSection('dashboardSection'));
+navButtons.coupons.addEventListener('click', () => showSection('couponSection')); // Coupon nav listener
 
 
 // === ORDER HISTORY & DATA FETCHING ===
@@ -76,15 +86,9 @@ function renderOrders(orders) {
         return;
     }
     
-    // Orders ko status ke hisaab se sort karein
     orders.sort((a, b) => {
         const statusOrder = { 'Pending': 1, 'Confirmed': 2, 'Completed': 3 };
-        const statusA = statusOrder[a.status] || 4;
-        const statusB = statusOrder[b.status] || 4;
-        if (statusA !== statusB) {
-            return statusA - statusB;
-        }
-        return new Date(b.timestamp) - new Date(a.timestamp);
+        return (statusOrder[a.status] || 4) - (statusOrder[b.status] || 4) || new Date(b.timestamp) - new Date(a.timestamp);
     });
 
     orders.forEach(order => {
@@ -172,20 +176,9 @@ function resetForm() {
 }
 
 function populateCategoryDropdown() {
-    const categories = [
-        "Atta Rice & Daal", "Masala & Oil", "Bakery & Biscuits", 
-        "Cold Drinks & Juices", "Pan Corner", "Personal Care", 
-        "Cleaning Care", "Dry Fruits", "Baby Care", 
-        "Maxo Killer & candle", "Gass", "Electronics", "Stationary", 
-        "Colgate & Brush", "Fish & Chicken", "Sweet & Snacks", 
-        "Dawat-e-Biriyani", "Bakery & Cake"
-    ];
+    const categories = ["Atta Rice & Daal", "Masala & Oil", "Bakery & Biscuits", "Cold Drinks & Juices", "Pan Corner", "Personal Care", "Cleaning Care", "Dry Fruits", "Baby Care", "Maxo Killer & candle", "Gass", "Electronics", "Stationary", "Colgate & Brush", "Fish & Chicken", "Sweet & Snacks", "Dawat-e-Biriyani", "Bakery & Cake"];
     categoryList.innerHTML = '';
-    categories.forEach(cat => {
-        const option = document.createElement('option');
-        option.value = cat;
-        categoryList.appendChild(option);
-    });
+    categories.forEach(cat => categoryList.innerHTML += `<option value="${cat}">`);
 }
 
 function renderProducts(searchTerm = '') {
@@ -245,7 +238,7 @@ addProductForm.addEventListener('submit', async (e) => {
                 return;
             }
             imageUrl = await uploadImageAndGetURL(file);
-            await db.ref('products').push({ name: name, price, category, image: imageUrl, inStock: true });
+            await db.ref('products').push({ name, price, category, image: imageUrl, inStock: true });
             alert('Product added successfully!');
         }
         await fetchAndRenderProducts();
@@ -332,29 +325,21 @@ productListDiv.addEventListener('change', async (e) => {
 });
 adminSearchInput.addEventListener('input', (e) => renderProducts(e.target.value));
 
-// --- NOTIFICATION AUR DASHBOARD CODE (NO CHANGES) ---
+// --- NOTIFICATION & DASHBOARD CODE ---
 enableNotificationsBtn.addEventListener('click', () => { askForNotificationPermission(); });
 async function askForNotificationPermission() {
     try {
         const permissionResult = await Notification.requestPermission();
-        if (permissionResult !== 'granted') {
-            throw new Error('Notification permission not granted.');
-        }
-
+        if (permissionResult !== 'granted') throw new Error('Notification permission not granted.');
         const swRegistration = await navigator.serviceWorker.ready;
-        
         const subscription = await swRegistration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array('BD7ekfMaxKz0kUHWYFlGc1H4HJh_vVLlHVNA-AWhBbKgAakjBkpEXG8x9hWSnra5g8rxBH5dOd65L_oBukyBHfQ')
         });
-
         const currentUser = auth.currentUser;
         if (currentUser) {
-            const token = JSON.stringify(subscription);
-            await db.ref(`admin_tokens/${currentUser.uid}`).set(token);
-            alert('Notifications have been enabled successfully!');
-        } else {
-            alert('Could not identify user. Please login again to enable notifications.');
+            await db.ref(`admin_tokens/${currentUser.uid}`).set(JSON.stringify(subscription));
+            alert('Notifications enabled successfully!');
         }
     } catch (error) {
         console.error('Failed to enable notifications:', error);
@@ -371,67 +356,36 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 async function generateDashboardData(startDate = null, endDate = null) {
-    const itemTotalEl = document.getElementById('itemTotalSales');
-    const deliveryFeeEl = document.getElementById('totalDeliveryFees');
-    const totalSalesEl = document.getElementById('totalSales');
-    const totalOrdersEl = document.getElementById('totalOrders');
-    const topItemsList = document.getElementById('topSellingItems');
+    const [itemTotalEl, deliveryFeeEl, totalSalesEl, totalOrdersEl, topItemsList] = [
+        document.getElementById('itemTotalSales'), document.getElementById('totalDeliveryFees'),
+        document.getElementById('totalSales'), document.getElementById('totalOrders'), document.getElementById('topSellingItems')
+    ];
     const completedOrders = allOrders.filter(order => order.status === 'Completed');
-
     if (completedOrders.length === 0) {
-        itemTotalEl.textContent = '₹0.00';
-        deliveryFeeEl.textContent = '₹0.00';
-        totalSalesEl.textContent = '₹0.00';
-        totalOrdersEl.textContent = '0';
-        topItemsList.innerHTML = '<p>No completed sales data yet.</p>';
-        return;
+        itemTotalEl.textContent = '₹0.00'; deliveryFeeEl.textContent = '₹0.00';
+        totalSalesEl.textContent = '₹0.00'; totalOrdersEl.textContent = '0';
+        topItemsList.innerHTML = '<p>No completed sales data yet.</p>'; return;
     }
-
-    const filteredOrders = completedOrders.filter(order => {
-        if (!startDate || !endDate) return true;
-        const orderDate = new Date(order.timestamp);
-        return orderDate >= startDate && orderDate <= endDate;
-    });
-
+    const filteredOrders = completedOrders.filter(order => !startDate || (new Date(order.timestamp) >= startDate && new Date(order.timestamp) <= endDate));
     const totalSales = filteredOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
     const totalDeliveryFees = filteredOrders.reduce((sum, order) => sum + (order.deliveryFee || 0), 0);
-    const itemTotalSales = totalSales - totalDeliveryFees;
-    const totalOrders = filteredOrders.length;
-    itemTotalEl.textContent = `₹${itemTotalSales.toFixed(2)}`;
+    itemTotalEl.textContent = `₹${(totalSales - totalDeliveryFees).toFixed(2)}`;
     deliveryFeeEl.textContent = `₹${totalDeliveryFees.toFixed(2)}`;
     totalSalesEl.textContent = `₹${totalSales.toFixed(2)}`;
-    totalOrdersEl.textContent = totalOrders;
-
+    totalOrdersEl.textContent = filteredOrders.length;
     const itemCounts = {};
     filteredOrders.forEach(order => {
-        if (order.items && Array.isArray(order.items)) {
-            order.items.forEach(item => {
-                const cleanName = item.name.replace(/\(P\d+\)\s/, '');
-                itemCounts[cleanName] = (itemCounts[cleanName] || 0) + item.quantity;
-            });
-        }
-    });
-
-    const sortedItems = Object.entries(itemCounts).sort(([, qtyA], [, qtyB]) => qtyB - qtyA).slice(0, 10);
-    topItemsList.innerHTML = '';
-
-    if (sortedItems.length === 0) {
-        topItemsList.innerHTML = '<p>No items sold in this period.</p>';
-    } else {
-        sortedItems.forEach(([name, quantity]) => {
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'top-item';
-            itemDiv.innerHTML = `<span class="top-item-name">${name}</span><span class="top-item-qty">${quantity} units sold</span>`;
-            topItemsList.appendChild(itemDiv);
+        if (order.items) order.items.forEach(item => {
+            const cleanName = item.name.replace(/\(P\d+\)\s/, '');
+            itemCounts[cleanName] = (itemCounts[cleanName] || 0) + item.quantity;
         });
-    }
-
-    const topSellerNames = sortedItems.slice(0, 10).map(([name, quantity]) => name);
+    });
+    const sortedItems = Object.entries(itemCounts).sort(([, a], [, b]) => b - a).slice(0, 10);
+    topItemsList.innerHTML = sortedItems.length === 0 ? '<p>No items sold in this period.</p>' :
+        sortedItems.map(([name, quantity]) => `<div class="top-item"><span class="top-item-name">${name}</span><span class="top-item-qty">${quantity} units sold</span></div>`).join('');
     try {
-        await db.ref('topSellers').set(topSellerNames);
-    } catch (error) {
-        console.error("Could not save top sellers:", error);
-    }
+        await db.ref('topSellers').set(sortedItems.map(([name]) => name));
+    } catch (error) { console.error("Could not save top sellers:", error); }
 }
 
 filterButtons.forEach(button => {
@@ -442,37 +396,98 @@ filterButtons.forEach(button => {
         const now = new Date();
         let startDate, endDate = new Date(now);
         endDate.setHours(23, 59, 59, 999);
-        if (range === 'today') {
-            startDate = new Date(now);
-            startDate.setHours(0, 0, 0, 0);
-        } else if (range === 'week') {
-            startDate = new Date(now);
-            startDate.setDate(now.getDate() - now.getDay());
-            startDate.setHours(0, 0, 0, 0);
-        } else if (range === 'month') {
-            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-            startDate.setHours(0, 0, 0, 0);
-        } else {
-            startDate = null;
-            endDate = null;
-        }
-        startDateInput.value = '';
-        endDateInput.value = '';
+        if (range === 'today') startDate = new Date(now);
+        else if (range === 'week') startDate = new Date(now.setDate(now.getDate() - now.getDay()));
+        else if (range === 'month') startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        else { startDate = null; endDate = null; }
+        if(startDate) startDate.setHours(0, 0, 0, 0);
+        startDateInput.value = ''; endDateInput.value = '';
         generateDashboardData(startDate, endDate);
     });
 });
 
 applyDateRangeBtn.addEventListener('click', () => {
-    const start = startDateInput.value;
-    const end = endDateInput.value;
-    if (!start || !end) {
-        alert('Please select both a start and end date.');
+    if (!startDateInput.value || !endDateInput.value) return alert('Please select both a start and end date.');
+    filterButtons.forEach(btn => btn.classList.remove('active'));
+    const startDate = new Date(startDateInput.value); startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(endDateInput.value); endDate.setHours(23, 59, 59, 999);
+    generateDashboardData(startDate, endDate);
+});
+
+
+// === COUPON MANAGEMENT FUNCTIONS ===
+async function fetchAllUsers() {
+    try {
+        const snapshot = await db.ref('users').once('value');
+        const usersObject = snapshot.val();
+        allUsers = usersObject ? Object.entries(usersObject).map(([key, value]) => ({ ...value, uid: key })) : [];
+    } catch (error) {
+        console.error("Error fetching users:", error);
+    }
+}
+
+function renderUsers(searchTerm = '') {
+    if (!searchTerm) {
+        userListDiv.innerHTML = '<p>Search for a user to see their coupon balance.</p>';
         return;
     }
-    filterButtons.forEach(btn => btn.classList.remove('active'));
-    const startDate = new Date(start);
-    startDate.setHours(0, 0, 0, 0);
-    const endDate = new Date(end);
-    endDate.setHours(23, 59, 59, 999);
-    generateDashboardData(startDate, endDate);
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    const filteredUsers = allUsers.filter(user => 
+        (user.displayName && user.displayName.toLowerCase().includes(lowerCaseSearchTerm)) ||
+        (user.phoneNumber && user.phoneNumber.includes(searchTerm))
+    );
+
+    if (filteredUsers.length === 0) {
+        userListDiv.innerHTML = '<p>No user found.</p>';
+        return;
+    }
+
+    userListDiv.innerHTML = '';
+    filteredUsers.forEach(user => {
+        const userCard = document.createElement('div');
+        userCard.className = 'product-list-item'; // Reusing style
+        userCard.innerHTML = `
+            <div class="product-list-details">
+                <p class="product-list-name">${user.displayName || 'No Name'}</p>
+                <p class="product-list-price">Phone: ${user.phoneNumber}</p>
+                <p class="product-list-category">Coupons: <strong>${user.couponBalance || 0}</strong></p>
+            </div>
+            <div class="product-buttons">
+                <button class="admin-btn-edit redeem-coupon-btn" data-uid="${user.uid}">Redeem</button>
+            </div>
+        `;
+        userListDiv.appendChild(userCard);
+    });
+}
+
+userSearchInput.addEventListener('input', () => {
+    renderUsers(userSearchInput.value.trim());
+});
+
+userListDiv.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('redeem-coupon-btn')) {
+        const uid = e.target.dataset.uid;
+        const user = allUsers.find(u => u.uid === uid);
+        const currentBalance = user.couponBalance || 0;
+
+        const amountToRedeem = prompt(`How many coupons to redeem for ${user.displayName}? (Available: ${currentBalance})`);
+        
+        if (amountToRedeem === null || amountToRedeem.trim() === '') return; // User cancelled
+
+        const redeemValue = parseInt(amountToRedeem, 10);
+        if (isNaN(redeemValue) || redeemValue <= 0 || redeemValue > currentBalance) {
+            alert('Invalid amount. Please enter a number less than or equal to the available balance.');
+            return;
+        }
+
+        try {
+            const newBalance = currentBalance - redeemValue;
+            await db.ref(`users/${uid}/couponBalance`).set(newBalance);
+            alert(`Successfully redeemed ${redeemValue} coupons. New balance is ${newBalance}.`);
+            await fetchAllUsers(); // Refresh user data
+            renderUsers(userSearchInput.value.trim()); // Re-render the list
+        } catch (error) {
+            alert('Failed to redeem coupons. Error: ' + error.message);
+        }
+    }
 });

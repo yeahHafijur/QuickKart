@@ -1,73 +1,77 @@
+// functions/index.js (CORRECTED CODE FOR LATEST FIREBASE SDK)
 
+const { onValueCreated } = require("firebase-functions/v2/database");
+const admin = require("firebase-admin");
 
-// const functions = require("firebase-functions");
-// const admin = require("firebase-admin");
-// const webpush = require("web-push");
-// const { onValueCreated } = require("firebase-functions/v2/database");
+admin.initializeApp();
+const db = admin.database();
 
-// admin.initializeApp();
+/**
+ * Cloud Function to handle awarding referral and purchase coupons.
+ * Triggers when a new order is created in `/orders/{orderId}`.
+ * This uses the modern v2 SDK syntax.
+ */
+exports.awardCouponsOnFirstOrder = onValueCreated(
+  {
+    ref: "/orders/{orderId}",
+    region: "asia-southeast1", // Aapke database ka region
+  },
+  async (event) => {
+    // Naye SDK mein, data event.data ke andar hota hai
+    const snapshot = event.data;
+    const orderData = snapshot.val();
+    
+    if (!orderData) {
+        console.log("Order data is null. Exiting function.");
+        return null;
+    }
+    
+    const userId = orderData.userId;
 
-// const db = admin.database();
+    // 1. Check if this is the user's first order
+    const userOrdersSnapshot = await db.ref('orders').orderByChild('userId').equalTo(userId).once('value');
+    if (userOrdersSnapshot.numChildren() !== 1) {
+        console.log(`Not the first order for user ${userId}. Exiting.`);
+        return null;
+    }
 
-// // --- YAHAN APNI VAPID KEYS DAALEIN (Jaisa pehle kiya tha) ---
-// const vapidKeys = {
-//       publicKey: "BD7ekfMaxKz0kUHWYFlGc1H4HJh_vVLlHVNA-AWhBbKgAakjBkpEXG8x9hWSnra5g8rxBH5dOd65L_oBukyBHfQ",
-//       privateKey: "QCL98nhFkGr6aatugOTI_PjqADxaFpQS5lPE8mL4lPs",
-// };
+    console.log(`Processing first order for user ${userId}.`);
+    const userRef = db.ref(`users/${userId}`);
 
-// webpush.setVapidDetails(
-//   "mailto:hafijurnits@gmail.com",
-//   vapidKeys.publicKey,
-//   vapidKeys.privateKey
-// );
+    // 2. Naye user ko uske order value ke hisaab se coupons do
+    const itemTotal = orderData.totalAmount - orderData.deliveryFee;
+    const purchaseCoupons = Math.floor(itemTotal / 100) * 10;
 
-// exports.sendNewOrderNotification = onValueCreated(
-//   {
-//     ref: "/orders/{orderId}",
-//     region: "asia-southeast1", // <-- YEH LINE ADD KI GAYI HAI
-//   },
-//   async (event) => {
-//     const newOrder = event.data.val();
+    if (purchaseCoupons > 0) {
+        await userRef.child('couponBalance').set(admin.database.ServerValue.increment(purchaseCoupons));
+        console.log(`Awarded ${purchaseCoupons} purchase coupons to new user ${userId}.`);
+    }
 
-//     if (!newOrder) {
-//         console.log("New order data is null, exiting function.");
-//         return null;
-//     }
+    // 3. Check karo ki user ko kisi ne refer kiya hai ya nahi
+    const userSnapshot = await userRef.once('value');
+    const userData = userSnapshot.val();
+    
+    if (!userData || !userData.referredBy) {
+        console.log(`User ${userId} was not referred. No referral bonus to award.`);
+        return null;
+    }
+    
+    const referrerCode = userData.referredBy;
 
-//     const notificationPayload = {
-//       title: "🚀 New QuickKart Order!",
-//       body: `New order from ${newOrder.customerName} for ₹${newOrder.totalAmount}.`,
-//       icon: "images/icons/icon-192x192.png",
-//     };
+    // 4. Jisne refer kiya hai use dhoondho aur 500 coupons do
+    const referrerQuery = await db.ref('users').orderByChild('referralCode').equalTo(referrerCode).limitToFirst(1).once('value');
 
-//     try {
-//       const tokensSnapshot = await db.ref("admin_tokens").once("value");
-//       const tokensData = tokensSnapshot.val();
+    if (!referrerQuery.exists()) {
+        console.log(`Referrer with code ${referrerCode} not found.`);
+        return null;
+    }
 
-//       if (!tokensData) {
-//         console.log("No admin tokens found to send notification.");
-//         return null;
-//       }
-
-//       const promises = [];
-//       for (const uid in tokensData) {
-//         if (Object.prototype.hasOwnProperty.call(tokensData, uid)) {
-//           const subscription = JSON.parse(tokensData[uid]);
-//           promises.push(
-//             webpush.sendNotification(
-//               subscription,
-//               JSON.stringify(notificationPayload)
-//             )
-//           );
-//         }
-//       }
-
-//       await Promise.all(promises);
-//       console.log("Notifications sent successfully.");
-//       return null;
-//     } catch (error) {
-//       console.error("Error sending notification:", error);
-//       return null;
-//     }
-//   }
-// );
+    const [referrerId] = Object.keys(referrerQuery.val());
+    
+    const referrerRef = db.ref(`users/${referrerId}`);
+    await referrerRef.child('couponBalance').set(admin.database.ServerValue.increment(500));
+    
+    console.log(`Successfully awarded 500 referral coupons to user ${referrerId} for referring ${userId}.`);
+    return null;
+  }
+);

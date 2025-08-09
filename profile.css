@@ -1,4 +1,4 @@
-/* profile.css (NEW & IMPROVED DESIGN) */
+/* profile.css (COMPLETE NEW DESIGN) */
 
 :root {
   --primary: #00b140;
@@ -10,19 +10,24 @@
   --bg: #f1f3f6;
   --white: #ffffff;
   --border: #e0e0e0;
-  --radius: 12px; /* Thoda aur rounded corners */
+  --radius: 12px;
   --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --error: #ff4444;
 }
 
 body {
     background-color: var(--bg);
+    font-family: 'Poppins', sans-serif;
 }
-/* Is code ko profile.css mein add karein */
-.header-left-group {
-    display: flex;
-    align-items: center;
-    gap: 1rem; /* Arrow aur Title ke beech mein thoda space */
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
 }
+
+/* =================================== */
+/* HEADER STYLES */
+/* =================================== */
 
 .profile-header {
     display: flex;
@@ -36,16 +41,10 @@ body {
     z-index: 100;
 }
 
-.back-btn, .logout-btn-profile {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: var(--text);
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-.back-btn:hover, .logout-btn-profile:hover {
-    color: var(--primary);
+.header-left-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
 .profile-header h1 {
@@ -53,20 +52,34 @@ body {
     font-weight: 600;
 }
 
-/* Auth Form Styles - Modern Look */
+.back-btn, .logout-btn-profile {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text);
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+.back-btn:hover, .logout-btn-profile:hover {
+    color: var(--primary);
+    transform: scale(1.1);
+}
+
+/* =================================== */
+/* AUTHENTICATION FORM STYLES */
+/* =================================== */
 .auth-container {
     background-color: var(--white);
-    padding: 2.5rem;
+    padding: 2rem 2.5rem;
     margin: 2rem auto;
-    max-width: 400px;
+    max-width: 450px;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     text-align: center;
-    border-top: 4px solid var(--primary);
 }
 
 .auth-container h3 {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
     color: var(--text);
@@ -77,16 +90,8 @@ body {
     color: var(--muted);
 }
 
-.auth-container .phone-input-group {
-    border-color: #ccc;
-    transition: border-color 0.3s ease;
-}
-.auth-container .phone-input-group:focus-within {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 2px var(--primary-light);
-}
-.auth-container input {
-    background: #f9f9f9;
+.auth-container form input {
+    background: #f9fafb;
     border-radius: 8px;
     font-size: 1rem;
     padding: 14px;
@@ -95,15 +100,46 @@ body {
     border: 1px solid var(--border);
     transition: all 0.2s ease-in-out;
 }
-.auth-container input:focus {
+
+.auth-container form input:focus {
     outline: none;
     border-color: var(--primary);
     background-color: var(--white);
     box-shadow: 0 0 0 3px rgba(0, 177, 64, 0.1);
 }
 
+/* Phone Input Special Style */
+.phone-input-group {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #f9fafb;
+    transition: all 0.2s ease-in-out;
+    margin-bottom: 1rem;
+}
 
-.auth-container button {
+.phone-input-group:focus-within {
+    border-color: var(--primary);
+    background-color: var(--white);
+    box-shadow: 0 0 0 3px rgba(0, 177, 64, 0.1);
+}
+
+.phone-input-group span {
+    padding: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    border-right: 1px solid var(--border);
+}
+
+.phone-input-group input {
+    border: none;
+    margin-bottom: 0;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+.auth-container form button {
     width: 100%;
     padding: 14px;
     background: linear-gradient(90deg, var(--primary-dark), var(--primary));
@@ -115,29 +151,40 @@ body {
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.auth-container button:hover {
+.auth-container form button:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(0, 177, 64, 0.2);
 }
-.auth-container button:disabled {
+.auth-container form button:disabled {
     background: #ccc;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
 }
+.auth-error-msg {
+    color: var(--error);
+    margin-top: 1rem;
+    font-weight: 500;
+}
 
-/* Profile Info Styles */
+
+/* =================================== */
+/* PROFILE SECTION STYLES */
+/* =================================== */
+#profileSection {
+    padding: 1.5rem;
+}
+
 .profile-info {
     text-align: center;
     padding: 2rem;
     background-color: var(--white);
-    margin: 1.5rem;
+    margin-bottom: 2rem;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
 }
-
 .profile-info p {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     color: var(--text);
 }
 .profile-info span {
@@ -145,23 +192,95 @@ body {
     color: var(--primary-dark);
 }
 
-/* Order History Styles - Card Design */
-.order-history-section {
-    padding: 0 1.5rem 1.5rem 1.5rem;
-}
 
-.order-history-section h2 {
-    font-size: 1.3rem;
+/* =================================== */
+/* REFERRAL & COUPON SECTION (NEW DESIGN) */
+/* =================================== */
+.referral-section {
+    margin-bottom: 2.5rem;
+}
+.referral-section h2, .order-history-section h2 {
+    font-size: 1.4rem;
     margin-bottom: 1.5rem;
     color: var(--text);
     display: flex;
     align-items: center;
     gap: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
 }
-.order-history-section h2 i {
+.referral-section h2 i, .order-history-section h2 i {
     color: var(--primary);
 }
 
+.referral-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+@media (min-width: 600px) {
+    .referral-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.coupon-balance-card, .referral-code-card {
+    background: var(--white);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    text-align: center;
+}
+
+.coupon-balance-card h3, .referral-code-card h3 {
+    color: var(--muted);
+    font-weight: 500;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+.coupon-balance-card p {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+}
+.coupon-balance-card small {
+    color: var(--muted);
+}
+
+.referral-code-card #referralCode {
+    display: inline-block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--secondary);
+    background: var(--secondary-light);
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 2px dashed var(--secondary);
+    margin-bottom: 1.5rem;
+}
+
+#shareReferralBtn {
+    width: 100%;
+    padding: 12px;
+    background: var(--secondary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+#shareReferralBtn:hover {
+    background: #e66300;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(255, 111, 0, 0.2);
+}
+
+/* =================================== */
+/* ORDER HISTORY STYLES */
+/* =================================== */
 
 #orderHistoryList {
     display: flex;
@@ -173,22 +292,20 @@ body {
     background-color: var(--white);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    overflow: hidden; /* For border-left */
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     border-left: 5px solid var(--primary);
 }
+
 .order-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 20px rgba(0,0,0,0.1);
 }
 
-
 .order-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
-    background-color: #f9fafb;
+    padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border);
 }
 
@@ -197,55 +314,14 @@ body {
     font-weight: 500;
     color: var(--muted);
 }
-
-.order-card-status {
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    color: white;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-.status-pending { background-color: var(--secondary); }
-.status-completed { background-color: var(--primary-dark); }
-
-
-.order-card-body {
-    padding: 1rem;
-}
-
-.order-card-body ul {
-    list-style: none;
-    padding-left: 0;
-    margin: 0;
-}
-.order-card-body li {
-    padding: 6px 0;
-    border-bottom: 1px dashed #eee;
-    color: #555;
-}
-.order-card-body li:last-child {
-    border-bottom: none;
-}
-
-.order-card-footer {
-    text-align: right;
-    padding: 1rem;
-    background-color: #f9fafb;
-    border-top: 1px solid var(--border);
-}
-.order-card-footer strong {
-    font-size: 1.1rem;
-    color: var(--primary-dark);
-}
-/* Add to profile.css */
 .order-card-total {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
+    font-weight: 700;
     color: var(--primary-dark);
 }
+
 .progress-container {
-    padding: 1rem;
+    padding: 1.5rem;
 }
 .progress-bar-wrapper {
     width: 100%;
@@ -267,6 +343,39 @@ body {
     color: var(--primary-dark);
     margin-top: 8px;
 }
+.delivery-estimate {
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--primary-dark);
+    background: var(--primary-light);
+    padding: 10px;
+    margin: 0 1.5rem;
+    border-radius: 8px;
+}
+.delivery-estimate i {
+    margin-right: 8px;
+}
+
 .order-card-body {
-    padding-top: 0;
+    padding: 1rem 1.5rem 1.5rem;
+}
+
+.order-card-body strong {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.order-card-body ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 10px 0 0 0;
+}
+.order-card-body li {
+    padding: 8px 0;
+    color: #555;
+    border-bottom: 1px dashed #eee;
+}
+.order-card-body li:last-child {
+    border-bottom: none;
 }

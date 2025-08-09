@@ -12,26 +12,26 @@
 <body>
 
     <header class="profile-header">
-    <div class="header-left-group">
-        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
-        <h1>My Profile</h1>
-    </div>
-    <button id="logoutBtn" class="logout-btn-profile" style="display: none;"><i class="fas fa-sign-out-alt"></i></button>
-</header>
+        <div class="header-left-group">
+            <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+            <h1>My Profile</h1>
+        </div>
+        <button id="logoutBtn" class="logout-btn-profile" style="display: none;"><i class="fas fa-sign-out-alt"></i></button>
+    </header>
 
     <main class="container">
         <div id="authSection">
             <div class="auth-container">
-                <h3>Login with Phone</h3>
-                <p>Please enter your phone number to continue.</p>
+                <h3>Login or Create Account</h3>
+                <p>Enter your details to continue.</p>
                 
                 <form id="phoneForm">
                     <input type="text" id="loginName" placeholder="Aapka Pura Naam" required>
-
                     <div class="phone-input-group">
                         <span>+91</span>
                         <input type="tel" id="phoneNumber" placeholder="10-digit mobile number" required>
                     </div>
+                    <input type="text" id="referredByCode" placeholder="Referral Code (Optional)">
                     <button type="submit" id="sendOtpBtn">Send OTP</button>
                 </form>
 
@@ -42,7 +42,6 @@
                 </form>
                 
                 <p id="authError" class="auth-error-msg"></p>
-
                 <div id="recaptcha-container"></div>
             </div>
         </div>
@@ -51,6 +50,20 @@
             <div class="profile-info">
                 <p>Welcome, <span id="userPhone"></span>!</p>
             </div>
+
+            <section class="referral-section">
+                <h2><i class="fas fa-gift"></i> Refer & Earn</h2>
+                <div class="coupon-balance-card">
+                    <h3>Your Coupon Balance</h3>
+                    <p><span id="couponBalance">0</span>  coupons</p>
+                    <small>(10 coupons = ₹1)</small>
+                </div>
+                <div class="referral-code-card">
+                    <h3>Your Referral Code</h3>
+                    <p id="referralCode">Loading...</p>
+                    <button id="shareReferralBtn"><i class="fas fa-share-alt"></i> Share Code</button>
+                </div>
+            </section>
 
             <section class="order-history-section">
                 <h2><i class="fas fa-receipt"></i> My Orders</h2>
