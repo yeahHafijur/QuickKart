@@ -209,67 +209,79 @@ function renderProducts(e=""){const t=e.toLowerCase(),o=allProducts.filter(e=>e.
 async function fetchAndRenderProducts(){productListDiv.innerHTML="<p>Loading products...</p>";try{const e=await db.ref("products").once("value"),t=e.val();allProducts=t?Object.entries(t).map(([e,t])=>({...t,key:e})):[];renderProducts(adminSearchInput.value);populateCategoryDropdown()}catch(e){console.error("Error loading products:",e);productListDiv.innerHTML="<p>Could not load products.</p>"}}
 addProductForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-
+    
     const user = auth.currentUser;
-    if (!user || !(await isAdmin(user))) {
-        alert("You don't have permission to add products.");
+    if (!user) {
+        alert("Please login first.");
+        return;
+    }
+
+    const isUserAdmin = await isAdmin(user);
+    if (!isUserAdmin) {
+        alert("You don't have admin privileges.");
         return;
     }
 
     submitProductBtn.textContent = "Saving...";
     submitProductBtn.disabled = true;
 
-    const t = document.getElementById("productName").value.trim();
-    const o = Number(document.getElementById("productPrice").value);
-    const n = document.getElementById("productCategory").value.trim();
-    const d = document.getElementById("productImageFile").files[0];
-    const i = editingIdInput.value;
-    let l = "";
+    const productName = document.getElementById("productName").value.trim();
+    const productPrice = Number(document.getElementById("productPrice").value);
+    const productCategory = document.getElementById("productCategory").value.trim();
+    const productImageFile = document.getElementById("productImageFile").files[0];
+    const editingId = editingIdInput.value;
 
-    if (t && o && n) {
-        try {
-            if (i) {
-                const e = allProducts.find(e => e.key === i);
-                l = e.image;
-                if (d) l = await uploadImageAndGetURL(d);
-                await db.ref(`products/${i}`).update({
-                    name: t,
-                    price: o,
-                    category: n,
-                    image: l
-                });
-                alert("Product updated successfully!");
-            } else {
-                if (!d) {
-                    alert("Please select an image file to upload.");
-                    submitProductBtn.disabled = false;
-                    submitProductBtn.textContent = "Add Product";
-                    return;
-                }
-                l = await uploadImageAndGetURL(d);
-                await db.ref("products").push({
-                    name: t,
-                    price: o,
-                    category: n,
-                    image: l,
-                    inStock: true
-                });
-                alert("Product added successfully!");
-            }
-
-            await fetchAndRenderProducts();
-            showSection("productListSection");
-        } catch (e) {
-            console.error("Error saving product:", e);
-            alert(`Failed to save product: ${e.message}`);
-        } finally {
-            submitProductBtn.disabled = false;
-            resetForm();
-        }
-    } else {
-        alert("Please fill all text fields.");
+    if (!productName || !productPrice || !productCategory) {
+        alert("Please fill all required fields.");
         submitProductBtn.disabled = false;
-        submitProductBtn.textContent = i ? "Update Product" : "Add Product";
+        submitProductBtn.textContent = editingId ? "Update Product" : "Add Product";
+        return;
+    }
+
+    try {
+        let imageUrl = "";
+        
+        // For new products, image is required
+        if (!editingId && !productImageFile) {
+            throw new Error("Please select an image for new products");
+        }
+
+        // Upload image if file is selected
+        if (productImageFile) {
+            imageUrl = await uploadImageAndGetURL(productImageFile);
+        }
+
+        const productData = {
+            name: productName,
+            price: productPrice,
+            category: productCategory,
+            inStock: true
+        };
+
+        // If we have an image URL (either new or from edit), add it
+        if (imageUrl) {
+            productData.image = imageUrl;
+        }
+
+        if (editingId) {
+            // Update existing product
+            await db.ref(`products/${editingId}`).update(productData);
+            alert("Product updated successfully!");
+        } else {
+            // Add new product
+            await db.ref("products").push(productData);
+            alert("Product added successfully!");
+        }
+
+        await fetchAndRenderProducts();
+        showSection("productListSection");
+        resetForm();
+    } catch (error) {
+        console.error("Error saving product:", error);
+        alert(`Failed to save product: ${error.message}`);
+    } finally {
+        submitProductBtn.disabled = false;
+        submitProductBtn.textContent = editingId ? "Update Product" : "Add Product";
     }
 });
 
