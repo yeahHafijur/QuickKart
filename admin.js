@@ -207,18 +207,22 @@ function resetForm(){addProductForm.reset();editingIdInput.value="";formTitle.te
 function populateCategoryDropdown(){const e=["Atta Rice & Daal","Masala & Oil","Bakery & Biscuits","Cold Drinks & Juices","Pan Corner","Personal Care","Cleaning Care","Dry Fruits","Baby Care","Maxo Killer & candle","Gass","Electronics","Stationary","Colgate & Brush","Fish & Chicken","Sweet & Snacks","Dawat-e-Biriyani","Bakery & Cake"];categoryList.innerHTML="";e.forEach(e=>{categoryList.innerHTML+=`<option value="${e}">`})}
 function renderProducts(e=""){const t=e.toLowerCase(),o=allProducts.filter(e=>e.name&&e.name.toLowerCase().includes(t));productListDiv.innerHTML="";if(0===o.length)return void(productListDiv.innerHTML="<p>No products found.</p>");o.forEach(e=>{const t=document.createElement("div");t.className="product-list-item";const o=e.inStock!==!1;t.innerHTML=`<img src="${e.image}" alt="${e.name}" class="product-list-img"><div class="product-list-details"><p class="product-list-name">${e.name}</p><p class="product-list-price">₹${e.price}</p><p class="product-list-category">Category: ${e.category||"N/A"}</p></div><div class="product-list-actions"><div class="stock-toggle"><label class="switch-small"><input type="checkbox" class="stock-status-checkbox" data-id="${e.key}" ${o?"checked":""}><span class="slider-small round"></span></label><span class="stock-label">${o?"In Stock":"Out of Stock"}</span></div><div class="product-buttons"><button class="admin-btn-edit" data-id="${e.key}">Edit</button><button class="admin-btn-delete" data-id="${e.key}">Delete</button></div></div>`;productListDiv.appendChild(t)})}
 async function fetchAndRenderProducts(){productListDiv.innerHTML="<p>Loading products...</p>";try{const e=await db.ref("products").once("value"),t=e.val();allProducts=t?Object.entries(t).map(([e,t])=>({...t,key:e})):[];renderProducts(adminSearchInput.value);populateCategoryDropdown()}catch(e){console.error("Error loading products:",e);productListDiv.innerHTML="<p>Could not load products.</p>"}}
+// Yeh function aapke addProductForm event listener ko replace karega
+
 addProductForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     
     const user = auth.currentUser;
     if (!user) {
-        alert("Please login first.");
+        // alert ko isse badal dein
+        showNotification("Please login first.", "error");
         return;
     }
 
     const isUserAdmin = await isAdmin(user);
     if (!isUserAdmin) {
-        alert("You don't have admin privileges.");
+        // alert ko isse badal dein
+        showNotification("You don't have admin privileges.", "error");
         return;
     }
 
@@ -232,7 +236,8 @@ addProductForm.addEventListener("submit", async (e) => {
     const editingId = editingIdInput.value;
 
     if (!productName || !productPrice || !productCategory) {
-        alert("Please fill all required fields.");
+        // alert ko isse badal dein
+        showNotification("Please fill all required fields.", "error");
         submitProductBtn.disabled = false;
         submitProductBtn.textContent = editingId ? "Update Product" : "Add Product";
         return;
@@ -241,12 +246,10 @@ addProductForm.addEventListener("submit", async (e) => {
     try {
         let imageUrl = "";
         
-        // For new products, image is required
         if (!editingId && !productImageFile) {
             throw new Error("Please select an image for new products");
         }
 
-        // Upload image if file is selected
         if (productImageFile) {
             imageUrl = await uploadImageAndGetURL(productImageFile);
         }
@@ -258,19 +261,16 @@ addProductForm.addEventListener("submit", async (e) => {
             inStock: true
         };
 
-        // If we have an image URL (either new or from edit), add it
         if (imageUrl) {
             productData.image = imageUrl;
         }
 
         if (editingId) {
-            // Update existing product
             await db.ref(`products/${editingId}`).update(productData);
-            alert("Product updated successfully!");
+            showNotification("Product updated successfully!", "success");
         } else {
-            // Add new product
             await db.ref("products").push(productData);
-            alert("Product added successfully!");
+            showNotification("Product added successfully!", "success");
         }
 
         await fetchAndRenderProducts();
@@ -278,7 +278,8 @@ addProductForm.addEventListener("submit", async (e) => {
         resetForm();
     } catch (error) {
         console.error("Error saving product:", error);
-        alert(`Failed to save product: ${error.message}`);
+        // alert ko isse badal dein
+        showNotification(`Failed to save product: ${error.message}`, 'error');
     } finally {
         submitProductBtn.disabled = false;
         submitProductBtn.textContent = editingId ? "Update Product" : "Add Product";
