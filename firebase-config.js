@@ -55,21 +55,34 @@ function setupShopStatus(elements, closeCartCallback) {
             this.checked = isShopOpen;
         }
     });
-    loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = document.getElementById('ownerEmail').value;
-        const password = document.getElementById('ownerPassword').value;
-        auth.signInWithEmailAndPassword(email, password)
-            .then(() => {
+    // In firebase-config.js, update the login form handler
+loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('ownerEmail').value;
+    const password = document.getElementById('ownerPassword').value;
+    
+    auth.signInWithEmailAndPassword(email, password)
+        .then(async (userCredential) => {
+            const isAdmin = await checkAdminStatus(userCredential.user.uid);
+            if (isAdmin) {
                 loginModal.style.display = 'none';
                 loginError.textContent = '';
                 loginForm.reset();
-                showNotification('Login Successful! You can now manage the shop.');
-            })
-            .catch(() => {
-                loginError.textContent = "Wrong email or password.";
-            });
-    });
+                showNotification('Admin login successful!');
+            } else {
+                auth.signOut();
+                loginError.textContent = "Not an admin account.";
+            }
+        })
+        .catch((error) => {
+            loginError.textContent = "Wrong email or password.";
+        });
+});
+
+async function checkAdminStatus(uid) {
+    const snapshot = await db.ref(`admins/${uid}`).once('value');
+    return snapshot.exists();
+}
     closeLoginBtn.addEventListener('click', () => {
         loginModal.style.display = 'none';
     });

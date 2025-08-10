@@ -5,20 +5,23 @@ import { db, auth, storage } from './firebase-config.js';
 // Function to check if a user is an admin
 const isAdmin = async (user) => {
     if (!user) return false;
-    const adminRef = db.ref(`admins/${user.uid}`);
-    const snapshot = await adminRef.once('value');
-    return snapshot.exists();
+    try {
+        const adminRef = db.ref(`admins/${user.uid}`);
+        const snapshot = await adminRef.once('value');
+        return snapshot.exists();
+    } catch (error) {
+        console.error("Admin check failed:", error);
+        return false;
+    }
 };
 
 
 // === AUTHENTICATION & INITIALIZATION - UPDATED ===
 auth.onAuthStateChanged(async (user) => {
     if (user) {
-        // Pehle check karein ki user admin hai ya nahi
-        const isUserAdmin = await isAdmin(user);
-        
-        if (isUserAdmin) {
-            // Agar admin hai, tabhi admin panel dikhayein aur data load karein
+        const adminStatus = await isAdmin(user);
+        if (adminStatus) {
+            // Load admin panel
             document.body.style.display = 'block';
             Promise.all([
                 fetchAndRenderProducts(),
@@ -29,12 +32,12 @@ auth.onAuthStateChanged(async (user) => {
                 showSection('dashboardSection');
             });
         } else {
-            // Agar admin nahi hai, to use homepage par bhej dein
+            // Redirect non-admins
             console.log("Access Denied: User is not an admin.");
             window.location.href = 'index.html';
         }
     } else {
-        // Agar koi bhi user logged-in nahi hai, to homepage par bhej dein
+        // Redirect unauthenticated users
         window.location.href = 'index.html';
     }
 });
@@ -204,7 +207,72 @@ function resetForm(){addProductForm.reset();editingIdInput.value="";formTitle.te
 function populateCategoryDropdown(){const e=["Atta Rice & Daal","Masala & Oil","Bakery & Biscuits","Cold Drinks & Juices","Pan Corner","Personal Care","Cleaning Care","Dry Fruits","Baby Care","Maxo Killer & candle","Gass","Electronics","Stationary","Colgate & Brush","Fish & Chicken","Sweet & Snacks","Dawat-e-Biriyani","Bakery & Cake"];categoryList.innerHTML="";e.forEach(e=>{categoryList.innerHTML+=`<option value="${e}">`})}
 function renderProducts(e=""){const t=e.toLowerCase(),o=allProducts.filter(e=>e.name&&e.name.toLowerCase().includes(t));productListDiv.innerHTML="";if(0===o.length)return void(productListDiv.innerHTML="<p>No products found.</p>");o.forEach(e=>{const t=document.createElement("div");t.className="product-list-item";const o=e.inStock!==!1;t.innerHTML=`<img src="${e.image}" alt="${e.name}" class="product-list-img"><div class="product-list-details"><p class="product-list-name">${e.name}</p><p class="product-list-price">₹${e.price}</p><p class="product-list-category">Category: ${e.category||"N/A"}</p></div><div class="product-list-actions"><div class="stock-toggle"><label class="switch-small"><input type="checkbox" class="stock-status-checkbox" data-id="${e.key}" ${o?"checked":""}><span class="slider-small round"></span></label><span class="stock-label">${o?"In Stock":"Out of Stock"}</span></div><div class="product-buttons"><button class="admin-btn-edit" data-id="${e.key}">Edit</button><button class="admin-btn-delete" data-id="${e.key}">Delete</button></div></div>`;productListDiv.appendChild(t)})}
 async function fetchAndRenderProducts(){productListDiv.innerHTML="<p>Loading products...</p>";try{const e=await db.ref("products").once("value"),t=e.val();allProducts=t?Object.entries(t).map(([e,t])=>({...t,key:e})):[];renderProducts(adminSearchInput.value);populateCategoryDropdown()}catch(e){console.error("Error loading products:",e);productListDiv.innerHTML="<p>Could not load products.</p>"}}
-addProductForm.addEventListener("submit",async e=>{e.preventDefault();submitProductBtn.textContent="Saving...";submitProductBtn.disabled=!0;const t=document.getElementById("productName").value.trim(),o=Number(document.getElementById("productPrice").value),n=document.getElementById("productCategory").value.trim(),d=document.getElementById("productImageFile").files[0],i=editingIdInput.value;let l="";if(t&&o&&n)try{if(i){const e=allProducts.find(e=>e.key===i);l=e.image;if(d)l=await uploadImageAndGetURL(d);await db.ref(`products/${i}`).update({name:t,price:o,category:n,image:l});alert("Product updated successfully!")}else{if(!d)return alert("Please select an image file to upload."),submitProductBtn.disabled=!1,void(submitProductBtn.textContent="Add Product");l=await uploadImageAndGetURL(d);await db.ref("products").push({name:t,price:o,category:n,image:l,inStock:!0});alert("Product added successfully!")}await fetchAndRenderProducts();showSection("productListSection")}catch(e){console.error("Error saving product:",e);alert(`Failed to save product: ${e.message}`)}finally{submitProductBtn.disabled=!1;resetForm()}else{alert("Please fill all text fields.");submitProductBtn.disabled=!1;submitProductBtn.textContent=i?"Update Product":"Add Product"}});
+addProductForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const user = auth.currentUser;
+    if (!user || !(await isAdmin(user))) {
+        alert("You don't have permission to add products.");
+        return;
+    }
+
+    submitProductBtn.textContent = "Saving...";
+    submitProductBtn.disabled = true;
+
+    const t = document.getElementById("productName").value.trim();
+    const o = Number(document.getElementById("productPrice").value);
+    const n = document.getElementById("productCategory").value.trim();
+    const d = document.getElementById("productImageFile").files[0];
+    const i = editingIdInput.value;
+    let l = "";
+
+    if (t && o && n) {
+        try {
+            if (i) {
+                const e = allProducts.find(e => e.key === i);
+                l = e.image;
+                if (d) l = await uploadImageAndGetURL(d);
+                await db.ref(`products/${i}`).update({
+                    name: t,
+                    price: o,
+                    category: n,
+                    image: l
+                });
+                alert("Product updated successfully!");
+            } else {
+                if (!d) {
+                    alert("Please select an image file to upload.");
+                    submitProductBtn.disabled = false;
+                    submitProductBtn.textContent = "Add Product";
+                    return;
+                }
+                l = await uploadImageAndGetURL(d);
+                await db.ref("products").push({
+                    name: t,
+                    price: o,
+                    category: n,
+                    image: l,
+                    inStock: true
+                });
+                alert("Product added successfully!");
+            }
+
+            await fetchAndRenderProducts();
+            showSection("productListSection");
+        } catch (e) {
+            console.error("Error saving product:", e);
+            alert(`Failed to save product: ${e.message}`);
+        } finally {
+            submitProductBtn.disabled = false;
+            resetForm();
+        }
+    } else {
+        alert("Please fill all text fields.");
+        submitProductBtn.disabled = false;
+        submitProductBtn.textContent = i ? "Update Product" : "Add Product";
+    }
+});
+
 async function uploadImageAndGetURL(e){const t=document.getElementById("uploadProgress"),o=t.querySelector("span");return t.style.display="block",new Promise((n,d)=>{const i=`product_images/product_${Date.now()}_${e.name}`,l=storage.ref(i).put(e);l.on("state_changed",e=>{const t=(e.bytesTransferred/e.totalBytes)*100;o.textContent=Math.round(t)},e=>{console.error("Upload failed:",e);t.style.display="none";d(e)},async()=>{try{const e=await l.snapshot.ref.getDownloadURL();t.style.display="none";n(e)}catch(e){d(e)}})})}
 cancelEditBtn.addEventListener("click",()=>{resetForm();showSection("productListSection")});
 productListDiv.addEventListener("click",e=>{const t=e.target.closest("button");if(t){const o=t.dataset.id;if(t.matches(".admin-btn-delete")){confirm("Are you sure you want to delete this product?")&&db.ref(`products/${o}`).remove().then(()=>fetchAndRenderProducts())}else if(t.matches(".admin-btn-edit")){const e=allProducts.find(e=>e.key===o);e&&(document.getElementById("productName").value=e.name,document.getElementById("productPrice").value=e.price,document.getElementById("productCategory").value=e.category,editingIdInput.value=o,formTitle.textContent="Edit Product",submitProductBtn.textContent="Update Product",cancelEditBtn.style.display="block",showSection("addProductSection"),window.scrollTo(0,0))}}});
