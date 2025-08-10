@@ -1,6 +1,44 @@
-// admin.js (COMPLETE CODE WITH FIXED NOTIFICATION LOOP)
+// admin.js (FINAL CODE WITH ADMIN VERIFICATION)
 
 import { db, auth, storage } from './firebase-config.js';
+
+// Function to check if a user is an admin
+const isAdmin = async (user) => {
+    if (!user) return false;
+    const adminRef = db.ref(`admins/${user.uid}`);
+    const snapshot = await adminRef.once('value');
+    return snapshot.exists();
+};
+
+
+// === AUTHENTICATION & INITIALIZATION - UPDATED ===
+auth.onAuthStateChanged(async (user) => {
+    if (user) {
+        // Pehle check karein ki user admin hai ya nahi
+        const isUserAdmin = await isAdmin(user);
+        
+        if (isUserAdmin) {
+            // Agar admin hai, tabhi admin panel dikhayein aur data load karein
+            document.body.style.display = 'block';
+            Promise.all([
+                fetchAndRenderProducts(),
+                fetchAndRenderOrders(),
+                fetchAllUsers()
+            ]).then(() => {
+                setupNewOrderNotifications();
+                showSection('dashboardSection');
+            });
+        } else {
+            // Agar admin nahi hai, to use homepage par bhej dein
+            console.log("Access Denied: User is not an admin.");
+            window.location.href = 'index.html';
+        }
+    } else {
+        // Agar koi bhi user logged-in nahi hai, to homepage par bhej dein
+        window.location.href = 'index.html';
+    }
+});
+
 
 let allProducts = [];
 let allOrders = [];
@@ -38,23 +76,6 @@ const applyDateRangeBtn = document.getElementById('applyDateRange');
 const userSearchInput = document.getElementById('userSearchInput');
 const userListDiv = document.getElementById('userList');
 
-// === AUTHENTICATION & INITIALIZATION ===
-document.body.style.display = 'none';
-auth.onAuthStateChanged(user => {
-    if (user) {
-        document.body.style.display = 'block';
-        Promise.all([
-            fetchAndRenderProducts(),
-            fetchAndRenderOrders(),
-            fetchAllUsers()
-        ]).then(() => {
-            setupNewOrderNotifications(); // Isse yahan call karna theek hai
-            showSection('dashboardSection');
-        });
-    } else {
-        window.location.href = 'index.html';
-    }
-});
 
 // === NAVIGATION LOGIC ===
 function showSection(sectionId) {
@@ -82,7 +103,6 @@ function renderOrders(orders) {
         orderListDiv.innerHTML = '<p>No orders found.</p>';
         return;
     }
-    // Orders ko status aur time ke hisaab se sort karein
     orders.sort((a, b) => {
         const statusOrder = { 'Pending': 1, 'Confirmed': 2, 'Completed': 3 };
         return (statusOrder[a.status] || 4) - (statusOrder[b.status] || 4) || new Date(b.timestamp) - new Date(a.timestamp);
@@ -97,7 +117,6 @@ function renderOrders(orders) {
         
         let locationLinkHtml = '';
         if (order.location?.lat && order.location?.lng) {
-            // === YAHAN LINK THEEK KIYA GAYA HAI ===
             const mapsLink = `https://maps.google.com/?q=${order.location.lat},${order.location.lng}`;
             locationLinkHtml = `<a href="${mapsLink}" target="_blank" class="location-link"><i class="fas fa-map-marker-alt"></i> View on Map</a>`;
         }
@@ -137,10 +156,8 @@ async function fetchAndRenderOrders() {
 orderListDiv.addEventListener('click', e => {
     const target = e.target;
     
-    // Status button click hua ya nahi, yeh check karein
     if (target.matches('.status-btn')) {
         const status = target.dataset.status;
-        // Button ke parent se order ID lein
         const orderId = target.closest('.order-status-buttons').dataset.id;
         if (orderId && status) {
             db.ref(`orders/${orderId}/status`).set(status)
@@ -148,7 +165,6 @@ orderListDiv.addEventListener('click', e => {
         }
     }
 
-    // Delete button click hua ya nahi, yeh check karein
     const deleteButton = target.closest('.admin-btn-delete-order');
     if (deleteButton) {
         const orderId = deleteButton.dataset.id;
@@ -211,7 +227,6 @@ filterButtons.forEach(e => {
         endDate.setHours(23, 59, 59, 999);
 
         if (range === 'today') {
-            // No change needed
         } else if (range === 'week') {
             startDate.setDate(startDate.getDate() - startDate.getDay());
         } else if (range === 'month') {
