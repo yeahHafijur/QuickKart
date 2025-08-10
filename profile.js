@@ -57,7 +57,7 @@ async function handleSendOtp(e) {
     
     const name = document.getElementById('loginName').value.trim();
     const phoneNumberInput = document.getElementById('phoneNumber').value;
-    const referredByCode = document.getElementById('referredByCode').value.trim().toUpperCase(); // Naya field
+    const referredByCode = document.getElementById('referredByCode').value.trim().toUpperCase();
 
     if (!name || phoneNumberInput.length !== 10) {
         errorEl.textContent = "Please enter name and a valid 10-digit number.";
@@ -93,7 +93,6 @@ async function handleSendOtp(e) {
 }
 
 
-// Handle OTP Verification
 // Handle OTP Verification
 async function handleVerifyOtp(e) {
     e.preventDefault();
@@ -135,11 +134,9 @@ async function handleVerifyOtp(e) {
         sessionStorage.removeItem('userNameForSignup');
         sessionStorage.removeItem('referredByCode');
 
-        // *** YEH LOGIC ADD KIYA GAYA HAI ***
-        // Check karein ki kya cart pe wapas redirect karna hai
         if (sessionStorage.getItem('loginRedirectToCart') === 'true') {
-            sessionStorage.removeItem('loginRedirectToCart'); // Flag ko hata dein
-            window.location.href = 'index.html'; // Wapas main page par bhej dein
+            sessionStorage.removeItem('loginRedirectToCart');
+            window.location.href = 'index.html?openCart=true';
         }
         
     } catch (error) {
@@ -159,7 +156,6 @@ function showUserProfile(user) {
     logoutBtn.style.display = 'block';
     userPhoneSpan.textContent = user.displayName ? `${user.displayName} (${user.phoneNumber})` : user.phoneNumber;
     
-    // User ka data fetch karo referral code aur coupons ke liye
     const userRef = db.ref(`users/${user.uid}`);
     userRef.on('value', (snapshot) => {
         const userData = snapshot.val();
@@ -243,9 +239,11 @@ async function fetchOrders(userId) {
 setupRecaptcha();
 
 auth.onAuthStateChanged(user => {
-    if (user) {
+    // Check if user exists AND has a phone number (is not an admin)
+    if (user && user.phoneNumber) {
         showUserProfile(user);
     } else {
+        // If no user or user is an admin, show login form
         showLoginForm();
     }
 });

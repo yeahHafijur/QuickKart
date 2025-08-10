@@ -2,7 +2,7 @@
 
 import cart from './cart-data.js';
 import { showNotification, debugCart } from './utils.js';
-import { auth } from './firebase-config.js'; // Firebase auth ko import karein
+import { auth } from './firebase-config.js';
 
 let elements;
 let navElements = {}; 
@@ -31,12 +31,9 @@ export function setupCartElements(el, navEl = {}) {
     navElements = navEl;
     setupClearCart();
 
-    // Login button ke liye event listener
     const loginBtn = document.getElementById('loginToOrderBtn');
     if (loginBtn) {
         loginBtn.addEventListener('click', () => {
-            // *** YEH LINE ADD KI GAYI HAI ***
-            // Browser ko batayein ki login ke baad cart pe wapas aana hai
             sessionStorage.setItem('loginRedirectToCart', 'true');
             window.location.href = 'profile.html';
         });
@@ -96,20 +93,16 @@ export function updateCartUI() {
         elements.itemTotal.textContent = `₹${total}`;
         elements.cartTotal.textContent = `₹${total}`;
 
-        // === YAHAN PAR MAIN LOGIC HAI ===
         const currentUser = auth.currentUser;
         if (currentUser) {
-            // User logged in hai
             loginToOrderBtn.style.display = 'none';
             placeOrderBtn.style.display = 'flex';
             placeOrderBtn.disabled = false;
         } else {
-            // User logged out hai
             loginToOrderBtn.style.display = 'flex';
             placeOrderBtn.style.display = 'none';
         }
 
-        // Minimum order value check
         if (total < 50 && cart.length > 0) {
             placeOrderBtn.disabled = true;
             locationStatus.textContent = `Add ₹${50 - total} more to place order.`;
@@ -146,7 +139,7 @@ export function openCart() {
     document.body.classList.add('cart-open');
     elements.cartElement.classList.add('open');
     elements.cartOverlay.classList.add('show');
-    updateCartUI(); // Cart kholne par UI update karein
+    updateCartUI();
 }
 
 export function closeCart() {

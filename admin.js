@@ -75,8 +75,6 @@ navButtons.enableNotifications.addEventListener('click', () => askForNotificatio
 
 
 // === ORDER HISTORY & DATA FETCHING ===
-// admin.js mein yeh function badlein
-
 function renderOrders(orders) {
     if (!orderListDiv) return;
     orderListDiv.innerHTML = '';
@@ -100,7 +98,7 @@ function renderOrders(orders) {
         let locationLinkHtml = '';
         if (order.location?.lat && order.location?.lng) {
             // === YAHAN LINK THEEK KIYA GAYA HAI ===
-            const mapsLink = `https://www.google.com/maps?q=${order.location.lat},${order.location.lng}`;
+            const mapsLink = `https://maps.google.com/?q=${order.location.lat},${order.location.lng}`;
             locationLinkHtml = `<a href="${mapsLink}" target="_blank" class="location-link"><i class="fas fa-map-marker-alt"></i> View on Map</a>`;
         }
 
@@ -127,6 +125,7 @@ function renderOrders(orders) {
         orderListDiv.appendChild(orderCard);
     });
 }
+
 async function fetchAndRenderOrders() {
     db.ref('orders').on('value', snapshot => {
         allOrders = snapshot.exists() ? Object.entries(snapshot.val()).map(([key, value]) => ({ ...value, key })) : [];
@@ -134,23 +133,36 @@ async function fetchAndRenderOrders() {
         generateDashboardData();
     }, err => { console.error("Order fetch error:", err); orderListDiv.innerHTML = '<p>Could not load orders.</p>'; });
 }
+
 orderListDiv.addEventListener('click', e => {
-    const button = e.target.closest('button');
-    if (!button) return;
-    const orderId = button.closest('[data-id]').dataset.id;
-    if (button.matches('.status-btn')) {
-        db.ref(`orders/${orderId}/status`).set(button.dataset.status);
-    } else if (button.matches('.admin-btn-delete-order, .admin-btn-delete-order *')) {
-        if (confirm('Are you sure you want to delete this order?')) {
-            db.ref(`orders/${orderId}`).remove();
+    const target = e.target;
+    
+    // Status button click hua ya nahi, yeh check karein
+    if (target.matches('.status-btn')) {
+        const status = target.dataset.status;
+        // Button ke parent se order ID lein
+        const orderId = target.closest('.order-status-buttons').dataset.id;
+        if (orderId && status) {
+            db.ref(`orders/${orderId}/status`).set(status)
+                .catch(err => console.error("Status update failed:", err));
+        }
+    }
+
+    // Delete button click hua ya nahi, yeh check karein
+    const deleteButton = target.closest('.admin-btn-delete-order');
+    if (deleteButton) {
+        const orderId = deleteButton.dataset.id;
+        if (orderId && confirm('Are you sure you want to delete this order?')) {
+            db.ref(`orders/${orderId}`).remove()
+                .catch(err => console.error("Order deletion failed:", err));
         }
     }
 });
 
+
 // === NEW ORDER NOTIFICATION (FIXED TO PREVENT LOOP) ===
 const notificationSound = new Audio('notification.mp3');
 async function setupNewOrderNotifications() {
-    // 1. Sabse aakhiri order ka time le lo, taaki purane notifications na aayein
     const lastOrderQuery = db.ref('orders').orderByChild('timestamp').limitToLast(1);
     const snapshot = await lastOrderQuery.once('value');
     
@@ -160,15 +172,12 @@ async function setupNewOrderNotifications() {
         lastKnownTimestamp = lastOrder.timestamp;
     }
 
-    // 2. Sirf aakhiri order ke baad aane wale naye orders ko suno
     db.ref('orders').orderByChild('timestamp').startAt(lastKnownTimestamp).on('child_added', (childSnapshot) => {
         const newOrder = childSnapshot.val();
         
-        // 3. Check karo ki order sachmuch naya hai
         if (newOrder.timestamp > lastKnownTimestamp) {
             console.log("New order detected, playing sound.");
             notificationSound.play().catch(() => alert('🔔 New Order Received!'));
-            // Ab naye order ka time save kar lo
             lastKnownTimestamp = newOrder.timestamp;
         }
     });
@@ -193,29 +202,25 @@ filterButtons.forEach(e => {
     e.addEventListener('click', () => {
         filterButtons.forEach(btn => btn.classList.remove("active"));
         e.classList.add("active");
-        const range = e.dataset.range; // Correctly get the range
+        const range = e.dataset.range;
         
         let startDate = new Date(); 
         let endDate = new Date(); 
 
-        // Set time for accuracy
         startDate.setHours(0, 0, 0, 0);
         endDate.setHours(23, 59, 59, 999);
 
         if (range === 'today') {
-            // Start and End date are already set to today
+            // No change needed
         } else if (range === 'week') {
-            // Get the date for the beginning of the current week (Sunday)
             startDate.setDate(startDate.getDate() - startDate.getDay());
         } else if (range === 'month') {
-            // Get the date for the 1st of the current month
             startDate.setDate(1);
-        } else { // This handles the 'all' case
+        } else {
             startDate = null;
             endDate = null;
         }
 
-        // Clear the custom date inputs and generate the report
         startDateInput.value = "";
         endDateInput.value = "";
         generateDashboardData(startDate, endDate);

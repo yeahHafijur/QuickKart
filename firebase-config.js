@@ -11,7 +11,7 @@ const firebaseConfig = {
   authDomain: "quickkart-shop-status.firebaseapp.com",
   databaseURL: "https://quickkart-shop-status-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "quickkart-shop-status",
-  storageBucket: "quickkart-shop-status.firebasestorage.app",
+  storageBucket: "quickkart-shop-status.appspot.com", // CORRECTED URL
   messagingSenderId: "603872368115",
   appId: "1:603872368115:web:3ed732f3c7afe934ee2e86"
 };
@@ -91,5 +91,4 @@ function updateShopStatus(isOpen, elements, closeCartCallback) {
         closeCartCallback();
     }
 }
-// Export everything including the main firebase object
 export { db, auth, storage, shopStatusRef, isShopOpen, getShopStatus, setupShopStatus, updateShopStatus, firebaseApp as firebase };

@@ -8,7 +8,6 @@ import { showNotification } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- SPLASH SCREEN LOGIC ---
     const splashScreen = document.getElementById('splash-screen');
     const logoAnimated = document.querySelector('.logo-text-animated');
 
@@ -37,7 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     }
     
-    // All element selections are now safely inside DOMContentLoaded
     const elements = {
         body: document.body,
         storeDiv: document.getElementById('storeItems'),
@@ -189,6 +187,13 @@ document.addEventListener('DOMContentLoaded', () => {
     initLocation();
     showCategoryView(); 
     updateCartUI(); 
+    
+    // Check if we need to open the cart on page load
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('openCart') === 'true') {
+        openCart();
+        updateActiveNav(elements.navCart);
+    }
     
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {

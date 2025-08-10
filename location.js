@@ -59,8 +59,6 @@ async function getAddressFromCoords(lat, lng) {
     }
 }
 
-// location.js mein yeh function badlein
-
 async function sendWhatsAppOrder(customerName, customerPhone, address, lat, lng, deliveryFee, cartTotal, cartItems) {
     try {
         const user = auth.currentUser;
@@ -88,7 +86,7 @@ async function sendWhatsAppOrder(customerName, customerPhone, address, lat, lng,
         ).join('\n');
 
         // === YAHAN BHI LINK THEEK KIYA GAYA HAI ===
-        const mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
+        const mapsLink = `https://maps.google.com/?q=${lat},${lng}`;
 
         const message = `✨ *New QuickKart Order!* ✨
 ====================
@@ -128,11 +126,9 @@ ${cartItemsText}
     }
 }
 
-// Is function ko location.js mein replace karein
 async function handleOrderWithLocation() {
     const currentUser = auth.currentUser;
 
-    // Yakeen karein ki sirf logged-in user hi order place kar sakta hai
     if (!currentUser) {
         showNotification('Something went wrong. Please login again.', 'error');
         return;
@@ -141,14 +137,12 @@ async function handleOrderWithLocation() {
     if (cart.length === 0) return showNotification('Your cart is empty!', 'error');
     if (!isShopOpen) return showNotification('Shop is currently closed.', 'error');
     
-    // User ki details seedhe auth se lein
-    const customerName = currentUser.displayName || 'Guest'; // Agar naam set nahi hai
-    const customerPhone = currentUser.phoneNumber.replace('+91', ''); // +91 hata dein
+    const customerName = currentUser.displayName || 'Guest';
+    const customerPhone = currentUser.phoneNumber.replace('+91', '');
 
     const itemTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
     if (itemTotal < 50) return showNotification('Minimum order value is ₹50.', 'error');
 
-    // Baaki ka function waisa hi rahega
     const btn = document.getElementById('placeOrderBtn');
     const spinner = document.getElementById('locationSpinner');
     const btnText = document.getElementById('btnText');
