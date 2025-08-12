@@ -1,0 +1,9 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.firebaseapp.quickkart_shop_status.twa",
+    "sha256_cert_fingerprints":
+    ["5B:56:C3:A0:DD:10:21:0C:92:5D:63:45:A0:D1:31:88:0E:45:01:B9:B2:C5:E6:11:ED:AA:9F:0B:B5:0C:7B:F8"]
+  }
+}]
