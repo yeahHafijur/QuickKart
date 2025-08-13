@@ -1,4 +1,4 @@
-// main.js (REPLACE THIS ENTIRE FILE)
+// main.js (Final and Corrected Code)
 
 import { auth, setupShopStatus } from './firebase-config.js';
 import { initStore, renderCategoryGrid, fetchTopSellers } from './store.js';
@@ -193,6 +193,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (urlParams.get('openCart') === 'true') {
         openCart();
         updateActiveNav(elements.navCart);
+        // Clean the URL so it doesn't open the cart on every refresh
+        window.history.replaceState({}, document.title, window.location.pathname);
     }
     
     if ('serviceWorker' in navigator) {

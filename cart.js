@@ -34,6 +34,7 @@ export function setupCartElements(el, navEl = {}) {
     const loginBtn = document.getElementById('loginToOrderBtn');
     if (loginBtn) {
         loginBtn.addEventListener('click', () => {
+            // YEH LINE ZAROORI HAI
             sessionStorage.setItem('loginRedirectToCart', 'true');
             window.location.href = 'profile.html';
         });

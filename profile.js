@@ -94,6 +94,7 @@ async function handleSendOtp(e) {
 
 
 // Handle OTP Verification
+// Handle OTP Verification
 async function handleVerifyOtp(e) {
     e.preventDefault();
     errorEl.textContent = '';
@@ -134,9 +135,13 @@ async function handleVerifyOtp(e) {
         sessionStorage.removeItem('userNameForSignup');
         sessionStorage.removeItem('referredByCode');
 
+        // YEH HAI ASLI LOGIC: Flag check karke redirect karna
         if (sessionStorage.getItem('loginRedirectToCart') === 'true') {
             sessionStorage.removeItem('loginRedirectToCart');
             window.location.href = 'index.html?openCart=true';
+        } else {
+            // Agar user normal profile page se login kar raha hai, to use yahin rakho
+            showUserProfile(user); 
         }
         
     } catch (error) {

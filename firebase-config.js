@@ -1,4 +1,4 @@
-// firebase-config.js (FINAL UPDATED CODE)
+// firebase-config.js (FINAL AND CORRECTED CODE)
 
 import "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js";
 import "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js";
@@ -44,7 +44,9 @@ function setupShopStatus(elements, closeCartCallback) {
 
     shopStatusToggle.addEventListener('change', async function(e) {
         e.preventDefault();
-        if (auth.currentUser) {
+        // Admin status check karne ke baad hi toggle kaam karega
+        const isAdmin = auth.currentUser ? await checkAdminStatus(auth.currentUser.uid) : false;
+        if (auth.currentUser && isAdmin) {
             try {
                 await shopStatusRef.set({ isOpen: this.checked });
                 showNotification(`Shop is now ${this.checked ? 'OPEN' : 'CLOSED'}`);
@@ -53,11 +55,10 @@ function setupShopStatus(elements, closeCartCallback) {
             }
         } else {
             loginModal.style.display = 'flex';
-            this.checked = isShopOpen;
+            this.checked = isShopOpen; // Status ko purane state par reset karein
         }
     });
-
-    // Admin check logic ko yahan bhi add kar rahe hain
+    
     async function checkAdminStatus(uid) {
         if (!uid) return false;
         const snapshot = await db.ref(`admins/${uid}`).once('value');
@@ -94,21 +95,23 @@ function setupShopStatus(elements, closeCartCallback) {
     // YAHAN BADLAV KIYA GAYA HAI
     auth.onAuthStateChanged(async (user) => {
         if (user) {
-            // User logged in hai
-            logoutBtn.style.display = 'block';
-            
-            // Ab check karo ki user admin hai ya nahi
+            // User logged in hai, ab check karo ki admin hai ya nahi
             const isUserAdmin = await checkAdminStatus(user.uid);
             if (isUserAdmin) {
+                // Agar admin hai, to dono button dikhao
+                logoutBtn.style.display = 'block';
                 adminPanelBtn.style.display = 'block';
             } else {
+                // Agar normal user hai, to dono button chhupa do
+                logoutBtn.style.display = 'none';
                 adminPanelBtn.style.display = 'none';
             }
         } else {
-            // User logged out hai
+            // User logged out hai, to dono button chhupa do
             logoutBtn.style.display = 'none';
             adminPanelBtn.style.display = 'none';
         }
+        // Har baar auth state change hone par cart UI update karo
         updateCartUI();
     });
 }
