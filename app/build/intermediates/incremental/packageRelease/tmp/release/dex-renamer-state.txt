@@ -1,4 +1,4 @@
-#Tue Aug 12 01:43:42 IST 2025
+#Wed Aug 13 20:55:18 IST 2025
 base.0=C\:\\Users\\yhz01\\OneDrive\\Desktop\\QuickKart\\app\\build\\intermediates\\dex\\release\\minifyReleaseWithR8\\classes.dex
 renamed.0=classes.dex
 path.0=classes.dex
