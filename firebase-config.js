@@ -1,28 +1,26 @@
-// firebase-config.js (UPDATED AND CORRECTED)
+// firebase-config.js (FINAL UPDATED CODE)
 
 import "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js";
 import "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js";
 import "https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js";
 import "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js";
 import { showNotification } from './utils.js';
+import { updateCartUI } from './cart.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBieX9ymlSZH_nGc17YukhmrIvNOpBzF_M",
   authDomain: "quickkart-shop-status.firebaseapp.com",
   databaseURL: "https://quickkart-shop-status-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "quickkart-shop-status",
-  // Yeh SAHI hai
-storageBucket: "quickkart-shop-status.firebasestorage.app",
+  storageBucket: "quickkart-shop-status.appspot.com",
   messagingSenderId: "603872368115",
   appId: "1:603872368115:web:3ed732f3c7afe934ee2e86"
 };
 
-// Check if Firebase is already initialized
 if (!window.firebase.apps.length) {
     window.firebase.initializeApp(firebaseConfig);
 }
 
-// Get the firebase object from the window
 const firebaseApp = window.firebase;
 const db = firebaseApp.database();
 const auth = firebaseApp.auth();
@@ -34,6 +32,7 @@ const getShopStatus = () => isShopOpen;
 
 function setupShopStatus(elements, closeCartCallback) {
     const { shopStatusToggle, loginModal, loginForm, closeLoginBtn, loginError, logoutBtn, adminPanelBtn } = elements;
+
     shopStatusRef.on('value', (snapshot) => {
         const statusData = snapshot.val();
         if (statusData) {
@@ -42,6 +41,7 @@ function setupShopStatus(elements, closeCartCallback) {
             updateShopStatus(isShopOpen, elements, closeCartCallback);
         }
     });
+
     shopStatusToggle.addEventListener('change', async function(e) {
         e.preventDefault();
         if (auth.currentUser) {
@@ -56,47 +56,63 @@ function setupShopStatus(elements, closeCartCallback) {
             this.checked = isShopOpen;
         }
     });
-    // In firebase-config.js, update the login form handler
-loginForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const email = document.getElementById('ownerEmail').value;
-    const password = document.getElementById('ownerPassword').value;
-    
-    auth.signInWithEmailAndPassword(email, password)
-        .then(async (userCredential) => {
-            const isAdmin = await checkAdminStatus(userCredential.user.uid);
-            if (isAdmin) {
-                loginModal.style.display = 'none';
-                loginError.textContent = '';
-                loginForm.reset();
-                showNotification('Admin login successful!');
-            } else {
-                auth.signOut();
-                loginError.textContent = "Not an admin account.";
-            }
-        })
-        .catch((error) => {
-            loginError.textContent = "Wrong email or password.";
-        });
-});
 
-async function checkAdminStatus(uid) {
-    const snapshot = await db.ref(`admins/${uid}`).once('value');
-    return snapshot.exists();
-}
+    // Admin check logic ko yahan bhi add kar rahe hain
+    async function checkAdminStatus(uid) {
+        if (!uid) return false;
+        const snapshot = await db.ref(`admins/${uid}`).once('value');
+        return snapshot.exists();
+    }
+
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('ownerEmail').value;
+        const password = document.getElementById('ownerPassword').value;
+        
+        auth.signInWithEmailAndPassword(email, password)
+            .then(async (userCredential) => {
+                const isAdmin = await checkAdminStatus(userCredential.user.uid);
+                if (isAdmin) {
+                    loginModal.style.display = 'none';
+                    loginError.textContent = '';
+                    loginForm.reset();
+                    showNotification('Admin login successful!');
+                } else {
+                    auth.signOut();
+                    loginError.textContent = "Not an admin account.";
+                }
+            })
+            .catch((error) => {
+                loginError.textContent = "Wrong email or password.";
+            });
+    });
+
     closeLoginBtn.addEventListener('click', () => {
         loginModal.style.display = 'none';
     });
-    auth.onAuthStateChanged((user) => {
+    
+    // YAHAN BADLAV KIYA GAYA HAI
+    auth.onAuthStateChanged(async (user) => {
         if (user) {
+            // User logged in hai
             logoutBtn.style.display = 'block';
-            adminPanelBtn.style.display = 'block';
+            
+            // Ab check karo ki user admin hai ya nahi
+            const isUserAdmin = await checkAdminStatus(user.uid);
+            if (isUserAdmin) {
+                adminPanelBtn.style.display = 'block';
+            } else {
+                adminPanelBtn.style.display = 'none';
+            }
         } else {
+            // User logged out hai
             logoutBtn.style.display = 'none';
             adminPanelBtn.style.display = 'none';
         }
+        updateCartUI();
     });
 }
+
 function updateShopStatus(isOpen, elements, closeCartCallback) {
     document.body.classList.toggle('shop-closed', !isOpen);
     elements.shopStatusText.textContent = isOpen ? "Open" : "Closed";
@@ -105,4 +121,5 @@ function updateShopStatus(isOpen, elements, closeCartCallback) {
         closeCartCallback();
     }
 }
+
 export { db, auth, storage, shopStatusRef, isShopOpen, getShopStatus, setupShopStatus, updateShopStatus, firebaseApp as firebase };
