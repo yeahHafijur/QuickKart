@@ -19,8 +19,8 @@
     "path": "C:\\Users\\yhz01\\OneDrive\\Desktop\\QuickKart\\android.keystore",
     "alias": "android"
   },
-  "appVersionName": "3",
-  "appVersionCode": 4,
+  "appVersionName": "5",
+  "appVersionCode": 6,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://quickkart-shop-status.firebaseapp.com/manifest.json",
@@ -45,5 +45,5 @@
   "protocolHandlers": [],
   "fileHandlers": [],
   "launchHandlerClientMode": "",
-  "appVersion": "3"
+  "appVersion": "5"
 }

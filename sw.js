@@ -1,6 +1,6 @@
 // sw.js (UPDATED CODE)
 
-const CACHE_NAME = 'quickkart-v1';
+const CACHE_NAME = 'quickkart-v5S';
 
 // Yahan un sabhi files ka path daalein jinhe aap offline available karana chahte hain
 const urlsToCache = [
