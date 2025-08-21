@@ -12,7 +12,7 @@ const firebaseConfig = {
   authDomain: "quickkart-shop-status.firebaseapp.com",
   databaseURL: "https://quickkart-shop-status-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "quickkart-shop-status",
-  storageBucket: "quickkart-shop-status.appspot.com",
+  storageBucket: "gs://quickkart-shop-status.firebasestorage.app",
   messagingSenderId: "603872368115",
   appId: "1:603872368115:web:3ed732f3c7afe934ee2e86"
 };
