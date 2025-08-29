@@ -63,6 +63,7 @@ const sections = {
     orderHistorySection: document.getElementById('orderHistorySection'),
     couponSection: document.getElementById('couponSection'),
 };
+const ordersTabs = document.querySelectorAll('.orders-tab');
 const addProductForm = document.getElementById('addProductForm');
 const productListDiv = document.getElementById('productList');
 const submitProductBtn = document.getElementById('submitProductBtn');
@@ -86,8 +87,16 @@ function showSection(sectionId) {
     Object.values(navButtons).forEach(button => button.classList.remove('active'));
     if (sections[sectionId]) {
         sections[sectionId].style.display = 'block';
-        const navBtnKey = Object.keys(navButtons).find(key => sectionId.toLowerCase().startsWith(key.toLowerCase()));
-        if(navBtnKey) navButtons[navBtnKey].classList.add('active');
+        // Explicit mapping to avoid mismatches and ensure correct active state
+        const mapping = {
+            dashboardSection: 'dashboard',
+            productListSection: 'viewProducts',
+            addProductSection: 'addProduct',
+            orderHistorySection: 'orderHistory',
+            couponSection: 'coupons'
+        };
+        const navBtnKey = mapping[sectionId];
+        if (navBtnKey && navButtons[navBtnKey]) navButtons[navBtnKey].classList.add('active');
     }
 }
 navButtons.dashboard.addEventListener('click', () => showSection('dashboardSection'));
@@ -111,13 +120,17 @@ function renderOrders(orders) {
         return (statusOrder[a.status] || 4) - (statusOrder[b.status] || 4) || new Date(b.timestamp) - new Date(a.timestamp);
     });
 
-    orders.forEach(order => {
+    const activeTab = document.querySelector('.orders-tab.active');
+    const filterStatus = activeTab ? activeTab.dataset.status : 'All';
+    const filtered = filterStatus === 'All' ? orders : orders.filter(o => (o.status || 'Pending') === filterStatus);
+
+    filtered.forEach(order => {
         const orderCard = document.createElement('div');
         const statusClass = (order.status || 'pending').toLowerCase();
         orderCard.className = `order-list-item status-border-${statusClass}`;
         const itemsHtml = order.items.map(item => `<li>${item.name} (Qty: ${item.quantity}) - ₹${item.price * item.quantity}</li>`).join('');
         const orderDate = new Date(order.timestamp).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
-        
+
         let locationLinkHtml = '';
         if (order.location?.lat && order.location?.lng) {
             const mapsLink = `https://maps.google.com/?q=${order.location.lat},${order.location.lng}`;
@@ -146,6 +159,9 @@ function renderOrders(orders) {
             </div>`;
         orderListDiv.appendChild(orderCard);
     });
+    // Update badge count
+    const badgeOrders = document.getElementById('badgeOrders');
+    if (badgeOrders) badgeOrders.textContent = String(orders.length);
 }
 
 async function fetchAndRenderOrders() {
@@ -154,11 +170,20 @@ async function fetchAndRenderOrders() {
         renderOrders(allOrders);
         generateDashboardData();
     }, err => { console.error("Order fetch error:", err); orderListDiv.innerHTML = '<p>Could not load orders.</p>'; });
+    if (ordersTabs.length) {
+        ordersTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                ordersTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                renderOrders(allOrders);
+            });
+        });
+    }
 }
 
 orderListDiv.addEventListener('click', e => {
     const target = e.target;
-    
+
     if (target.matches('.status-btn')) {
         const status = target.dataset.status;
         const orderId = target.closest('.order-status-buttons').dataset.id;
@@ -184,7 +209,7 @@ const notificationSound = new Audio('notification.mp3');
 async function setupNewOrderNotifications() {
     const lastOrderQuery = db.ref('orders').orderByChild('timestamp').limitToLast(1);
     const snapshot = await lastOrderQuery.once('value');
-    
+
     let lastKnownTimestamp = new Date().toISOString();
     if (snapshot.exists()) {
         const lastOrder = Object.values(snapshot.val())[0];
@@ -193,7 +218,7 @@ async function setupNewOrderNotifications() {
 
     db.ref('orders').orderByChild('timestamp').startAt(lastKnownTimestamp).on('child_added', (childSnapshot) => {
         const newOrder = childSnapshot.val();
-        
+
         if (newOrder.timestamp > lastKnownTimestamp) {
             console.log("New order detected, playing sound.");
             notificationSound.play().catch(() => alert('🔔 New Order Received!'));
@@ -203,15 +228,23 @@ async function setupNewOrderNotifications() {
 }
 
 // === PRODUCT MANAGEMENT FUNCTIONS (NO CHANGE) ===
-function resetForm(){addProductForm.reset();editingIdInput.value="";formTitle.textContent="Add New Product";submitProductBtn.textContent="Add Product";cancelEditBtn.style.display="none"}
-function populateCategoryDropdown(){const e=["Atta Rice & Daal","Masala & Oil","Bakery & Biscuits","Cold Drinks & Juices","Pan Corner","Personal Care","Cleaning Care","Dry Fruits","Baby Care","Maxo Killer & candle","Gass","Electronics","Stationary","Colgate & Brush","Fish & Chicken","Sweet & Snacks","Dawat-e-Biriyani","Bakery & Cake"];categoryList.innerHTML="";e.forEach(e=>{categoryList.innerHTML+=`<option value="${e}">`})}
-function renderProducts(e=""){const t=e.toLowerCase(),o=allProducts.filter(e=>e.name&&e.name.toLowerCase().includes(t));productListDiv.innerHTML="";if(0===o.length)return void(productListDiv.innerHTML="<p>No products found.</p>");o.forEach(e=>{const t=document.createElement("div");t.className="product-list-item";const o=e.inStock!==!1;t.innerHTML=`<img src="${e.image}" alt="${e.name}" class="product-list-img"><div class="product-list-details"><p class="product-list-name">${e.name}</p><p class="product-list-price">₹${e.price}</p><p class="product-list-category">Category: ${e.category||"N/A"}</p></div><div class="product-list-actions"><div class="stock-toggle"><label class="switch-small"><input type="checkbox" class="stock-status-checkbox" data-id="${e.key}" ${o?"checked":""}><span class="slider-small round"></span></label><span class="stock-label">${o?"In Stock":"Out of Stock"}</span></div><div class="product-buttons"><button class="admin-btn-edit" data-id="${e.key}">Edit</button><button class="admin-btn-delete" data-id="${e.key}">Delete</button></div></div>`;productListDiv.appendChild(t)})}
-async function fetchAndRenderProducts(){productListDiv.innerHTML="<p>Loading products...</p>";try{const e=await db.ref("products").once("value"),t=e.val();allProducts=t?Object.entries(t).map(([e,t])=>({...t,key:e})):[];renderProducts(adminSearchInput.value);populateCategoryDropdown()}catch(e){console.error("Error loading products:",e);productListDiv.innerHTML="<p>Could not load products.</p>"}}
+function resetForm() { addProductForm.reset(); editingIdInput.value = ""; formTitle.textContent = "Add New Product"; submitProductBtn.textContent = "Add Product"; cancelEditBtn.style.display = "none" }
+function populateCategoryDropdown() { const e = ["Atta Rice & Daal", "Masala & Oil", "Bakery & Biscuits", "Cold Drinks & Juices", "Pan Corner", "Personal Care", "Cleaning Care", "Dry Fruits", "Baby Care", "Maxo Killer & candle", "Gass", "Electronics", "Stationary", "Colgate & Brush", "Fish & Chicken", "Sweet & Snacks", "Dawat-e-Biriyani", "Bakery & Cake"]; categoryList.innerHTML = ""; e.forEach(e => { categoryList.innerHTML += `<option value="${e}">` }) }
+function renderProducts(e = "") { const t = e.toLowerCase(), o = allProducts.filter(e => e.name && e.name.toLowerCase().includes(t)); productListDiv.innerHTML = ""; if (0 === o.length) return void (productListDiv.innerHTML = "<p>No products found.</p>"); o.forEach(e => { const t = document.createElement("div"); t.className = "product-list-item"; const o = e.inStock !== !1; t.innerHTML = `<img src="${e.image}" alt="${e.name}" class="product-list-img"><div class="product-list-details"><p class="product-list-name">${e.name}</p><p class="product-list-price">₹${e.price}</p><p class="product-list-category">Category: ${e.category || "N/A"}</p></div><div class="product-list-actions"><div class="stock-toggle"><label class="switch-small"><input type="checkbox" class="stock-status-checkbox" data-id="${e.key}" ${o ? "checked" : ""}><span class="slider-small round"></span></label><span class="stock-label">${o ? "In Stock" : "Out of Stock"}</span></div><div class="product-buttons"><button class="admin-btn-edit" data-id="${e.key}">Edit</button><button class="admin-btn-delete" data-id="${e.key}">Delete</button></div></div>`; productListDiv.appendChild(t) }) }
+async function fetchAndRenderProducts() { productListDiv.innerHTML = "<p>Loading products...</p>"; try { const e = await db.ref("products").once("value"), t = e.val(); allProducts = t ? Object.entries(t).map(([e, t]) => ({ ...t, key: e })) : []; renderProducts(adminSearchInput.value); populateCategoryDropdown() } catch (e) { console.error("Error loading products:", e); productListDiv.innerHTML = "<p>Could not load products.</p>" } }
+// Update product badge when products change
+const productsRef = db.ref('products');
+productsRef.on('value', snapshot => {
+    const data = snapshot.val();
+    const count = data ? Object.keys(data).length : 0;
+    const badgeProducts = document.getElementById('badgeProducts');
+    if (badgeProducts) badgeProducts.textContent = String(count);
+});
 // Yeh function aapke addProductForm event listener ko replace karega
 
 addProductForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    
+
     const user = auth.currentUser;
     if (!user) {
         // alert ko isse badal dein
@@ -245,7 +278,7 @@ addProductForm.addEventListener("submit", async (e) => {
 
     try {
         let imageUrl = "";
-        
+
         if (!editingId && !productImageFile) {
             throw new Error("Please select an image for new products");
         }
@@ -286,23 +319,23 @@ addProductForm.addEventListener("submit", async (e) => {
     }
 });
 
-async function uploadImageAndGetURL(e){const t=document.getElementById("uploadProgress"),o=t.querySelector("span");return t.style.display="block",new Promise((n,d)=>{const i=`product_images/product_${Date.now()}_${e.name}`,l=storage.ref(i).put(e);l.on("state_changed",e=>{const t=(e.bytesTransferred/e.totalBytes)*100;o.textContent=Math.round(t)},e=>{console.error("Upload failed:",e);t.style.display="none";d(e)},async()=>{try{const e=await l.snapshot.ref.getDownloadURL();t.style.display="none";n(e)}catch(e){d(e)}})})}
-cancelEditBtn.addEventListener("click",()=>{resetForm();showSection("productListSection")});
-productListDiv.addEventListener("click",e=>{const t=e.target.closest("button");if(t){const o=t.dataset.id;if(t.matches(".admin-btn-delete")){confirm("Are you sure you want to delete this product?")&&db.ref(`products/${o}`).remove().then(()=>fetchAndRenderProducts())}else if(t.matches(".admin-btn-edit")){const e=allProducts.find(e=>e.key===o);e&&(document.getElementById("productName").value=e.name,document.getElementById("productPrice").value=e.price,document.getElementById("productCategory").value=e.category,editingIdInput.value=o,formTitle.textContent="Edit Product",submitProductBtn.textContent="Update Product",cancelEditBtn.style.display="block",showSection("addProductSection"),window.scrollTo(0,0))}}});
-productListDiv.addEventListener("change",e=>{if(e.target.matches(".stock-status-checkbox")){const t=e.target.dataset.id,o=e.target.checked;db.ref(`products/${t}/inStock`).set(o).then(()=>{const t=e.target.closest(".stock-toggle").querySelector(".stock-label");t.textContent=o?"In Stock":"Out of Stock";const n=allProducts.find(e=>e.key===t);n&&(n.inStock=o)}).catch(t=>{console.error("Stock update failed:",t),e.target.checked=!o})}});
-adminSearchInput.addEventListener("input",e=>renderProducts(e.target.value));
+async function uploadImageAndGetURL(e) { const t = document.getElementById("uploadProgress"), o = t.querySelector("span"); return t.style.display = "block", new Promise((n, d) => { const i = `product_images/product_${Date.now()}_${e.name}`, l = storage.ref(i).put(e); l.on("state_changed", e => { const t = (e.bytesTransferred / e.totalBytes) * 100; o.textContent = Math.round(t) }, e => { console.error("Upload failed:", e); t.style.display = "none"; d(e) }, async () => { try { const e = await l.snapshot.ref.getDownloadURL(); t.style.display = "none"; n(e) } catch (e) { d(e) } }) }) }
+cancelEditBtn.addEventListener("click", () => { resetForm(); showSection("productListSection") });
+productListDiv.addEventListener("click", e => { const t = e.target.closest("button"); if (t) { const o = t.dataset.id; if (t.matches(".admin-btn-delete")) { confirm("Are you sure you want to delete this product?") && db.ref(`products/${o}`).remove().then(() => fetchAndRenderProducts()) } else if (t.matches(".admin-btn-edit")) { const e = allProducts.find(e => e.key === o); e && (document.getElementById("productName").value = e.name, document.getElementById("productPrice").value = e.price, document.getElementById("productCategory").value = e.category, editingIdInput.value = o, formTitle.textContent = "Edit Product", submitProductBtn.textContent = "Update Product", cancelEditBtn.style.display = "block", showSection("addProductSection"), window.scrollTo(0, 0)) } } });
+productListDiv.addEventListener("change", e => { if (e.target.matches(".stock-status-checkbox")) { const t = e.target.dataset.id, o = e.target.checked; db.ref(`products/${t}/inStock`).set(o).then(() => { const t = e.target.closest(".stock-toggle").querySelector(".stock-label"); t.textContent = o ? "In Stock" : "Out of Stock"; const n = allProducts.find(e => e.key === t); n && (n.inStock = o) }).catch(t => { console.error("Stock update failed:", t), e.target.checked = !o }) } });
+adminSearchInput.addEventListener("input", e => renderProducts(e.target.value));
 
 // === DASHBOARD & PUSH NOTIFICATIONS (NO CHANGE) ===
-async function askForNotificationPermission(){try{if("granted"===Notification.permission)return void alert("Notifications are already enabled.");const e=await Notification.requestPermission();if("granted"!==e)throw new Error("Permission not granted.");const t=await navigator.serviceWorker.ready,o=await t.pushManager.subscribe({userVisibleOnly:!0,applicationServerKey:"BD7ekfMaxKz0kUHWYFlGc1H4HJh_vVLlHVNA-AWhBbKgAakjBkpEXG8x9hWSnra5g8rxBH5dOd65L_oBukyBHfQ"});auth.currentUser&&await db.ref(`admin_tokens/${auth.currentUser.uid}`).set(JSON.stringify(o)),alert("Notifications enabled!")}catch(e){alert("Could not enable notifications."),console.error(e)}}
-async function generateDashboardData(e=null,t=null){const[o,n,d,i,l]=[document.getElementById("itemTotalSales"),document.getElementById("totalDeliveryFees"),document.getElementById("totalSales"),document.getElementById("totalOrders"),document.getElementById("topSellingItems")],a=allOrders.filter(e=>"Completed"===e.status);if(0===a.length)return o.textContent="₹0.00",n.textContent="₹0.00",d.textContent="₹0.00",i.textContent="0",void(l.innerHTML="<p>No completed sales data yet.</p>");const r=a.filter(o=>!e||new Date(o.timestamp)>=e&&new Date(o.timestamp)<=t),s=r.reduce((e,t)=>e+(t.totalAmount||0),0),c=r.reduce((e,t)=>e+(t.deliveryFee||0),0);o.textContent=`₹${(s-c).toFixed(2)}`,n.textContent=`₹${c.toFixed(2)}`,d.textContent=`₹${s.toFixed(2)}`,i.textContent=r.length;const u={};r.forEach(e=>e.items?.forEach(t=>{u[t.name]=(u[t.name]||0)+t.quantity}));const p=Object.entries(u).sort(([,e],[,t])=>t-e).slice(0,10);l.innerHTML=p.length?p.map(([e,t])=>`<div class="top-item"><span class="top-item-name">${e}</span><span class="top-item-qty">${t} sold</span></div>`).join(""):"<p>No items sold in this period.</p>";try{await db.ref("topSellers").set(p.map(([e])=>e))}catch(e){console.error("Could not save top sellers:",e)}}
+async function askForNotificationPermission() { try { if ("granted" === Notification.permission) return void alert("Notifications are already enabled."); const e = await Notification.requestPermission(); if ("granted" !== e) throw new Error("Permission not granted."); const t = await navigator.serviceWorker.ready, o = await t.pushManager.subscribe({ userVisibleOnly: !0, applicationServerKey: "BD7ekfMaxKz0kUHWYFlGc1H4HJh_vVLlHVNA-AWhBbKgAakjBkpEXG8x9hWSnra5g8rxBH5dOd65L_oBukyBHfQ" }); auth.currentUser && await db.ref(`admin_tokens/${auth.currentUser.uid}`).set(JSON.stringify(o)), alert("Notifications enabled!") } catch (e) { alert("Could not enable notifications."), console.error(e) } }
+async function generateDashboardData(e = null, t = null) { const [o, n, d, i, l] = [document.getElementById("itemTotalSales"), document.getElementById("totalDeliveryFees"), document.getElementById("totalSales"), document.getElementById("totalOrders"), document.getElementById("topSellingItems")], a = allOrders.filter(e => "Completed" === e.status); if (0 === a.length) return o.textContent = "₹0.00", n.textContent = "₹0.00", d.textContent = "₹0.00", i.textContent = "0", void (l.innerHTML = "<p>No completed sales data yet.</p>"); const r = a.filter(o => !e || new Date(o.timestamp) >= e && new Date(o.timestamp) <= t), s = r.reduce((e, t) => e + (t.totalAmount || 0), 0), c = r.reduce((e, t) => e + (t.deliveryFee || 0), 0); o.textContent = `₹${(s - c).toFixed(2)}`, n.textContent = `₹${c.toFixed(2)}`, d.textContent = `₹${s.toFixed(2)}`, i.textContent = r.length; const u = {}; r.forEach(e => e.items?.forEach(t => { u[t.name] = (u[t.name] || 0) + t.quantity })); const p = Object.entries(u).sort(([, e], [, t]) => t - e).slice(0, 10); l.innerHTML = p.length ? p.map(([e, t]) => `<div class="top-item"><span class="top-item-name">${e}</span><span class="top-item-qty">${t} sold</span></div>`).join("") : "<p>No items sold in this period.</p>"; try { await db.ref("topSellers").set(p.map(([e]) => e)) } catch (e) { console.error("Could not save top sellers:", e) } }
 filterButtons.forEach(e => {
     e.addEventListener('click', () => {
         filterButtons.forEach(btn => btn.classList.remove("active"));
         e.classList.add("active");
         const range = e.dataset.range;
-        
-        let startDate = new Date(); 
-        let endDate = new Date(); 
+
+        let startDate = new Date();
+        let endDate = new Date();
 
         startDate.setHours(0, 0, 0, 0);
         endDate.setHours(23, 59, 59, 999);
@@ -322,7 +355,7 @@ filterButtons.forEach(e => {
         generateDashboardData(startDate, endDate);
     });
 });
-applyDateRangeBtn.addEventListener("click",()=>{if(!startDateInput.value||!endDateInput.value)return alert("Please select both start and end dates.");filterButtons.forEach(e=>e.classList.remove("active"));const e=new Date(startDateInput.value);e.setHours(0,0,0,0);const t=new Date(endDateInput.value);t.setHours(23,59,59,999),generateDashboardData(e,t)});
+applyDateRangeBtn.addEventListener("click", () => { if (!startDateInput.value || !endDateInput.value) return alert("Please select both start and end dates."); filterButtons.forEach(e => e.classList.remove("active")); const e = new Date(startDateInput.value); e.setHours(0, 0, 0, 0); const t = new Date(endDateInput.value); t.setHours(23, 59, 59, 999), generateDashboardData(e, t) });
 
 
 // === COUPON MANAGEMENT (FIXED & IMPROVED) ===

@@ -1,6 +1,6 @@
 // sw.js (UPDATED CODE)
 
-const CACHE_NAME = 'quickkart-v5S';
+const CACHE_NAME = 'quickkart-v6-premium';
 
 // Yahan un sabhi files ka path daalein jinhe aap offline available karana chahte hain
 const urlsToCache = [
@@ -33,8 +33,8 @@ self.addEventListener('install', event => {
         return cache.addAll(urlsToCache);
       })
       .catch(error => {
-          // ADDED: Error handling to see which file failed
-          console.error('Failed to cache files during install:', error);
+        // ADDED: Error handling to see which file failed
+        console.error('Failed to cache files during install:', error);
       })
   );
 });
@@ -72,19 +72,19 @@ self.addEventListener('activate', event => {
 // sw.js file ke aakhir me yeh add karein
 
 self.addEventListener('push', event => {
-    console.log('[Service Worker] Push Received.');
-    
-    // Notification ka data taiyaar karna
-    const notificationData = event.data.json();
-    const title = notificationData.title || 'New Notification';
-    const options = {
-        body: notificationData.body || 'Something new happened!',
-        icon: 'images/icons/icon-192x192.png', // Aapka app icon
-        badge: 'images/icons/icon-192x192.png'
-    };
+  console.log('[Service Worker] Push Received.');
 
-    // Notification dikhana
-    event.waitUntil(
-        self.registration.showNotification(title, options)
-    );
+  // Notification ka data taiyaar karna
+  const notificationData = event.data.json();
+  const title = notificationData.title || 'New Notification';
+  const options = {
+    body: notificationData.body || 'Something new happened!',
+    icon: 'images/icons/icon-192x192.png', // Aapka app icon
+    badge: 'images/icons/icon-192x192.png'
+  };
+
+  // Notification dikhana
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
 });
